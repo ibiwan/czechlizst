@@ -9,6 +9,18 @@ Local-first project/task app with:
 
 Primary use case: conversational backlog management for board, card, and video game projects/tasks (see [README-TOOL.md](README-TOOL.md)).
 
+## Start Here In 60 Seconds
+1. Install dependencies: `npm install`
+2. Start backend + apply migrations: `npm run postgrest:start`
+3. Start frontend + type watch: `npm run dev`
+4. Pick the right doc for your task:
+   - implementation workflow: [README-DEV.md](README-DEV.md)
+   - schema/data changes: [README-DATA.md](README-DATA.md)
+   - tests and coverage: [README-TESTING.md](README-TESTING.md)
+   - MCP/tool usage: [README-TOOL.md](README-TOOL.md)
+   - architecture rationale: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
+   - debt and priorities: [README-TECHDEBT.md](README-TECHDEBT.md)
+
 ## Quick Start
 1. `npm install`
 2. `npm run postgrest:start`
