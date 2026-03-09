@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "exportedAt": "2026-03-09T02:06:32.269Z",
+    "baseUrl": "http://localhost:3002",
+    "resources": [
+      "_prisma_migrations",
+      "projects",
+      "tasks"
+    ]
+  },
+  "data": {
+    "_prisma_migrations": [
+      {
+        "id": "851eeb5e-9646-4431-b75d-79d70c8e0abd",
+        "checksum": "c890cf7f511e32cc25854915aeee90cd09a38b7e3dd9765e2c3dd70b90fa8f7d",
+        "finished_at": "2026-03-09T01:01:35.532026+00:00",
+        "migration_name": "20260309010000_init_postgres",
+        "logs": null,
+        "rolled_back_at": null,
+        "started_at": "2026-03-09T01:01:35.517298+00:00",
+        "applied_steps_count": 1
+      }
+    ],
+    "projects": [
+      {
+        "id": 18,
+        "name": "Master Chess",
+        "created_at": "2026-03-09T01:41:31.724"
+      },
+      {
+        "id": 19,
+        "name": "The Otherside",
+        "created_at": "2026-03-09T01:42:17.27"
+      }
+    ],
+    "tasks": [
+      {
+        "id": 8,
+        "project_id": 18,
+        "title": "Concept: board game combining chess and mastermind.",
+        "done": false,
+        "created_at": "2026-03-09T01:41:31.739"
+      },
+      {
+        "id": 9,
+        "project_id": 18,
+        "title": "Core mechanic: chess-like pieces/rules, but piece identities are hidden from opponent at game start.",
+        "done": false,
+        "created_at": "2026-03-09T01:41:31.744"
+      },
+      {
+        "id": 10,
+        "project_id": 18,
+        "title": "Visibility rule: each owner knows their own exact piece identities and move capabilities.",
+        "done": false,
+        "created_at": "2026-03-09T01:41:31.746"
+      },
+      {
+        "id": 11,
+        "project_id": 19,
+        "title": "Type: board game.",
+        "done": false,
+        "created_at": "2026-03-09T01:42:17.277"
+      },
+      {
+        "id": 12,
+        "project_id": 19,
+        "title": "Genre: tactical/survival.",
+        "done": false,
+        "created_at": "2026-03-09T01:42:17.281"
+      },
+      {
+        "id": 13,
+        "project_id": 19,
+        "title": "Premise: defend the town against incursions from an alternate evil plane.",
+        "done": false,
+        "created_at": "2026-03-09T01:42:17.283"
+      }
+    ]
+  }
+}

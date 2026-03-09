@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+package-lock.json
+apps/frontend/src/*.js
+apps/frontend/src/*.d.ts
+apps/frontend/tsconfig.tsbuildinfo

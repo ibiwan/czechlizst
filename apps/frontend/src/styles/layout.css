@@ -1,0 +1,13 @@
+.app-shell {
+  width: min(1100px, 100% - 2rem);
+  margin: var(--space-6) auto;
+  display: grid;
+  gap: var(--space-5);
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    width: calc(100% - 1rem);
+    margin: var(--space-4) auto;
+  }
+}

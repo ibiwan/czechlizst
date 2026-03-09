@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log*
+.env
+.env.*
+*.log
+dist
+coverage
+.prisma
+/data/*.sqlite
+/data/*.sqlite-journal
+/data/postgrest/db/*
+!/data/postgrest/db/.gitkeep

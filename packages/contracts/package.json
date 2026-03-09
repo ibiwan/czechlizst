@@ -1,0 +1,21 @@
+{
+  "name": "@app/contracts",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./src/index.cjs",
+  "module": "./src/index.mjs",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.mjs",
+      "require": "./src/index.cjs",
+      "types": "./src/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "echo \"contracts package does not require build\""
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}

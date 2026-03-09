@@ -1,0 +1,21 @@
+{
+  "name": "@app/db",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "scripts": {
+    "build": "echo \"db package does not require build\"",
+    "prisma:generate": "prisma generate",
+    "prisma:types": "node ./scripts/generate-contract-types.mjs",
+    "prisma:types:watch": "node ./scripts/watch-contract-types.mjs",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.5.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.5.0"
+  }
+}

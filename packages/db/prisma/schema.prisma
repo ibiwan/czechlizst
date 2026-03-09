@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["api"]
+}
+
+enum WorkStatus {
+  todo
+  doing
+  blocked
+  done
+  dropped
+
+  @@schema("api")
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  name      String
+  status    WorkStatus @default(todo)
+  createdAt DateTime @default(now()) @map("created_at")
+  tasks     Task[]
+  notes     ProjectNote[]
+
+  @@map("projects")
+  @@schema("api")
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @map("project_id")
+  title     String
+  status    WorkStatus @default(todo)
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  notes     TaskNote[]
+
+  @@index([projectId])
+  @@map("tasks")
+  @@schema("api")
+}
+
+model ProjectNote {
+  id        Int      @id @default(autoincrement())
+  projectId Int      @map("project_id")
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, createdAt])
+  @@map("project_notes")
+  @@schema("api")
+}
+
+model TaskNote {
+  id        Int      @id @default(autoincrement())
+  taskId    Int      @map("task_id")
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+  @@map("task_notes")
+  @@schema("api")
+}

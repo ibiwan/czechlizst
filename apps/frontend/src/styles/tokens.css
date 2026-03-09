@@ -1,0 +1,56 @@
+:root {
+  --font-family-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-sm: 0.45rem;
+  --radius-md: 0.8rem;
+
+  --color-bg: #0d1117;
+  --color-bg-elev: #161b22;
+  --color-bg-soft: #1f2937;
+  --color-border: #2e3a48;
+  --color-text: #e6edf3;
+  --color-text-dim: #9db0c4;
+  --color-accent: #58a6ff;
+  --color-accent-soft: #1f6feb33;
+  --color-danger: #f85149;
+  --color-panel-grad-start: #141b24;
+  --color-detail-bg: #121922;
+  --color-note-bg: #0f141b;
+  --color-row-hover: #1d2632;
+  --color-row-selected: #1b324d;
+  --color-row-add-hover: #16202b;
+  --color-row-add-edit: #141f2b;
+
+  --status-todo: #3b82f6;
+  --status-doing: #f59e0b;
+  --status-blocked: #ef4444;
+  --status-done: #10b981;
+  --status-dropped: #94a3b8;
+
+  --status-todo-border-soft: #3b82f655;
+  --status-doing-border-soft: #f59e0b55;
+  --status-blocked-border-soft: #ef444455;
+  --status-done-border-soft: #10b98155;
+  --status-dropped-border-soft: #94a3b855;
+
+  --status-todo-border-strong: #3b82f699;
+  --status-doing-border-strong: #f59e0b99;
+  --status-blocked-border-strong: #ef444499;
+  --status-done-border-strong: #10b98199;
+  --status-dropped-border-strong: #94a3b899;
+
+  --status-todo-shadow: #3b82f622;
+  --status-doing-shadow: #f59e0b22;
+  --status-blocked-shadow: #ef444422;
+  --status-done-shadow: #10b98122;
+  --status-dropped-shadow: #94a3b822;
+
+  --shadow-soft: 0 10px 30px rgb(0 0 0 / 0.3);
+}

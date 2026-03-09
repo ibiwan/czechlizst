@@ -1,0 +1,15 @@
+{
+  "name": "@app/mcp-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ./src/server.mjs",
+    "start": "node ./src/server.mjs",
+    "build": "echo \"mcp server does not require build\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "zod": "^3.25.76"
+  }
+}
