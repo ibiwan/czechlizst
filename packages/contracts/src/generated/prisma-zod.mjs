@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 
-export const WorkStatusSchema = z.enum(['todo', 'doing', 'blocked', 'done', 'dropped']);
+export const WorkStatusSchema = z.enum(['todo', 'started', 'active', 'blocked', 'done', 'dropped']);
 
 export const ProjectRowSchema = z.object({
   id: z.number().int(),

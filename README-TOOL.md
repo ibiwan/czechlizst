@@ -46,14 +46,21 @@ Then reload window (`Developer: Reload Window`).
 - `health_check`
 - `list_projects`
 - `create_project`
+- `update_project`
+- `delete_project`
 - `list_tasks`
 - `create_task`
+- `update_task`
+- `delete_task`
 - `list_project_notes`
 - `create_project_note`
+- `update_project_note`
+- `delete_project_note`
 - `list_task_notes`
 - `create_task_note`
+- `update_task_note`
+- `delete_task_note`
 
-`update_*` and `delete_*` tools are not implemented yet.
 Status transition enforcement still applies at DB level, so invalid direct updates are rejected even if attempted through other clients.
 
 ## Fast Validation

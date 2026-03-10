@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 
-export declare const WorkStatusSchema: z.ZodEnum<['todo', 'doing', 'blocked', 'done', 'dropped']>;
+export declare const WorkStatusSchema: z.ZodEnum<['todo', 'started', 'active', 'blocked', 'done', 'dropped']>;
 
 export declare const ProjectRowSchema: z.ZodType<ProjectRow>;
 export declare const TaskRowSchema: z.ZodType<TaskRow>;

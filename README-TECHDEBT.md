@@ -15,7 +15,24 @@ Known technical debt with practical, low-overhead fixes for a solo/local project
 
 ## Now
 
-### 1) Status Rule Drift Prevention (High Priority)
+### 1) Add Project UX Consistency Gaps (High Priority)
+Current problem:
+- after creating a project, the list updates but the details panel does not auto-select the new project.
+- whitespace-only submit leaves the form open with no visible validation/error message.
+
+Plan:
+1. On successful create, set active project to the newly created id and refresh details panel.
+2. Add inline validation for project name:
+   - trim input
+   - block empty submissions
+   - show a short, visible error near the input
+3. Ensure validation errors clear on input change or cancel.
+
+Done criteria:
+- new projects are selected immediately after create
+- empty/whitespace submit shows a clear error and does not create a project
+
+### 2) Status Rule Drift Prevention (High Priority)
 Current problem:
 - transition rules exist in JS and SQL, so drift is possible.
 
@@ -42,7 +59,7 @@ Done criteria:
 - SQL rule changes derived from generated snippet
 - parity E2E coverage passing
 
-### 2) Mutation Refresh Policy Cleanup (High Priority)
+### 3) Mutation Refresh Policy Cleanup (High Priority)
 Current problem:
 - mixed `invalidatesTags` + manual `refetch()` patterns can cause redundant requests and inconsistency.
 
@@ -58,7 +75,7 @@ Done criteria:
 
 ## Next
 
-### 3) Contracts Parser Boilerplate Reduction
+### 4) Contracts Parser Boilerplate Reduction
 Current problem:
 - repetitive parsing wrappers in `packages/contracts/src/index.mjs`.
 
@@ -73,7 +90,7 @@ Done criteria:
 - less wrapper duplication
 - unchanged external behavior
 
-### 4) Panel Hook Shared Helper Extraction
+### 5) Panel Hook Shared Helper Extraction
 Current problem:
 - some low-level state/update patterns are duplicated across project/task panel models.
 
@@ -88,7 +105,7 @@ Done criteria:
 
 ## Later
 
-### 5) MCP Tool Registration Boilerplate
+### 6) MCP Tool Registration Boilerplate
 Current problem:
 - repeated list/create `server.tool(...)` setup in `apps/mcp-server/src/server.mjs`.
 
@@ -99,7 +116,7 @@ Plan:
 Done criteria:
 - lower repetition, no loss of readability
 
-### 6) MCP Update/Delete Tool Surface
+### 7) MCP Update/Delete Tool Surface
 Current problem:
 - MCP currently exposes list/create and notes list/create only.
 - common workflow actions (rename, status updates, cleanup deletes) require direct API calls outside MCP tools.
@@ -121,7 +138,7 @@ Done criteria:
 - invalid transitions/deletes fail with clear errors
 - tests cover new tool behavior
 
-### 7) Incremental RTKQ Boundaries Cleanup
+### 8) Incremental RTKQ Boundaries Cleanup
 Current problem:
 - server-state consistency concerns are partially split between hooks and API policies.
 

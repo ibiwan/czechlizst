@@ -1,5 +1,5 @@
 import { type WorkStatus } from '@app/contracts';
-import { formatTimestamp } from '../../lib/format';
+import { formatProjectTimestamp } from '../../lib/format';
 import { type ProjectView } from '../../types/view';
 
 type ProjectRowProps = {
@@ -22,11 +22,17 @@ export function ProjectRow({
       className={project.id === activeProjectId ? 'is-selected' : ''}
       onClick={() => onSelectProject(project.id)}
     >
-      <td>{project.name}</td>
       <td>
-        <span className={`status-pill status-${shownStatus}`}>{shownStatus}</span>
+        <div className="project-card">
+          <div className="project-card-title">{project.name}</div>
+          <div className="project-card-meta">
+            <span className={`status-pill status-${shownStatus}`}>{shownStatus}</span>
+            <span className="project-created">
+              {formatProjectTimestamp(project.createdAt)}
+            </span>
+          </div>
+        </div>
       </td>
-      <td>{formatTimestamp(project.createdAt)}</td>
     </tr>
   );
 }

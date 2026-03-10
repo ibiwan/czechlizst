@@ -3,9 +3,15 @@ import { type WorkStatus } from '@app/contracts';
 import {
   useCreateTaskMutation,
   useCreateTaskNoteMutation,
+  useDemoteActiveTasksExceptTaskMutation,
+  useDemoteActiveTasksOutsideProjectMutation,
+  useDeleteTaskMutation,
   useListTaskNotesQuery,
   useListTasksQuery,
-  useUpdateTaskStatusMutation
+  useUpdateTaskMutation,
+  useUpdateTaskNoteMutation,
+  useUpdateTaskStatusMutation,
+  useUpdateProjectStatusMutation
 } from '../../api';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { setSelectedTaskId } from '../../mainPageSlice';
@@ -15,7 +21,7 @@ export function useTasksPanelModel() {
   const dispatch = useAppDispatch();
   const selectedTaskId = useAppSelector((state) => state.mainPage.selectedTaskId);
 
-  const { activeProjectId, projectsQuery } = useActiveProjectSelection();
+  const { activeProjectId, projects, projectsQuery } = useActiveProjectSelection();
 
   const [taskInputOpen, setTaskInputOpen] = useState(false);
   const [taskNoteInputOpen, setTaskNoteInputOpen] = useState(false);
@@ -45,7 +51,18 @@ export function useTasksPanelModel() {
 
   const [createTask, createTaskState] = useCreateTaskMutation();
   const [createTaskNote, createTaskNoteState] = useCreateTaskNoteMutation();
+  const [updateTask, updateTaskState] = useUpdateTaskMutation();
   const [updateTaskStatus, updateTaskStatusState] = useUpdateTaskStatusMutation();
+  const [updateProjectStatus] = useUpdateProjectStatusMutation();
+  const [demoteActiveTasksOutsideProject] = useDemoteActiveTasksOutsideProjectMutation();
+  const [demoteActiveTasksExceptTask] = useDemoteActiveTasksExceptTaskMutation();
+  const [deleteTask] = useDeleteTaskMutation();
+  const [updateTaskNote, updateTaskNoteState] = useUpdateTaskNoteMutation();
+
+  const activeTask = useMemo(
+    () => tasks.find((task) => task.id === selectedTaskId) ?? null,
+    [selectedTaskId, tasks]
+  );
 
   async function onCreateTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,10 +86,32 @@ export function useTasksPanelModel() {
     setTaskNoteInputOpen(false);
   }
 
+  async function demoteOtherActiveProjects(nextActiveProjectId: number) {
+    const activeProjects = projects.filter(
+      (project) => project.status === 'active' && project.id !== nextActiveProjectId
+    );
+    for (const project of activeProjects) {
+      await updateProjectStatus({ projectId: project.id, status: 'started' }).unwrap();
+    }
+  }
+
+  async function ensureProjectActive(projectId: number) {
+    await demoteOtherActiveProjects(projectId);
+    await demoteActiveTasksOutsideProject({ projectId }).unwrap();
+    await updateProjectStatus({ projectId, status: 'active' }).unwrap();
+    projectsQuery.refetch();
+  }
+
   async function onUpdateTaskStatus(taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) {
     if (nextStatus === currentStatus || activeProjectId === null) {
       return;
     }
+
+    if (nextStatus === 'active') {
+      await ensureProjectActive(activeProjectId);
+      await demoteActiveTasksExceptTask({ taskId }).unwrap();
+    }
+
     await updateTaskStatus({
       taskId,
       projectId: activeProjectId,
@@ -82,19 +121,63 @@ export function useTasksPanelModel() {
     projectsQuery.refetch();
   }
 
+  async function onUpdateTaskTitle(taskId: number, title: string) {
+    if (activeProjectId === null) {
+      return;
+    }
+    const trimmed = title.trim();
+    if (!trimmed) {
+      return;
+    }
+    await updateTask({ taskId, projectId: activeProjectId, title: trimmed }).unwrap();
+  }
+
+  async function onUpdateTaskNote(noteId: number, body: string) {
+    if (selectedTaskId === null) {
+      return;
+    }
+    const trimmed = body.trim();
+    if (!trimmed) {
+      return;
+    }
+    await updateTaskNote({ noteId, taskId: selectedTaskId, body: trimmed }).unwrap();
+  }
+
+  async function onDeleteTask(taskId: number) {
+    if (activeProjectId === null) {
+      return;
+    }
+    const task = tasks.find((entry) => entry.id === taskId) ?? null;
+    if (!task) {
+      return;
+    }
+    const confirmed = window.confirm(`Delete task "${task.title}"? This removes its notes.`);
+    if (!confirmed) {
+      return;
+    }
+    await deleteTask({ taskId, projectId: activeProjectId }).unwrap();
+    if (selectedTaskId === taskId) {
+      dispatch(setSelectedTaskId(null));
+    }
+  }
+
   function selectTask(taskId: number | null) {
     dispatch(setSelectedTaskId(taskId));
   }
 
   return {
     activeProjectId,
+    activeTask,
     createTaskNoteState,
     createTaskState,
     newTaskNoteBody,
     newTaskTitle,
     onCreateTask,
     onCreateTaskNote,
+    onDeleteTask,
     onUpdateTaskStatus,
+    onUpdateTaskTitle,
+    onUpdateTaskNote,
     selectTask,
     selectedTaskId,
     setNewTaskNoteBody,
@@ -107,6 +190,8 @@ export function useTasksPanelModel() {
     taskNotesQuery,
     tasks,
     tasksQuery,
+    updateTaskState,
+    updateTaskNoteState,
     updateTaskStatusState
   };
 }

@@ -29,26 +29,30 @@
   --color-row-add-edit: #141f2b;
 
   --status-todo: #3b82f6;
-  --status-doing: #f59e0b;
-  --status-blocked: #ef4444;
+  --status-started: #6DBA94;
+  --status-active: #f28f2a;
+  --status-blocked: #e23b3b;
   --status-done: #10b981;
   --status-dropped: #94a3b8;
 
   --status-todo-border-soft: #3b82f655;
-  --status-doing-border-soft: #f59e0b55;
-  --status-blocked-border-soft: #ef444455;
+  --status-started-border-soft: #6DBA9455;
+  --status-active-border-soft: #f28f2a55;
+  --status-blocked-border-soft: #e23b3b55;
   --status-done-border-soft: #10b98155;
   --status-dropped-border-soft: #94a3b855;
 
   --status-todo-border-strong: #3b82f699;
-  --status-doing-border-strong: #f59e0b99;
-  --status-blocked-border-strong: #ef444499;
+  --status-started-border-strong: #6DBA9499;
+  --status-active-border-strong: #f28f2a99;
+  --status-blocked-border-strong: #e23b3b99;
   --status-done-border-strong: #10b98199;
   --status-dropped-border-strong: #94a3b899;
 
   --status-todo-shadow: #3b82f622;
-  --status-doing-shadow: #f59e0b22;
-  --status-blocked-shadow: #ef444422;
+  --status-started-shadow: #6DBA9422;
+  --status-active-shadow: #f28f2a22;
+  --status-blocked-shadow: #e23b3b22;
   --status-done-shadow: #10b98122;
   --status-dropped-shadow: #94a3b822;
 

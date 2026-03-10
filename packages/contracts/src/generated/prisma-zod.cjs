@@ -3,7 +3,7 @@
 
 const { z } = require('zod');
 
-const WorkStatusSchema = z.enum(['todo', 'doing', 'blocked', 'done', 'dropped']);
+const WorkStatusSchema = z.enum(['todo', 'started', 'active', 'blocked', 'done', 'dropped']);
 
 const ProjectRowSchema = z.object({
   id: z.number().int(),

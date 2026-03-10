@@ -32,7 +32,7 @@ Tables:
 - `api.task_notes` (FK to `api.tasks`)
 
 Status enum:
-- `api."WorkStatus"` values: `todo`, `doing`, `blocked`, `done`, `dropped`
+- `api."WorkStatus"` values: `todo`, `started`, `active`, `blocked`, `done`, `dropped`
 
 ## Example requests
 

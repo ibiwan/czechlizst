@@ -28,11 +28,12 @@ export const workStatusSchema = WorkStatusSchema;
 export const workStatuses = workStatusSchema.options;
 
 export const allowedWorkStatusTransitions = {
-  todo: ['doing', 'blocked', 'dropped'],
-  doing: ['blocked', 'done', 'dropped', 'todo'],
-  blocked: ['doing', 'dropped', 'todo'],
-  done: ['todo', 'doing', 'dropped'],
-  dropped: ['todo', 'doing']
+  todo: ['started', 'active', 'blocked', 'dropped'],
+  started: ['active', 'blocked', 'done', 'dropped', 'todo'],
+  active: ['started', 'blocked', 'done', 'dropped', 'todo'],
+  blocked: ['started', 'active', 'dropped', 'todo'],
+  done: ['todo', 'started', 'active', 'dropped'],
+  dropped: ['todo', 'started', 'active']
 };
 
 export function canTransitionWorkStatus(from, to) {
@@ -58,7 +59,8 @@ export function computeProjectStatusFromTasks(tasks) {
     return null;
   }
 
-  let doing = 0;
+  let activeCount = 0;
+  let startedCount = 0;
   let blocked = 0;
   let todo = 0;
   let done = 0;
@@ -66,8 +68,11 @@ export function computeProjectStatusFromTasks(tasks) {
 
   for (const task of tasks) {
     switch (task.status) {
-      case 'doing':
-        doing += 1;
+      case 'active':
+        activeCount += 1;
+        break;
+      case 'started':
+        startedCount += 1;
         break;
       case 'blocked':
         blocked += 1;
@@ -86,13 +91,17 @@ export function computeProjectStatusFromTasks(tasks) {
     }
   }
 
-  const active = total - dropped;
+  const totalActive = total - dropped;
 
-  if (doing > 0) {
-    return 'doing';
+  if (activeCount > 0) {
+    return 'active';
   }
 
-  if (active > 0 && done === active) {
+  if (startedCount > 0) {
+    return 'started';
+  }
+
+  if (totalActive > 0 && done === totalActive) {
     return 'done';
   }
 
@@ -154,6 +163,15 @@ export const createProjectBodySchema = z.object({
   name: z.string().min(1).max(120)
 });
 
+export const updateProjectBodySchema = z
+  .object({
+    name: z.string().min(1).max(120).optional(),
+    status: workStatusSchema.optional()
+  })
+  .refine((value) => value.name !== undefined || value.status !== undefined, {
+    message: 'Provide at least one project field to update.'
+  });
+
 export const updateProjectStatusBodySchema = z.object({
   status: workStatusSchema
 });
@@ -178,6 +196,15 @@ export const createTaskBodySchema = z.object({
   title: z.string().min(1).max(240)
 });
 
+export const updateTaskBodySchema = z
+  .object({
+    title: z.string().min(1).max(240).optional(),
+    status: workStatusSchema.optional()
+  })
+  .refine((value) => value.title !== undefined || value.status !== undefined, {
+    message: 'Provide at least one task field to update.'
+  });
+
 export const updateTaskStatusBodySchema = z.object({
   status: workStatusSchema
 });
@@ -191,6 +218,14 @@ export const createProjectNoteBodySchema = z.object({
 });
 
 export const createTaskNoteBodySchema = z.object({
+  body: z.string().min(1).max(5000)
+});
+
+export const updateProjectNoteBodySchema = z.object({
+  body: z.string().min(1).max(5000)
+});
+
+export const updateTaskNoteBodySchema = z.object({
   body: z.string().min(1).max(5000)
 });
 

@@ -14,7 +14,7 @@ export declare const routes: {
 
 export declare const healthResponseSchema: z.ZodObject<{ ok: z.ZodBoolean }>;
 export declare const workStatusSchema: z.ZodEnum<
-  ['todo', 'doing', 'blocked', 'done', 'dropped']
+  ['todo', 'started', 'active', 'blocked', 'done', 'dropped']
 >;
 export declare const workStatuses: ReadonlyArray<z.infer<typeof workStatusSchema>>;
 export declare const allowedWorkStatusTransitions: Record<
@@ -112,11 +112,21 @@ export declare const listTaskNotesResponseSchema: z.ZodObject<{
 }>;
 
 export declare const createProjectBodySchema: z.ZodObject<{ name: z.ZodString }>;
+export declare const updateProjectBodySchema: z.ZodObject<{
+  name: z.ZodOptional<z.ZodString>;
+  status: z.ZodOptional<typeof workStatusSchema>;
+}>;
 export declare const updateProjectStatusBodySchema: z.ZodObject<{ status: typeof workStatusSchema }>;
 export declare const createTaskBodySchema: z.ZodObject<{ title: z.ZodString }>;
+export declare const updateTaskBodySchema: z.ZodObject<{
+  title: z.ZodOptional<z.ZodString>;
+  status: z.ZodOptional<typeof workStatusSchema>;
+}>;
 export declare const updateTaskStatusBodySchema: z.ZodObject<{ status: typeof workStatusSchema }>;
 export declare const createProjectNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
 export declare const createTaskNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
+export declare const updateProjectNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
+export declare const updateTaskNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
 
 export declare const createProjectResponseSchema: z.ZodObject<{ project: typeof projectSchema }>;
 export declare const createTaskResponseSchema: z.ZodObject<{ task: typeof taskSchema }>;

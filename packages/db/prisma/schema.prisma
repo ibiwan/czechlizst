@@ -10,7 +10,8 @@ datasource db {
 
 enum WorkStatus {
   todo
-  doing
+  started
+  active
   blocked
   done
   dropped

@@ -47,6 +47,17 @@ const server = new McpServer({
   version: '0.1.0'
 });
 
+const workStatusSchema = z.enum(['todo', 'started', 'active', 'blocked', 'done', 'dropped']);
+
+function ensureNonEmptyUpdate(value, ctx) {
+  if (!value || Object.keys(value).length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'At least one field must be provided to update.'
+    });
+  }
+}
+
 server.tool(
   'health_check',
   'Checks PostgREST connectivity and returns service status.',
@@ -101,6 +112,56 @@ server.tool(
 );
 
 server.tool(
+  'update_project',
+  'Updates a project row in PostgREST.',
+  {
+    id: z.number().int().positive(),
+    name: z.string().min(1).max(120).optional(),
+    status: workStatusSchema.optional()
+  },
+  async ({ id, name, status }) => {
+    const payload = {};
+    if (name !== undefined) payload.name = name;
+    if (status !== undefined) payload.status = status;
+
+    ensureNonEmptyUpdate(payload, {
+      addIssue: (issue) => {
+        throw new Error(issue.message);
+      }
+    });
+
+    const project = await postgrestRequest(`/projects?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    return okContent({ project });
+  }
+);
+
+server.tool(
+  'delete_project',
+  'Deletes a project row in PostgREST.',
+  {
+    id: z.number().int().positive()
+  },
+  async ({ id }) => {
+    const project = await postgrestRequest(`/projects?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        Prefer: 'return=representation'
+      }
+    });
+
+    return okContent({ project });
+  }
+);
+
+server.tool(
   'list_tasks',
   'Lists tasks. Optional filter by project id.',
   {
@@ -140,6 +201,58 @@ server.tool(
         Prefer: 'return=representation'
       },
       body: JSON.stringify({ project_id: projectId, title })
+    });
+
+    return okContent({ task });
+  }
+);
+
+server.tool(
+  'update_task',
+  'Updates a task row in PostgREST.',
+  {
+    id: z.number().int().positive(),
+    projectId: z.number().int().positive().optional(),
+    title: z.string().min(1).max(240).optional(),
+    status: workStatusSchema.optional()
+  },
+  async ({ id, projectId, title, status }) => {
+    const payload = {};
+    if (projectId !== undefined) payload.project_id = projectId;
+    if (title !== undefined) payload.title = title;
+    if (status !== undefined) payload.status = status;
+
+    ensureNonEmptyUpdate(payload, {
+      addIssue: (issue) => {
+        throw new Error(issue.message);
+      }
+    });
+
+    const task = await postgrestRequest(`/tasks?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    return okContent({ task });
+  }
+);
+
+server.tool(
+  'delete_task',
+  'Deletes a task row in PostgREST.',
+  {
+    id: z.number().int().positive()
+  },
+  async ({ id }) => {
+    const task = await postgrestRequest(`/tasks?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        Prefer: 'return=representation'
+      }
     });
 
     return okContent({ task });
@@ -189,6 +302,45 @@ server.tool(
 );
 
 server.tool(
+  'update_project_note',
+  'Updates a project note row in PostgREST.',
+  {
+    id: z.number().int().positive(),
+    body: z.string().min(1).max(5000)
+  },
+  async ({ id, body }) => {
+    const note = await postgrestRequest(`/project_notes?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify({ body })
+    });
+
+    return okContent({ note });
+  }
+);
+
+server.tool(
+  'delete_project_note',
+  'Deletes a project note row in PostgREST.',
+  {
+    id: z.number().int().positive()
+  },
+  async ({ id }) => {
+    const note = await postgrestRequest(`/project_notes?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        Prefer: 'return=representation'
+      }
+    });
+
+    return okContent({ note });
+  }
+);
+
+server.tool(
   'list_task_notes',
   'Lists notes for a task.',
   {
@@ -224,6 +376,45 @@ server.tool(
         Prefer: 'return=representation'
       },
       body: JSON.stringify({ task_id: taskId, body })
+    });
+
+    return okContent({ note });
+  }
+);
+
+server.tool(
+  'update_task_note',
+  'Updates a task note row in PostgREST.',
+  {
+    id: z.number().int().positive(),
+    body: z.string().min(1).max(5000)
+  },
+  async ({ id, body }) => {
+    const note = await postgrestRequest(`/task_notes?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify({ body })
+    });
+
+    return okContent({ note });
+  }
+);
+
+server.tool(
+  'delete_task_note',
+  'Deletes a task note row in PostgREST.',
+  {
+    id: z.number().int().positive()
+  },
+  async ({ id }) => {
+    const note = await postgrestRequest(`/task_notes?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        Prefer: 'return=representation'
+      }
     });
 
     return okContent({ note });

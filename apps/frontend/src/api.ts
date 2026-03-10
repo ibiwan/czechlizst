@@ -14,7 +14,11 @@ import {
   parsePostgrestListTaskNotesResponse,
   parsePostgrestListTasksResponse,
   postgrestProjectRowsSchema,
+  updateProjectBodySchema,
+  updateProjectNoteBodySchema,
   updateProjectStatusBodySchema,
+  updateTaskBodySchema,
+  updateTaskNoteBodySchema,
   updateTaskStatusBodySchema,
   routes
 } from '@app/contracts';
@@ -52,6 +56,63 @@ export const api = createApi({
       }),
       transformResponse: (response) => parsePostgrestCreateProjectResponse(response),
       invalidatesTags: ['Projects']
+    }),
+    updateProject: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateProjectResponse>,
+      { projectId: number; name?: string; status?: ReturnType<typeof updateProjectBodySchema.parse>['status'] }
+    >({
+      query: ({ projectId, name, status }) => ({
+        url: `${routes.projects}?id=eq.${projectId}`,
+        method: 'PATCH',
+        body: updateProjectBodySchema.parse({ name, status }),
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateProjectResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Project not found' };
+        }
+        return response;
+      },
+      invalidatesTags: ['Projects']
+    }),
+    deleteProject: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateProjectResponse>,
+      { projectId: number }
+    >({
+      query: ({ projectId }) => ({
+        url: `${routes.projects}?id=eq.${projectId}`,
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateProjectResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Project not found' };
+        }
+        return response;
+      },
+      invalidatesTags: ['Projects', 'Tasks', 'ProjectNotes', 'TaskNotes']
     }),
     updateProjectStatus: builder.mutation<
       ReturnType<typeof parsePostgrestCreateProjectResponse>,
@@ -124,6 +185,37 @@ export const api = createApi({
         { type: 'Tasks', id: arg.projectId }
       ]
     }),
+    updateTask: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateTaskResponse>,
+      { taskId: number; projectId: number; title?: string; status?: ReturnType<typeof updateTaskBodySchema.parse>['status'] }
+    >({
+      query: ({ taskId, title, status }) => ({
+        url: `${routes.tasks}?id=eq.${taskId}`,
+        method: 'PATCH',
+        body: updateTaskBodySchema.parse({ title, status }),
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) => parsePostgrestCreateTaskResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Task not found' };
+        }
+        return response;
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Tasks', id: arg.projectId },
+        'Projects'
+      ]
+    }),
     updateTaskStatus: builder.mutation<
       ReturnType<typeof parsePostgrestCreateTaskResponse>,
       { taskId: number; projectId: number; status: ReturnType<typeof updateTaskStatusBodySchema.parse>['status'] }
@@ -155,6 +247,67 @@ export const api = createApi({
         'Projects'
       ]
     }),
+    demoteActiveTasksOutsideProject: builder.mutation<
+      ReturnType<typeof parsePostgrestListTasksResponse>,
+      { projectId: number }
+    >({
+      query: ({ projectId }) => ({
+        url: `${routes.tasks}?status=eq.active&project_id=neq.${projectId}`,
+        method: 'PATCH',
+        body: updateTaskStatusBodySchema.parse({ status: 'started' }),
+        headers: {
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) => parsePostgrestListTasksResponse(response),
+      invalidatesTags: ['Tasks', 'Projects']
+    }),
+    demoteActiveTasksExceptTask: builder.mutation<
+      ReturnType<typeof parsePostgrestListTasksResponse>,
+      { taskId: number }
+    >({
+      query: ({ taskId }) => ({
+        url: `${routes.tasks}?status=eq.active&id=neq.${taskId}`,
+        method: 'PATCH',
+        body: updateTaskStatusBodySchema.parse({ status: 'started' }),
+        headers: {
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) => parsePostgrestListTasksResponse(response),
+      invalidatesTags: ['Tasks', 'Projects']
+    }),
+    deleteTask: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateTaskResponse>,
+      { taskId: number; projectId: number }
+    >({
+      query: ({ taskId }) => ({
+        url: `${routes.tasks}?id=eq.${taskId}`,
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) => parsePostgrestCreateTaskResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Task not found' };
+        }
+        return response;
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'Tasks', id: arg.projectId },
+        'Projects',
+        { type: 'TaskNotes', id: arg.taskId }
+      ]
+    }),
     createProjectNote: builder.mutation<
       ReturnType<typeof parsePostgrestCreateProjectNoteResponse>,
       { projectId: number; body: string }
@@ -171,6 +324,67 @@ export const api = createApi({
         }
       }),
       transformResponse: (response) => parsePostgrestCreateProjectNoteResponse(response),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'ProjectNotes', id: arg.projectId }
+      ]
+    }),
+    updateProjectNote: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateProjectNoteResponse>,
+      { noteId: number; projectId: number; body: string }
+    >({
+      query: ({ noteId, body }) => ({
+        url: `${routes.projectNotes}?id=eq.${noteId}`,
+        method: 'PATCH',
+        body: updateProjectNoteBodySchema.parse({ body }),
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateProjectNoteResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Project note not found' };
+        }
+        return response;
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: 'ProjectNotes', id: arg.projectId }
+      ]
+    }),
+    deleteProjectNote: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateProjectNoteResponse>,
+      { noteId: number; projectId: number }
+    >({
+      query: ({ noteId }) => ({
+        url: `${routes.projectNotes}?id=eq.${noteId}`,
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateProjectNoteResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Project note not found' };
+        }
+        return response;
+      },
       invalidatesTags: (_result, _error, arg) => [
         { type: 'ProjectNotes', id: arg.projectId }
       ]
@@ -192,6 +406,63 @@ export const api = createApi({
       }),
       transformResponse: (response) => parsePostgrestCreateTaskNoteResponse(response),
       invalidatesTags: (_result, _error, arg) => [{ type: 'TaskNotes', id: arg.taskId }]
+    }),
+    updateTaskNote: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateTaskNoteResponse>,
+      { noteId: number; taskId: number; body: string }
+    >({
+      query: ({ noteId, body }) => ({
+        url: `${routes.taskNotes}?id=eq.${noteId}`,
+        method: 'PATCH',
+        body: updateTaskNoteBodySchema.parse({ body }),
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateTaskNoteResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Task note not found' };
+        }
+        return response;
+      },
+      invalidatesTags: (_result, _error, arg) => [{ type: 'TaskNotes', id: arg.taskId }]
+    }),
+    deleteTaskNote: builder.mutation<
+      ReturnType<typeof parsePostgrestCreateTaskNoteResponse>,
+      { noteId: number; taskId: number }
+    >({
+      query: ({ noteId }) => ({
+        url: `${routes.taskNotes}?id=eq.${noteId}`,
+        method: 'DELETE',
+        headers: {
+          Accept: 'application/vnd.pgrst.object+json',
+          Prefer: 'return=representation'
+        }
+      }),
+      transformResponse: (response) =>
+        parsePostgrestCreateTaskNoteResponse([response] as unknown[]),
+      transformErrorResponse: (response) => {
+        if (
+          response.status === 406 &&
+          typeof response.data === 'object' &&
+          response.data !== null &&
+          'code' in response.data &&
+          response.data.code === 'PGRST116'
+        ) {
+          return { status: 404, message: 'Task note not found' };
+        }
+        return response;
+      },
+      invalidatesTags: (_result, _error, arg) => [{ type: 'TaskNotes', id: arg.taskId }]
     })
   })
 });
@@ -199,10 +470,20 @@ export const api = createApi({
 export const {
   useCreateProjectMutation,
   useCreateTaskMutation,
+  useDeleteProjectMutation,
+  useDeleteProjectNoteMutation,
+  useDeleteTaskMutation,
+  useDeleteTaskNoteMutation,
   useUpdateProjectStatusMutation,
+  useUpdateProjectMutation,
   useUpdateTaskStatusMutation,
+  useUpdateTaskMutation,
   useCreateProjectNoteMutation,
   useCreateTaskNoteMutation,
+  useDemoteActiveTasksExceptTaskMutation,
+  useDemoteActiveTasksOutsideProjectMutation,
+  useUpdateProjectNoteMutation,
+  useUpdateTaskNoteMutation,
   useHealthQuery,
   useListProjectNotesQuery,
   useListProjectsQuery,

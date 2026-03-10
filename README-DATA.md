@@ -9,8 +9,8 @@ Prisma is the canonical schema definition.
 `apps/backend/sql/init.sql` is bootstrap-only (roles, schema, grants), not table SoT.
 
 ## Current Domain Model
-- `api.projects` (`status`: `todo|doing|blocked|done|dropped`)
-- `api.tasks` (`status`: `todo|doing|blocked|done|dropped`) with foreign key to `api.projects`
+- `api.projects` (`status`: `todo|started|active|blocked|done|dropped`)
+- `api.tasks` (`status`: `todo|started|active|blocked|done|dropped`) with foreign key to `api.projects`
 - `api.project_notes` (many notes per project)
 - `api.task_notes` (many notes per task)
 

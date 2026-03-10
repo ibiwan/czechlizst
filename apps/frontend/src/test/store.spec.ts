@@ -58,7 +58,7 @@ describe('store', () => {
     const result = await store.dispatch(
       api.endpoints.updateProjectStatus.initiate({
         projectId: 999_999,
-        status: 'doing'
+        status: 'active'
       })
     );
 
@@ -87,7 +87,7 @@ describe('store', () => {
       api.endpoints.updateTaskStatus.initiate({
         taskId: 999_999,
         projectId: 1,
-        status: 'doing'
+        status: 'active'
       })
     );
 

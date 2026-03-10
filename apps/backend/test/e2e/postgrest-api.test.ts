@@ -194,7 +194,7 @@ describe('PostgREST API E2E', () => {
     }
   });
 
-  it('rejects invalid status transitions and blocks manual project status when tasks exist', async () => {
+  it('rejects invalid status transitions while allowing manual project status updates', async () => {
     const projectName = uniqueName('transition-project');
     const taskTitle = uniqueName('transition-task');
     let projectId: number | null = null;
@@ -241,11 +241,11 @@ describe('PostgREST API E2E', () => {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ status: 'doing' })
+        body: JSON.stringify({ status: 'active' })
       });
       expect(validTaskTransition.status).toBe(200);
 
-      const blockedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
+      const allowedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +253,7 @@ describe('PostgREST API E2E', () => {
         },
         body: JSON.stringify({ status: 'done' })
       });
-      expect(blockedProjectManualUpdate.status).toBe(400);
+      expect(allowedProjectManualUpdate.status).toBe(200);
     } finally {
       if (projectId !== null) {
         await deleteProject(projectId);

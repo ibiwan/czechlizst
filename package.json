@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "dev": "npm run types:generate && concurrently -n types,frontend -c magenta,cyan \"npm run types:watch\" \"npm run dev:frontend\"",
-    "dev:full": "npm run dev",
+    "dev:full": "npm run postgrest:start && npm run dev",
     "dev:frontend": "npm run dev -w @app/frontend",
     "dev:mcp": "npm run dev -w @app/mcp-server",
     "types:generate": "npm run prisma:generate -w @app/db && npm run prisma:types -w @app/db",

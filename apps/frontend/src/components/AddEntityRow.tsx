@@ -1,7 +1,9 @@
 type AddEntityRowProps = {
   addLabel: string;
+  colSpan?: number;
   inputPlaceholder: string;
   isSaving: boolean;
+  labelClassName?: string;
   onChangeValue: (value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onToggleOpen: (open: boolean) => void;
@@ -10,21 +12,24 @@ type AddEntityRowProps = {
   value: string;
 };
 
+
 export function AddEntityRow({
   addLabel,
   inputPlaceholder,
   isSaving,
+  labelClassName,
   onChangeValue,
   onSubmit,
   onToggleOpen,
   open,
   resetValue,
-  value
+  value,
+  colSpan = 3
 }: AddEntityRowProps) {
   if (open) {
     return (
       <tr className="add-row-edit">
-        <td colSpan={3}>
+        <td colSpan={colSpan}>
           <form onSubmit={onSubmit} className="inline-form in-row">
             <input
               className="text-input"
@@ -54,7 +59,9 @@ export function AddEntityRow({
 
   return (
     <tr className="add-row" onClick={() => onToggleOpen(true)}>
-      <td colSpan={3}>{addLabel}</td>
+      <td colSpan={colSpan}>
+        {labelClassName ? <span className={labelClassName}>{addLabel}</span> : addLabel}
+      </td>
     </tr>
   );
 }

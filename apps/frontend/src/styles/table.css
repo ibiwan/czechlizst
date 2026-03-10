@@ -1,6 +1,11 @@
 .table-wrap {
   overflow-x: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
+
 
 .data-table {
   width: 100%;
@@ -16,30 +21,208 @@
   white-space: nowrap;
 }
 
+.project-table th,
+.project-table td,
+.task-table th,
+.task-table td {
+  white-space: normal;
+}
+
+.project-table,
+.task-table {
+  min-width: 0;
+}
+
+.project-table th,
+.task-table th {
+  white-space: nowrap;
+}
+
+.project-table td,
+.task-table td {
+  padding: 0;
+  border-bottom: none;
+}
+
+.project-table tbody tr + tr td,
+.task-table tbody tr + tr td {
+  padding-top: var(--space-2);
+}
+
 .data-table tbody tr {
   cursor: pointer;
 }
 
-.data-table tbody tr:hover {
+.project-table tbody tr:hover {
+  background: transparent;
+}
+
+.project-table tbody tr.is-selected {
+  background: transparent;
+}
+
+.project-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-sm) + 0.08rem);
+  padding: var(--space-2) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.data-table tbody tr.is-selected .project-card,
+.data-table tbody tr.is-selected .task-card {
+  background: var(--color-row-selected);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.data-table tbody tr:hover .project-card,
+.data-table tbody tr:hover .task-card {
   background: var(--color-row-hover);
 }
 
-.data-table tbody tr.is-selected {
-  background: var(--color-row-selected);
+.project-card-title,
+.task-card-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.add-row td {
+.project-card-meta,
+.task-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   color: var(--color-text-dim);
-  font-size: 0.88rem;
-  border-bottom: none;
+  font-size: 0.85rem;
+  flex-wrap: nowrap;
 }
 
-.add-row:hover td {
-  color: var(--color-text);
-  background: var(--color-row-add-hover);
+.project-created,
+.task-created {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 6.1rem;
+  width: 6.1rem;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.add-row-edit td {
-  border-bottom: none;
-  background: var(--color-row-add-edit);
+.project-delete {
+  margin-left: auto;
+  opacity: 0.3;
+  transition: opacity 120ms ease;
+}
+
+.project-delete:hover {
+  opacity: 1;
+}
+
+.list-add-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  height: 1.9rem;
+  width: 1.9rem;
+  padding: 0;
+  border: 1px solid var(--status-todo-border-strong);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--status-todo) 18%, transparent);
+  color: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    width 520ms ease,
+    background 520ms ease,
+    border-color 520ms ease,
+    padding 520ms ease;
+  transform-origin: left center;
+  box-sizing: border-box;
+  will-change: width;
+}
+
+.list-add-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform 640ms ease;
+  flex-shrink: 0;
+}
+
+.list-add-header-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  max-width: 0;
+  overflow: hidden;
+  margin-left: 0;
+  transition: opacity 480ms ease, max-width 480ms ease, margin-left 480ms ease;
+}
+
+.list-add-header:hover {
+  width: 9.3rem;
+  background: color-mix(in srgb, var(--status-todo) 28%, transparent);
+  padding: 0 0.55rem;
+  justify-content: flex-start;
+}
+
+.list-add-header:hover .list-add-header-icon {
+  transform: rotate(180deg);
+}
+
+.list-add-header:hover .list-add-header-label {
+  opacity: 1;
+  max-width: 6rem;
+  margin-left: 0.5rem;
+}
+
+.project-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  padding-bottom: 2rem;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-right: 12px;
+  scrollbar-gutter: stable;
+}
+
+.task-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-sm) + 0.08rem);
+  padding: var(--space-2) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.data-table tbody tr.is-selected .task-card {
+  background: var(--color-row-selected);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.task-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.task-card-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }

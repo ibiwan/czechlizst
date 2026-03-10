@@ -28,7 +28,7 @@ Rationale:
 
 ## Data Model Decisions
 - `projects` and `tasks` use shared enum `WorkStatus`:
-  `todo`, `doing`, `blocked`, `done`, `dropped`
+  `todo`, `started`, `active`, `blocked`, `done`, `dropped`
 - Many notes per entity are modeled explicitly:
   - `project_notes`
   - `task_notes`
@@ -40,11 +40,12 @@ Rationale:
 ## Status Workflow Decisions
 ### Transition policy
 Allowed transitions (same-state no-op allowed):
-- `todo -> doing | blocked | dropped`
-- `doing -> blocked | done | dropped | todo`
-- `blocked -> doing | dropped | todo`
-- `done -> todo | doing | dropped`
-- `dropped -> todo | doing`
+- `todo -> started | active | blocked | dropped`
+- `started -> active | blocked | done | dropped | todo`
+- `active -> started | blocked | done | dropped | todo`
+- `blocked -> started | active | dropped | todo`
+- `done -> todo | started | active | dropped`
+- `dropped -> todo | started | active`
 
 ### Enforcement points
 - Shared rules in `@app/contracts` for frontend/tooling consistency.
