@@ -46,6 +46,7 @@ export function TaskRow({
     <tr
       className={isSelected ? 'is-selected' : ''}
       onClick={() => setSelectedTaskIdForRow(task.id)}
+      data-testid={`task-row-${task.id}`}
     >
       <td>
         <div className="task-card">
@@ -54,14 +55,21 @@ export function TaskRow({
               className="inline-form in-row"
               onSubmit={onSubmitTitle}
               onClick={(event) => event.stopPropagation()}
+              data-testid={`task-edit-form-${task.id}`}
             >
               <input
                 className="text-input"
                 value={draftTitle}
                 onChange={(event) => setDraftTitle(event.target.value)}
                 autoFocus
+                data-testid={`task-edit-input-${task.id}`}
               />
-              <button className="mini-btn" type="submit" disabled={updateTaskLoading}>
+              <button
+                className="mini-btn"
+                type="submit"
+                disabled={updateTaskLoading}
+                data-testid={`task-edit-save-${task.id}`}
+              >
                 Save
               </button>
               <button
@@ -71,13 +79,16 @@ export function TaskRow({
                   setEditing(false);
                   setDraftTitle(task.title);
                 }}
+                data-testid={`task-edit-cancel-${task.id}`}
               >
                 Cancel
               </button>
             </form>
           ) : (
             <div className="task-card-title-row">
-              <span className="task-card-title">{task.title}</span>
+              <span className="task-card-title" data-testid={`task-title-${task.id}`}>
+                {task.title}
+              </span>
               <div className="task-card-actions">
                 <button
                   className="icon-btn"
@@ -87,6 +98,7 @@ export function TaskRow({
                     event.stopPropagation();
                     onDeleteTask(task.id);
                   }}
+                  data-testid={`task-delete-${task.id}`}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z" />
@@ -100,6 +112,7 @@ export function TaskRow({
                       event.stopPropagation();
                       setEditing(true);
                     }}
+                    data-testid={`task-edit-${task.id}`}
                   >
                     Edit
                   </button>
@@ -115,11 +128,19 @@ export function TaskRow({
                 disabled={updateTaskStatusLoading}
                 onClick={(event) => event.stopPropagation()}
                 onChange={(nextStatus) => onUpdateTaskStatus(task.id, task.status, nextStatus)}
+                testId={`task-status-select-${task.id}`}
               />
             ) : (
-              <span className={`status-pill status-${task.status}`}>{task.status}</span>
+              <span
+                className={`status-pill status-${task.status}`}
+                data-testid={`task-status-pill-${task.id}`}
+              >
+                {task.status}
+              </span>
             )}
-            <span className="task-created">{formatProjectTimestamp(task.createdAt)}</span>
+            <span className="task-created" data-testid={`task-created-${task.id}`}>
+              {formatProjectTimestamp(task.createdAt)}
+            </span>
           </div>
         </div>
       </td>

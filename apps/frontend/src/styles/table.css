@@ -126,9 +126,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
   height: 1.9rem;
-  width: 1.9rem;
+  min-width: 1.9rem;
+  max-width: 1.9rem;
   padding: 0;
   border: 1px solid var(--status-todo-border-strong);
   border-radius: 999px;
@@ -137,7 +137,7 @@
   cursor: pointer;
   overflow: hidden;
   transition:
-    width 520ms ease,
+    max-width 520ms ease,
     background 520ms ease,
     border-color 520ms ease,
     padding 520ms ease;
@@ -170,10 +170,10 @@
 }
 
 .list-add-header:hover {
-  width: 9.3rem;
+  max-width: 12rem;
   background: color-mix(in srgb, var(--status-todo) 28%, transparent);
-  padding: 0 0.55rem;
-  justify-content: flex-start;
+  padding: 2px 12px;
+  justify-content: center;
 }
 
 .list-add-header:hover .list-add-header-icon {
@@ -185,6 +185,7 @@
   max-width: 6rem;
   margin-left: 0.5rem;
 }
+
 
 .project-list-scroll {
   flex: 1;

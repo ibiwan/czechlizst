@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { type ReactNode } from 'react';
 import { formatTimestamp } from '../lib/format';
 import { type NoteView } from '../types/view';
+import { AddSpinnerButton } from './AddSpinnerButton';
 
 type NotesDetailSectionProps = {
   addNoteLabel: string;
@@ -20,6 +21,7 @@ type NotesDetailSectionProps = {
   onToggleOpen: (open: boolean) => void;
   open: boolean;
   resetNoteBody: () => void;
+  testIdPrefix?: string;
   title: string;
   beforeList?: ReactNode;
   updateNoteLoading?: boolean;
@@ -43,6 +45,7 @@ export function NotesDetailSection({
   onToggleOpen,
   open,
   resetNoteBody,
+  testIdPrefix,
   title,
   titleNode,
   updateNoteLoading = false,
@@ -50,24 +53,35 @@ export function NotesDetailSection({
 }: NotesDetailSectionProps) {
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingBody, setEditingBody] = useState('');
+  const testId = (suffix: string) => (testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined);
 
   return (
-    <section className="detail-block">
-      <div className="panel-header">
+    <section className="detail-block" data-testid={testIdPrefix}>
+      <div className="panel-header" data-testid={testId('header')}>
         {titleNode ?? <h3 className="panel-title detail-title">{title}</h3>}
         {headerAction}
       </div>
 
       {open && (
-        <form onSubmit={onCreateNote} className="inline-form note-adder">
+        <form
+          onSubmit={onCreateNote}
+          className="inline-form note-adder"
+          data-testid={testId('add-form')}
+        >
           <input
             className="text-input"
             value={newNoteBody}
             onChange={(event) => onChangeNoteBody(event.target.value)}
             placeholder={inputPlaceholder}
             autoFocus
+            data-testid={testId('add-input')}
           />
-          <button className="mini-btn" type="submit" disabled={createNoteLoading}>
+          <button
+            className="mini-btn"
+            type="submit"
+            disabled={createNoteLoading}
+            data-testid={testId('add-save')}
+          >
             Save
           </button>
           <button
@@ -77,6 +91,7 @@ export function NotesDetailSection({
               onToggleOpen(false);
               resetNoteBody();
             }}
+            data-testid={testId('add-cancel')}
           >
             Cancel
           </button>
@@ -89,15 +104,16 @@ export function NotesDetailSection({
       {notesError && <p className="state-copy">Could not load notes.</p>}
 
       {notes.length === 0 ? (
-        <div className="note-empty">
+        <div className="note-empty" data-testid={testId('empty')}>
           <span className="state-copy">No notes yet.</span>
           {!open && (
-            <button className="list-add-header" type="button" onClick={() => onToggleOpen(true)}>
-              <span className="list-add-header-icon" aria-hidden="true">
-                +
-              </span>
-              <span className="list-add-header-label">{addNoteLabel}</span>
-            </button>
+            <AddSpinnerButton
+              label={addNoteLabel}
+              loadingLabel="Loading"
+              loading={createNoteLoading}
+              onClick={() => onToggleOpen(true)}
+              testId={testId('add-button')}
+            />
           )}
         </div>
       ) : (
@@ -105,17 +121,22 @@ export function NotesDetailSection({
           <div className="notes-header">
             <span className="notes-header-title">Notes</span>
             {!open && (
-              <button className="list-add-header" type="button" onClick={() => onToggleOpen(true)}>
-                <span className="list-add-header-icon" aria-hidden="true">
-                  +
-                </span>
-                <span className="list-add-header-label">{addNoteLabel}</span>
-              </button>
+              <AddSpinnerButton
+                label={addNoteLabel}
+                loadingLabel="Loading"
+                loading={createNoteLoading}
+                onClick={() => onToggleOpen(true)}
+                testId={testId('add-button')}
+              />
             )}
           </div>
-          <ul className="note-list">
+          <ul className="note-list" data-testid={testId('list')}>
             {notes.map((note) => (
-              <li key={note.id} className="note-item">
+              <li
+                key={note.id}
+                className="note-item"
+                data-testid={testId(`item-${note.id}`)}
+              >
                 {editingNoteId === note.id ? (
                   <form
                     className="inline-form in-row"
@@ -129,14 +150,21 @@ export function NotesDetailSection({
                       setEditingNoteId(null);
                       setEditingBody('');
                     }}
+                    data-testid={testId(`edit-form-${note.id}`)}
                   >
                     <input
                       className="text-input"
                       value={editingBody}
                       onChange={(event) => setEditingBody(event.target.value)}
                       autoFocus
+                      data-testid={testId(`edit-input-${note.id}`)}
                     />
-                    <button className="mini-btn" type="submit" disabled={updateNoteLoading}>
+                    <button
+                      className="mini-btn"
+                      type="submit"
+                      disabled={updateNoteLoading}
+                      data-testid={testId(`edit-save-${note.id}`)}
+                    >
                       Save
                     </button>
                     <button
@@ -146,6 +174,7 @@ export function NotesDetailSection({
                         setEditingNoteId(null);
                         setEditingBody('');
                       }}
+                      data-testid={testId(`edit-cancel-${note.id}`)}
                     >
                       Cancel
                     </button>
@@ -165,6 +194,7 @@ export function NotesDetailSection({
                                 setEditingBody(note.body);
                               }}
                               disabled={updateNoteLoading}
+                              data-testid={testId(`edit-button-${note.id}`)}
                             >
                               Edit
                             </button>
@@ -175,6 +205,7 @@ export function NotesDetailSection({
                               type="button"
                               onClick={() => onDeleteNote(note.id)}
                               disabled={deleteNoteLoading}
+                              data-testid={testId(`delete-button-${note.id}`)}
                             >
                               Delete
                             </button>

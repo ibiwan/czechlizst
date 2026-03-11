@@ -11,6 +11,7 @@ type StatusOptionSelectProps = {
   disabled: boolean;
   onChange: (status: WorkStatus) => void;
   onClick?: (event: React.MouseEvent<HTMLSelectElement>) => void;
+  testId?: string;
 };
 
 export function StatusOptionSelect({
@@ -18,7 +19,8 @@ export function StatusOptionSelect({
   currentStatus,
   disabled,
   onChange,
-  onClick
+  onClick,
+  testId
 }: StatusOptionSelectProps) {
   return (
     <select
@@ -27,6 +29,7 @@ export function StatusOptionSelect({
       disabled={disabled}
       onClick={onClick}
       onChange={(event) => onChange(event.target.value as WorkStatus)}
+      data-testid={testId}
     >
       {workStatuses.map((candidate) => {
         const allowed =

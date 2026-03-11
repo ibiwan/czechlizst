@@ -1,4 +1,5 @@
 import { AddEntityRow } from '../AddEntityRow';
+import { AddSpinnerButton } from '../AddSpinnerButton';
 import { TaskNotesDetail } from './TaskNotesDetail';
 import { TaskRow } from './TaskRow';
 import { useTasksPanelModel } from './useTasksPanelModel';
@@ -6,32 +7,42 @@ import { useTasksPanelModel } from './useTasksPanelModel';
 export type TasksPanelModel = ReturnType<typeof useTasksPanelModel>;
 
 export function TasksListPane({ model }: { model: TasksPanelModel }) {
+  const loading = model.createTaskState.isLoading;
+
   return (
     <>
-      <div className="panel-header panel-header-with-add">
-        <h2 className="panel-title">Tasks</h2>
-        <button
-          type="button"
-          className="list-add-header"
+      <div className="panel-header panel-header-with-add" data-testid="tasks-header">
+        <h2 className="panel-title" data-testid="tasks-title">
+          Tasks
+        </h2>
+        <AddSpinnerButton
+          label="New Task"
+          loadingLabel="Loading"
+          loading={loading}
           onClick={() => model.setTaskInputOpen(true)}
-          aria-label="New task"
-        >
-          <span className="list-add-header-icon" aria-hidden="true">
-            +
-          </span>
-          <span className="list-add-header-label">New task</span>
-        </button>
+          testId="tasks-add-button"
+        />
       </div>
 
       {model.activeProjectId === null ? (
-        <p className="state-copy">Select a project first.</p>
+        <p className="state-copy" data-testid="tasks-empty-project">
+          Select a project first.
+        </p>
       ) : (
         <>
-          {model.tasksQuery.isLoading && <p className="state-copy">Loading tasks...</p>}
-          {model.tasksQuery.error && <p className="state-copy">Could not load tasks.</p>}
+          {model.tasksQuery.isLoading && (
+            <p className="state-copy" data-testid="tasks-loading">
+              Loading tasks...
+            </p>
+          )}
+          {model.tasksQuery.error && (
+            <p className="state-copy" data-testid="tasks-error">
+              Could not load tasks.
+            </p>
+          )}
 
-          <div className="table-wrap">
-            <table className="data-table task-table">
+          <div className="table-wrap" data-testid="tasks-table-wrap">
+            <table className="data-table task-table" data-testid="tasks-table">
               <tbody>
                 {model.taskInputOpen && (
                   <AddEntityRow
@@ -44,6 +55,7 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
                     open={model.taskInputOpen}
                     resetValue={() => model.setNewTaskTitle('')}
                     value={model.newTaskTitle}
+                    testIdPrefix="tasks-add"
                     colSpan={1}
                   />
                 )}
@@ -71,11 +83,19 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
 
 export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   if (model.activeProjectId === null) {
-    return <p className="state-copy">Select a project first.</p>;
+    return (
+      <p className="state-copy" data-testid="task-notes-empty-project">
+        Select a project first.
+      </p>
+    );
   }
 
   if (model.selectedTaskId === null) {
-    return <p className="state-copy">Select a task first.</p>;
+    return (
+      <p className="state-copy" data-testid="task-notes-empty-task">
+        Select a task first.
+      </p>
+    );
   }
 
   return (

@@ -5,6 +5,7 @@ import App from './App';
 import { store } from './store';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/tailwind.css';
 import './styles/app.css';
 
 createRoot(document.getElementById('root')!).render(

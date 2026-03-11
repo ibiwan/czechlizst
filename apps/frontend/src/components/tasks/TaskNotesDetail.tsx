@@ -36,7 +36,9 @@ export function TaskNotesDetail({
     <div className="detail-actions">
       <div className="detail-action-row">
         <span className="status-label">Task:</span>
-        <span className="detail-text">{activeTask.title}</span>
+        <span className="detail-text" data-testid="task-notes-title">
+          {activeTask.title}
+        </span>
       </div>
     </div>
   ) : null;
@@ -57,6 +59,7 @@ export function TaskNotesDetail({
       onToggleOpen={onToggleOpen}
       open={open}
       resetNoteBody={resetTaskNoteBody}
+      testIdPrefix="task-notes"
       title="Task Notes"
       updateNoteLoading={updateTaskNoteLoading}
     />

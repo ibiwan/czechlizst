@@ -1,4 +1,5 @@
 import { AddEntityRow } from '../AddEntityRow';
+import { AddSpinnerButton } from '../AddSpinnerButton';
 import { ProjectNotesDetail } from './ProjectNotesDetail';
 import { ProjectRow } from './ProjectRow';
 import { useProjectsPanelModel } from './useProjectsPanelModel';
@@ -26,27 +27,33 @@ export function ProjectsListPane({ model }: { model: ProjectsPanelModel }) {
 
   return (
     <>
-      <div className="panel-header panel-header-with-add">
-        <h2 className="panel-title">Projects</h2>
-        <button
-          type="button"
-          className="list-add-header"
+      <div className="panel-header panel-header-with-add" data-testid="projects-header">
+        <h2 className="panel-title" data-testid="projects-title">
+          Projects
+        </h2>
+        <AddSpinnerButton
+          label="New Project"
+          loadingLabel="Loading"
+          loading={model.createProjectState.isLoading}
           onClick={() => model.setProjectInputOpen(true)}
-          aria-label="New project"
-        >
-          <span className="list-add-header-icon" aria-hidden="true">
-            +
-          </span>
-          <span className="list-add-header-label">New project</span>
-        </button>
+          testId="projects-add-button"
+        />
       </div>
 
-      {model.projectsQuery.isLoading && <p className="state-copy">Loading projects...</p>}
-      {model.projectsQuery.error && <p className="state-copy">Could not load projects.</p>}
+      {model.projectsQuery.isLoading && (
+        <p className="state-copy" data-testid="projects-loading">
+          Loading projects...
+        </p>
+      )}
+      {model.projectsQuery.error && (
+        <p className="state-copy" data-testid="projects-error">
+          Could not load projects.
+        </p>
+      )}
 
-      <div className="table-wrap">
-        <div className="project-list-scroll">
-          <table className="data-table project-table">
+      <div className="table-wrap" data-testid="projects-table-wrap">
+        <div className="project-list-scroll" data-testid="projects-list-scroll">
+          <table className="data-table project-table" data-testid="projects-table">
             <tbody>
               {model.projectInputOpen && (
                 <AddEntityRow
@@ -59,6 +66,7 @@ export function ProjectsListPane({ model }: { model: ProjectsPanelModel }) {
                   open={model.projectInputOpen}
                   resetValue={() => model.setNewProjectName('')}
                   value={model.newProjectName}
+                  testIdPrefix="projects-add"
                   colSpan={1}
                 />
               )}
@@ -81,7 +89,11 @@ export function ProjectsListPane({ model }: { model: ProjectsPanelModel }) {
 
 export function ProjectDetailPane({ model }: { model: ProjectsPanelModel }) {
   if (model.activeProjectId === null) {
-    return <p className="state-copy">Select a project first.</p>;
+    return (
+      <p className="state-copy" data-testid="project-detail-empty">
+        Select a project first.
+      </p>
+    );
   }
 
   return (
@@ -100,13 +112,13 @@ export function ProjectDetailPane({ model }: { model: ProjectsPanelModel }) {
       projectNotes={model.projectNotes}
       projectNotesError={Boolean(model.projectNotesQuery.error)}
       projectNotesLoading={model.projectNotesQuery.isLoading}
-            projectRenameOpen={model.projectRenameOpen}
-            projectRenameValue={model.projectRenameValue}
-            onToggleProjectRename={model.setProjectRenameOpen}
-            onChangeProjectRename={model.setProjectRenameValue}
-            onSetProjectStatus={model.setProjectStatus}
-            onDeleteProject={model.onDeleteProject}
-            updateProjectLoading={model.updateProjectState.isLoading}
+      projectRenameOpen={model.projectRenameOpen}
+      projectRenameValue={model.projectRenameValue}
+      onToggleProjectRename={model.setProjectRenameOpen}
+      onChangeProjectRename={model.setProjectRenameValue}
+      onSetProjectStatus={model.setProjectStatus}
+      onDeleteProject={model.onDeleteProject}
+      updateProjectLoading={model.updateProjectState.isLoading}
       updateProjectNoteLoading={model.updateProjectNoteState.isLoading}
       updateProjectStatusLoading={model.updateProjectStatusState.isLoading}
     />
