@@ -6,7 +6,7 @@
 }
 
 .app-shell.main-layout {
-  grid-template-columns: minmax(240px, 0.95fr) minmax(0, 2.05fr);
+  grid-template-columns: minmax(260px, 1.2fr) minmax(0, 1.8fr);
   align-items: start;
   height: calc(100vh - (var(--space-6) * 2));
 }

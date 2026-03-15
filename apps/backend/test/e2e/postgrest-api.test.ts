@@ -245,13 +245,23 @@ describe('PostgREST API E2E', () => {
       });
       expect(validTaskTransition.status).toBe(200);
 
-      const allowedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
+      const invalidProjectTransition = await request(`/projects?id=eq.${projectId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
         body: JSON.stringify({ status: 'done' })
+      });
+      expect(invalidProjectTransition.status).toBe(400);
+
+      const allowedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({ status: 'active' })
       });
       expect(allowedProjectManualUpdate.status).toBe(200);
     } finally {

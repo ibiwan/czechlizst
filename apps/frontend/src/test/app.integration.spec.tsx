@@ -128,7 +128,8 @@ describe('App integration', () => {
     );
 
     expect(await screen.findByText('Projects')).toBeInTheDocument();
-    expect(await screen.findByText('Roadmap')).toBeInTheDocument();
-    expect(await screen.findByText('Ship v1')).toBeInTheDocument();
+    expect(await screen.findByTestId('project-name-1')).toBeInTheDocument();
+    expect(await screen.findByTestId('project-detail-title')).toBeInTheDocument();
+    expect(await screen.findByTestId('task-title-1')).toBeInTheDocument();
   });
 });

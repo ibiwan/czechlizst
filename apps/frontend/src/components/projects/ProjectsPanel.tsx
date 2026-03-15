@@ -2,11 +2,10 @@ import { AddEntityRow } from '../AddEntityRow';
 import { AddSpinnerButton } from '../AddSpinnerButton';
 import { ProjectNotesDetail } from './ProjectNotesDetail';
 import { ProjectRow } from './ProjectRow';
-import { useProjectsPanelModel } from './useProjectsPanelModel';
+import { ProjectsPanelProvider, useProjectsPanel } from './ProjectsPanelContext';
 
-export type ProjectsPanelModel = ReturnType<typeof useProjectsPanelModel>;
-
-export function ProjectsListPane({ model }: { model: ProjectsPanelModel }) {
+export function ProjectsListPane() {
+  const model = useProjectsPanel();
   const statusPriority: Record<string, number> = {
     active: 0,
     started: 1,
@@ -87,7 +86,8 @@ export function ProjectsListPane({ model }: { model: ProjectsPanelModel }) {
   );
 }
 
-export function ProjectDetailPane({ model }: { model: ProjectsPanelModel }) {
+export function ProjectDetailPane() {
+  const model = useProjectsPanel();
   if (model.activeProjectId === null) {
     return (
       <p className="state-copy" data-testid="project-detail-empty">
@@ -96,43 +96,16 @@ export function ProjectDetailPane({ model }: { model: ProjectsPanelModel }) {
     );
   }
 
-  return (
-    <ProjectNotesDetail
-      activeProject={model.activeProject}
-      createProjectNoteLoading={model.createProjectNoteState.isLoading}
-      effectiveProjectStatus={model.effectiveProjectStatus}
-      newProjectNoteBody={model.newProjectNoteBody}
-      onChangeProjectNoteBody={model.setNewProjectNoteBody}
-      onCreateProjectNote={model.onCreateProjectNote}
-      onOpenProjectNoteInput={model.setProjectNoteInputOpen}
-      onUpdateProjectStatus={model.onUpdateProjectStatus}
-      onUpdateProjectName={model.onUpdateProjectName}
-      onUpdateProjectNote={model.onUpdateProjectNote}
-      projectNoteInputOpen={model.projectNoteInputOpen}
-      projectNotes={model.projectNotes}
-      projectNotesError={Boolean(model.projectNotesQuery.error)}
-      projectNotesLoading={model.projectNotesQuery.isLoading}
-      projectRenameOpen={model.projectRenameOpen}
-      projectRenameValue={model.projectRenameValue}
-      onToggleProjectRename={model.setProjectRenameOpen}
-      onChangeProjectRename={model.setProjectRenameValue}
-      onSetProjectStatus={model.setProjectStatus}
-      onDeleteProject={model.onDeleteProject}
-      updateProjectLoading={model.updateProjectState.isLoading}
-      updateProjectNoteLoading={model.updateProjectNoteState.isLoading}
-      updateProjectStatusLoading={model.updateProjectStatusState.isLoading}
-    />
-  );
+  return <ProjectNotesDetail />;
 }
 
 export function ProjectsPanel() {
-  const model = useProjectsPanelModel();
-
   return (
     <section className="panel">
-      <ProjectsListPane model={model} />
-
-      <ProjectDetailPane model={model} />
+      <ProjectsPanelProvider>
+        <ProjectsListPane />
+        <ProjectDetailPane />
+      </ProjectsPanelProvider>
     </section>
   );
 }

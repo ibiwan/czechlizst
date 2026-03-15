@@ -52,7 +52,7 @@ export function useProjectsPanelModel() {
       setProjectRenameValue('');
     }
     setProjectRenameOpen(false);
-  }, [activeProjectId, activeProject?.name]);
+  }, [activeProject, activeProjectId, activeProject?.name]);
 
   async function onCreateProject(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
