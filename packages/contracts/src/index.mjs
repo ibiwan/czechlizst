@@ -312,74 +312,103 @@ export function taskNoteFromPostgrestRow(row) {
   });
 }
 
-export function parsePostgrestListProjectsResponse(input) {
-  const rows = postgrestProjectRowsSchema.parse(input);
-  return listProjectsResponseSchema.parse({
-    projects: rows.map(projectFromPostgrestRow)
+function parseListResponse(input, rowsSchema, mapRow, listSchema, key) {
+  const rows = rowsSchema.parse(input);
+  return listSchema.parse({
+    [key]: rows.map(mapRow)
   });
+}
+
+function parseCreateOneResponse(input, rowsSchema, mapRow, responseSchema, key, entityName) {
+  const rows = rowsSchema.parse(input);
+  if (rows.length === 0) {
+    throw new Error(`Expected PostgREST create ${entityName} response to include one row`);
+  }
+  return responseSchema.parse({
+    [key]: mapRow(rows[0])
+  });
+}
+
+export function parsePostgrestListProjectsResponse(input) {
+  return parseListResponse(
+    input,
+    postgrestProjectRowsSchema,
+    projectFromPostgrestRow,
+    listProjectsResponseSchema,
+    'projects'
+  );
 }
 
 export function parsePostgrestCreateProjectResponse(input) {
-  const rows = postgrestProjectRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create project response to include one row');
-  }
-  const project = rows[0];
-  return createProjectResponseSchema.parse({
-    project: projectFromPostgrestRow(project)
-  });
+  return parseCreateOneResponse(
+    input,
+    postgrestProjectRowsSchema,
+    projectFromPostgrestRow,
+    createProjectResponseSchema,
+    'project',
+    'project'
+  );
 }
 
 export function parsePostgrestListTasksResponse(input) {
-  const rows = postgrestTaskRowsSchema.parse(input);
-  return listTasksResponseSchema.parse({
-    tasks: rows.map(taskFromPostgrestRow)
-  });
+  return parseListResponse(
+    input,
+    postgrestTaskRowsSchema,
+    taskFromPostgrestRow,
+    listTasksResponseSchema,
+    'tasks'
+  );
 }
 
 export function parsePostgrestListProjectNotesResponse(input) {
-  const rows = postgrestProjectNoteRowsSchema.parse(input);
-  return listProjectNotesResponseSchema.parse({
-    notes: rows.map(projectNoteFromPostgrestRow)
-  });
+  return parseListResponse(
+    input,
+    postgrestProjectNoteRowsSchema,
+    projectNoteFromPostgrestRow,
+    listProjectNotesResponseSchema,
+    'notes'
+  );
 }
 
 export function parsePostgrestListTaskNotesResponse(input) {
-  const rows = postgrestTaskNoteRowsSchema.parse(input);
-  return listTaskNotesResponseSchema.parse({
-    notes: rows.map(taskNoteFromPostgrestRow)
-  });
+  return parseListResponse(
+    input,
+    postgrestTaskNoteRowsSchema,
+    taskNoteFromPostgrestRow,
+    listTaskNotesResponseSchema,
+    'notes'
+  );
 }
 
 export function parsePostgrestCreateTaskResponse(input) {
-  const rows = postgrestTaskRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create task response to include one row');
-  }
-  const task = rows[0];
-  return createTaskResponseSchema.parse({
-    task: taskFromPostgrestRow(task)
-  });
+  return parseCreateOneResponse(
+    input,
+    postgrestTaskRowsSchema,
+    taskFromPostgrestRow,
+    createTaskResponseSchema,
+    'task',
+    'task'
+  );
 }
 
 export function parsePostgrestCreateProjectNoteResponse(input) {
-  const rows = postgrestProjectNoteRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create project note response to include one row');
-  }
-  const note = rows[0];
-  return createProjectNoteResponseSchema.parse({
-    note: projectNoteFromPostgrestRow(note)
-  });
+  return parseCreateOneResponse(
+    input,
+    postgrestProjectNoteRowsSchema,
+    projectNoteFromPostgrestRow,
+    createProjectNoteResponseSchema,
+    'note',
+    'project note'
+  );
 }
 
 export function parsePostgrestCreateTaskNoteResponse(input) {
-  const rows = postgrestTaskNoteRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create task note response to include one row');
-  }
-  const note = rows[0];
-  return createTaskNoteResponseSchema.parse({
-    note: taskNoteFromPostgrestRow(note)
-  });
+  return parseCreateOneResponse(
+    input,
+    postgrestTaskNoteRowsSchema,
+    taskNoteFromPostgrestRow,
+    createTaskNoteResponseSchema,
+    'note',
+    'task note'
+  );
 }

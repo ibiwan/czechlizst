@@ -90,6 +90,8 @@ Done criteria:
 - less wrapper duplication
 - unchanged external behavior
 
+Status: completed (helpers added; parse wrappers consolidated).
+
 ### 5) Panel Hook Shared Helper Extraction
 Current problem:
 - some low-level state/update patterns are duplicated across project/task panel models.
@@ -137,6 +139,8 @@ Done criteria:
 - update/delete flows are available through MCP without direct fallback calls
 - invalid transitions/deletes fail with clear errors
 - tests cover new tool behavior
+
+Status: implemented in MCP server; missing MCP-specific test coverage.
 
 ### 8) Incremental RTKQ Boundaries Cleanup
 Current problem:
