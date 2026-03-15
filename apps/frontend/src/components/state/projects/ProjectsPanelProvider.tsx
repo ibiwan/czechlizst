@@ -1,9 +1,6 @@
-import { createContext, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
+import { ProjectsPanelContext } from './ProjectsPanelContext';
 import { useProjectsPanelModel } from './useProjectsPanelModel';
-
-export const ProjectsPanelContext = createContext<ReturnType<typeof useProjectsPanelModel> | null>(
-  null
-);
 
 export function ProjectsPanelProvider({ children }: { children: ReactNode }) {
   const value = useProjectsPanelModel();

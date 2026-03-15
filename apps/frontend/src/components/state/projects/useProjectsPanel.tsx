@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { ProjectsPanelContext } from './ProjectsPanelProvider';
+import { ProjectsPanelContext } from './ProjectsPanelContext';
 
 export function useProjectsPanel() {
   const context = useContext(ProjectsPanelContext);

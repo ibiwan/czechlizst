@@ -34,7 +34,6 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
         />
       )}
       <TaskNotesDetail
-        activeTask={model.activeTask}
         createTaskNoteLoading={model.createTaskNoteState.isLoading}
         newTaskNoteBody={model.newTaskNoteBody}
         newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}

@@ -108,7 +108,7 @@ function parseModels(schemaText, enumTypeMap) {
       }
 
       const [, fieldName, fieldType, optionalToken, listToken, remainder] = fieldMatch;
-      const mapMatch = remainder.match(/@map\(\"([^\"]+)\"\)/);
+      const mapMatch = remainder.match(/@map\("([^"]+)"\)/);
       const dbName = mapMatch ? mapMatch[1] : fieldName;
       const isScalarOrEnum =
         Object.prototype.hasOwnProperty.call(SCALAR_TYPE_MAP, fieldType) ||

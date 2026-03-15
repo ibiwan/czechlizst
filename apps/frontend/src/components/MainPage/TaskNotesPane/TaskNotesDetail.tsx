@@ -1,9 +1,7 @@
-import { type NoteView, type TaskView } from '@app-types/view';
+import { type NoteView } from '@app-types/view';
 import { NotesDetailSection } from '@utilities/NotesDetailSection';
 
-
 type TaskNotesDetailProps = {
-  activeTask: TaskView | null;
   createTaskNoteLoading: boolean;
   newTaskNoteBody: string;
   newTaskNoteReferenceUrl: string;
@@ -22,7 +20,6 @@ type TaskNotesDetailProps = {
 };
 
 export function TaskNotesDetail({
-  activeTask,
   createTaskNoteLoading,
   newTaskNoteBody,
   newTaskNoteReferenceUrl,

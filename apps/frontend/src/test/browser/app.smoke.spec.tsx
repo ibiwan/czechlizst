@@ -2,8 +2,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import App from '../../App';
-import { api } from '../../api';
-import { store } from '../../store';
+import { api } from '@api';
+import { store } from '@store/store';
 import { buildTestName, deleteProjectsByPrefix } from './helpers';
 
 describe('Browser smoke: projects/tasks', () => {

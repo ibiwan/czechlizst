@@ -1,18 +1,12 @@
-import { InlineEditRow } from '@utilities/InlineEditRow';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
+import { ProjectRenameRow } from './ProjectDetailHeader/ProjectRenameRow';
 
-type ProjectDetailHeaderProps = {};
-
-export function ProjectDetailHeader(_props: ProjectDetailHeaderProps) {
+export function ProjectDetailHeader() {
   const {
     activeProject,
     onDeleteProject,
-    onUpdateProjectName,
     projectRenameOpen,
-    projectRenameValue,
-    setProjectRenameOpen,
-    setProjectRenameValue,
-    updateProjectState
+    setProjectRenameOpen
   } = useProjectsPanel();
 
   if (!activeProject) {
@@ -23,23 +17,7 @@ export function ProjectDetailHeader(_props: ProjectDetailHeaderProps) {
     <div className="detail-title-bar">
       <div className="detail-title-left">
         {projectRenameOpen ? (
-          <InlineEditRow
-            formClassName="inline-form in-row detail-title-edit"
-            inputClassName="text-input detail-title-input"
-            value={projectRenameValue}
-            placeholder="Project name"
-            autoFocus
-            loading={updateProjectState.isLoading}
-            onSubmit={onUpdateProjectName}
-            onCancel={() => setProjectRenameOpen(false)}
-            onChange={setProjectRenameValue}
-            saveLabel="Save project name"
-            cancelLabel="Cancel rename"
-            formTestId="project-rename-form"
-            inputTestId="project-rename-input"
-            saveTestId="project-rename-save"
-            cancelTestId="project-rename-cancel"
-          />
+          <ProjectRenameRow />
         ) : (
           <div className="detail-title-row">
             <h3

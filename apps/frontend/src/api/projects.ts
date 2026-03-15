@@ -1,5 +1,4 @@
 import {
-  createProjectBodySchema,
   parsePostgrestCreateProjectResponse,
   parsePostgrestListProjectsResponse,
   updateProjectBodySchema,
