@@ -103,12 +103,15 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
       activeTask={model.activeTask}
       createTaskNoteLoading={model.createTaskNoteState.isLoading}
       newTaskNoteBody={model.newTaskNoteBody}
+      newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}
       onChangeTaskNoteBody={model.setNewTaskNoteBody}
+      onChangeTaskNoteReferenceUrl={model.setNewTaskNoteReferenceUrl}
       onCreateTaskNote={model.onCreateTaskNote}
       onUpdateTaskNote={model.onUpdateTaskNote}
       onToggleOpen={model.setTaskNoteInputOpen}
       open={model.taskNoteInputOpen}
       resetTaskNoteBody={() => model.setNewTaskNoteBody('')}
+      resetTaskNoteReferenceUrl={() => model.setNewTaskNoteReferenceUrl('')}
       taskNotes={model.taskNotes}
       taskNotesError={Boolean(model.taskNotesQuery.error)}
       taskNotesLoading={model.taskNotesQuery.isLoading}

@@ -20,6 +20,11 @@
   gap: var(--space-2);
 }
 
+.note-item-content {
+  display: grid;
+  gap: var(--space-1);
+}
+
 .note-actions {
   display: flex;
   gap: var(--space-2);
@@ -28,6 +33,12 @@
 
 .note-item p {
   margin: 0 0 var(--space-1);
+}
+
+.note-reference {
+  font-size: 0.78rem;
+  color: var(--color-text-dim);
+  word-break: break-word;
 }
 
 .note-item time {

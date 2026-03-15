@@ -17,5 +17,6 @@ export type TaskView = {
 export type NoteView = {
   id: number;
   body: string;
+  referenceUrl: string | null;
   createdAt: string;
 };

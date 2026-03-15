@@ -24,12 +24,22 @@ type NoteTypes = {
   ListTaskResult: ReturnType<typeof parsePostgrestListTaskNotesResponse>;
   ListTaskArg: number;
   CreateProjectResult: ReturnType<typeof parsePostgrestCreateProjectNoteResponse>;
-  CreateProjectArg: { projectId: number; body: string };
-  UpdateProjectArg: { noteId: number; projectId: number; body: string };
+  CreateProjectArg: { projectId: number; body: string; referenceUrl?: string | null };
+  UpdateProjectArg: {
+    noteId: number;
+    projectId: number;
+    body: string;
+    referenceUrl?: string | null;
+  };
   DeleteProjectArg: { noteId: number; projectId: number };
   CreateTaskResult: ReturnType<typeof parsePostgrestCreateTaskNoteResponse>;
-  CreateTaskArg: { taskId: number; body: string };
-  UpdateTaskArg: { noteId: number; taskId: number; body: string };
+  CreateTaskArg: { taskId: number; body: string; referenceUrl?: string | null };
+  UpdateTaskArg: {
+    noteId: number;
+    taskId: number;
+    body: string;
+    referenceUrl?: string | null;
+  };
   DeleteTaskArg: { noteId: number; taskId: number };
 };
 
@@ -49,10 +59,13 @@ export const notesApi = api.injectEndpoints({
       NoteTypes['CreateProjectResult'],
       NoteTypes['CreateProjectArg']
     >({
-      query: ({ projectId, body }) =>
+      query: ({ projectId, body, referenceUrl }) =>
         buildPostReturn(routes.projectNotes, {
           project_id: projectId,
-          ...createProjectNoteBodySchema.parse({ body })
+          ...createProjectNoteBodySchema.parse({
+            body,
+            reference_url: referenceUrl ?? null
+          })
         }),
       transformResponse: (response) => parsePostgrestCreateProjectNoteResponse(response),
       invalidatesTags: (_result, _error, arg) => [{ type: 'ProjectNotes', id: arg.projectId }]
@@ -61,10 +74,13 @@ export const notesApi = api.injectEndpoints({
       NoteTypes['CreateProjectResult'],
       NoteTypes['UpdateProjectArg']
     >({
-      query: ({ noteId, body }) =>
+      query: ({ noteId, body, referenceUrl }) =>
         buildPatchSingle(
           `${routes.projectNotes}?id=eq.${noteId}`,
-          updateProjectNoteBodySchema.parse({ body })
+          updateProjectNoteBodySchema.parse({
+            body,
+            reference_url: referenceUrl ?? null
+          })
         ),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateProjectNoteResponse),
       transformErrorResponse: mapNotFound('Project note not found'),
@@ -80,19 +96,25 @@ export const notesApi = api.injectEndpoints({
       invalidatesTags: (_result, _error, arg) => [{ type: 'ProjectNotes', id: arg.projectId }]
     }),
     createTaskNote: builder.mutation<NoteTypes['CreateTaskResult'], NoteTypes['CreateTaskArg']>({
-      query: ({ taskId, body }) =>
+      query: ({ taskId, body, referenceUrl }) =>
         buildPostReturn(routes.taskNotes, {
           task_id: taskId,
-          ...createTaskNoteBodySchema.parse({ body })
+          ...createTaskNoteBodySchema.parse({
+            body,
+            reference_url: referenceUrl ?? null
+          })
         }),
       transformResponse: (response) => parsePostgrestCreateTaskNoteResponse(response),
       invalidatesTags: (_result, _error, arg) => [{ type: 'TaskNotes', id: arg.taskId }]
     }),
     updateTaskNote: builder.mutation<NoteTypes['CreateTaskResult'], NoteTypes['UpdateTaskArg']>({
-      query: ({ noteId, body }) =>
+      query: ({ noteId, body, referenceUrl }) =>
         buildPatchSingle(
           `${routes.taskNotes}?id=eq.${noteId}`,
-          updateTaskNoteBodySchema.parse({ body })
+          updateTaskNoteBodySchema.parse({
+            body,
+            reference_url: referenceUrl ?? null
+          })
         ),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskNoteResponse),
       transformErrorResponse: mapNotFound('Task note not found'),

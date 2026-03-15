@@ -49,6 +49,7 @@ model ProjectNote {
   id        Int      @id @default(autoincrement())
   projectId Int      @map("project_id")
   body      String
+  referenceUrl String? @map("reference_url")
   createdAt DateTime @default(now()) @map("created_at")
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -61,6 +62,7 @@ model TaskNote {
   id        Int      @id @default(autoincrement())
   taskId    Int      @map("task_id")
   body      String
+  referenceUrl String? @map("reference_url")
   createdAt DateTime @default(now()) @map("created_at")
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 

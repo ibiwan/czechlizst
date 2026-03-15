@@ -9,6 +9,7 @@ export function ProjectNotesDetail() {
     createProjectNoteState,
     effectiveProjectStatus,
     newProjectNoteBody,
+    newProjectNoteReferenceUrl,
     onCreateProjectNote,
     onDeleteProject,
     onUpdateProjectName,
@@ -20,6 +21,7 @@ export function ProjectNotesDetail() {
     projectRenameOpen,
     projectRenameValue,
     setNewProjectNoteBody,
+    setNewProjectNoteReferenceUrl,
     setProjectNoteInputOpen,
     setProjectRenameOpen,
     setProjectRenameValue,
@@ -60,15 +62,18 @@ export function ProjectNotesDetail() {
       headerAction={null}
       inputPlaceholder="Add a project note"
       newNoteBody={newProjectNoteBody}
+      newNoteReferenceUrl={newProjectNoteReferenceUrl}
       notes={projectNotes}
       notesError={Boolean(projectNotesQuery.error)}
       notesLoading={projectNotesQuery.isLoading}
       onUpdateNote={onUpdateProjectNote}
       onChangeNoteBody={setNewProjectNoteBody}
+      onChangeNoteReferenceUrl={setNewProjectNoteReferenceUrl}
       onCreateNote={onCreateProjectNote}
       onToggleOpen={setProjectNoteInputOpen}
       open={projectNoteInputOpen}
       resetNoteBody={() => setNewProjectNoteBody('')}
+      resetNoteReferenceUrl={() => setNewProjectNoteReferenceUrl('')}
       testIdPrefix="project-notes"
       title={activeProject ? activeProject.name : 'Project Notes'}
       updateNoteLoading={updateProjectNoteState.isLoading}

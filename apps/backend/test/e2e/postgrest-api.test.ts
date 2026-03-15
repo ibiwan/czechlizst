@@ -129,6 +129,8 @@ describe('PostgREST API E2E', () => {
     const taskTitle = uniqueName('notes-task');
     const projectNoteBody = uniqueName('project-note');
     const taskNoteBody = uniqueName('task-note');
+    const projectNoteReference = uniqueName('project-note-ref');
+    const taskNoteReference = uniqueName('task-note-ref');
     let projectId: number | null = null;
     let taskId: number | null = null;
     try {
@@ -162,7 +164,11 @@ describe('PostgREST API E2E', () => {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ project_id: projectId, body: projectNoteBody })
+        body: JSON.stringify({
+          project_id: projectId,
+          body: projectNoteBody,
+          reference_url: projectNoteReference
+        })
       });
       expect(projectNoteCreate.status).toBe(201);
 
@@ -172,7 +178,11 @@ describe('PostgREST API E2E', () => {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ task_id: taskId, body: taskNoteBody })
+        body: JSON.stringify({
+          task_id: taskId,
+          body: taskNoteBody,
+          reference_url: taskNoteReference
+        })
       });
       expect(taskNoteCreate.status).toBe(201);
 
@@ -180,13 +190,25 @@ describe('PostgREST API E2E', () => {
         `/project_notes?project_id=eq.${projectId}&select=*`
       );
       expect(projectNotesRead.status).toBe(200);
-      const projectNotesPayload = (await projectNotesRead.json()) as Array<{ body: string }>;
+      const projectNotesPayload = (await projectNotesRead.json()) as Array<{
+        body: string;
+        reference_url: string | null;
+      }>;
       expect(projectNotesPayload.some((note) => note.body === projectNoteBody)).toBe(true);
+      expect(
+        projectNotesPayload.some((note) => note.reference_url === projectNoteReference)
+      ).toBe(true);
 
       const taskNotesRead = await request(`/task_notes?task_id=eq.${taskId}&select=*`);
       expect(taskNotesRead.status).toBe(200);
-      const taskNotesPayload = (await taskNotesRead.json()) as Array<{ body: string }>;
+      const taskNotesPayload = (await taskNotesRead.json()) as Array<{
+        body: string;
+        reference_url: string | null;
+      }>;
       expect(taskNotesPayload.some((note) => note.body === taskNoteBody)).toBe(true);
+      expect(
+        taskNotesPayload.some((note) => note.reference_url === taskNoteReference)
+      ).toBe(true);
     } finally {
       if (projectId !== null) {
         await deleteProject(projectId);

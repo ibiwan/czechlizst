@@ -24,6 +24,7 @@ export const ProjectNoteRowSchema = z.object({
   id: z.number().int(),
   projectId: z.number().int(),
   body: z.string(),
+  referenceUrl: z.string().nullable(),
   createdAt: z.string().datetime(),
 });
 
@@ -31,6 +32,7 @@ export const TaskNoteRowSchema = z.object({
   id: z.number().int(),
   taskId: z.number().int(),
   body: z.string(),
+  referenceUrl: z.string().nullable(),
   createdAt: z.string().datetime(),
 });
 

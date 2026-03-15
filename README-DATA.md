@@ -30,6 +30,10 @@ Prisma is the canonical schema definition.
 4. Apply migrations in running stack:
    `npm run postgrest:start`
 
+For field-level changes and end-to-end wiring, see the playbooks in `README-DEV.md`:
+- `Playbook: Add Or Modify A Field`
+- `Playbook: Add A New Entity`
+
 ## Migration Policy
 Use forward-only migrations:
 - Never edit an existing migration directory after it has been applied.

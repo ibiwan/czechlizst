@@ -27,6 +27,7 @@ export function useTasksPanelModel() {
   const [taskNoteInputOpen, setTaskNoteInputOpen] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskNoteBody, setNewTaskNoteBody] = useState('');
+  const [newTaskNoteReferenceUrl, setNewTaskNoteReferenceUrl] = useState('');
 
   const tasksQuery = useListTasksQuery(activeProjectId ?? 0, {
     skip: activeProjectId === null
@@ -41,6 +42,7 @@ export function useTasksPanelModel() {
       dispatch(setSelectedTaskId(null));
       setTaskNoteInputOpen(false);
       setNewTaskNoteBody('');
+      setNewTaskNoteReferenceUrl('');
     }
   }, [dispatch, selectedTaskId, tasks]);
 
@@ -81,8 +83,14 @@ export function useTasksPanelModel() {
     if (!body || selectedTaskId === null) {
       return;
     }
-    await createTaskNote({ taskId: selectedTaskId, body }).unwrap();
+    const referenceUrl = newTaskNoteReferenceUrl.trim();
+    await createTaskNote({
+      taskId: selectedTaskId,
+      body,
+      referenceUrl: referenceUrl ? referenceUrl : null
+    }).unwrap();
     setNewTaskNoteBody('');
+    setNewTaskNoteReferenceUrl('');
     setTaskNoteInputOpen(false);
   }
 
@@ -132,7 +140,7 @@ export function useTasksPanelModel() {
     await updateTask({ taskId, projectId: activeProjectId, title: trimmed }).unwrap();
   }
 
-  async function onUpdateTaskNote(noteId: number, body: string) {
+  async function onUpdateTaskNote(noteId: number, body: string, referenceUrl: string | null) {
     if (selectedTaskId === null) {
       return;
     }
@@ -140,7 +148,12 @@ export function useTasksPanelModel() {
     if (!trimmed) {
       return;
     }
-    await updateTaskNote({ noteId, taskId: selectedTaskId, body: trimmed }).unwrap();
+    await updateTaskNote({
+      noteId,
+      taskId: selectedTaskId,
+      body: trimmed,
+      referenceUrl
+    }).unwrap();
   }
 
   async function onDeleteTask(taskId: number) {
@@ -171,6 +184,7 @@ export function useTasksPanelModel() {
     createTaskNoteState,
     createTaskState,
     newTaskNoteBody,
+    newTaskNoteReferenceUrl,
     newTaskTitle,
     onCreateTask,
     onCreateTaskNote,
@@ -181,6 +195,7 @@ export function useTasksPanelModel() {
     selectTask,
     selectedTaskId,
     setNewTaskNoteBody,
+    setNewTaskNoteReferenceUrl,
     setNewTaskTitle,
     setTaskInputOpen,
     setTaskNoteInputOpen,

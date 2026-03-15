@@ -22,6 +22,7 @@ export function useProjectsPanelModel() {
   const [newProjectName, setNewProjectName] = useState('');
   const [projectRenameValue, setProjectRenameValue] = useState('');
   const [newProjectNoteBody, setNewProjectNoteBody] = useState('');
+  const [newProjectNoteReferenceUrl, setNewProjectNoteReferenceUrl] = useState('');
 
   const [createProject, createProjectState] = useCreateProjectMutation();
   const [createProjectNote, createProjectNoteState] = useCreateProjectNoteMutation();
@@ -73,9 +74,14 @@ export function useProjectsPanelModel() {
     if (!body || activeProjectId === null) {
       return;
     }
-
-    await createProjectNote({ projectId: activeProjectId, body }).unwrap();
+    const referenceUrl = newProjectNoteReferenceUrl.trim();
+    await createProjectNote({
+      projectId: activeProjectId,
+      body,
+      referenceUrl: referenceUrl ? referenceUrl : null
+    }).unwrap();
     setNewProjectNoteBody('');
+    setNewProjectNoteReferenceUrl('');
     setProjectNoteInputOpen(false);
   }
 
@@ -135,7 +141,7 @@ export function useProjectsPanelModel() {
     }
   }
 
-  async function onUpdateProjectNote(noteId: number, body: string) {
+  async function onUpdateProjectNote(noteId: number, body: string, referenceUrl: string | null) {
     if (activeProjectId === null) {
       return;
     }
@@ -143,7 +149,12 @@ export function useProjectsPanelModel() {
     if (!trimmed) {
       return;
     }
-    await updateProjectNote({ noteId, projectId: activeProjectId, body: trimmed }).unwrap();
+    await updateProjectNote({
+      noteId,
+      projectId: activeProjectId,
+      body: trimmed,
+      referenceUrl
+    }).unwrap();
   }
 
   return {
@@ -154,6 +165,7 @@ export function useProjectsPanelModel() {
     effectiveProjectStatus,
     newProjectName,
     newProjectNoteBody,
+    newProjectNoteReferenceUrl,
     onCreateProject,
     onCreateProjectNote,
     onDeleteProject,
@@ -171,6 +183,7 @@ export function useProjectsPanelModel() {
     selectProject,
     setNewProjectName,
     setNewProjectNoteBody,
+    setNewProjectNoteReferenceUrl,
     setProjectRenameOpen,
     setProjectRenameValue,
     setProjectInputOpen,

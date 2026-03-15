@@ -140,6 +140,7 @@ export const postgrestProjectNoteRowSchema = z.object({
   id: z.number().int().positive(),
   project_id: z.number().int().positive(),
   body: z.string().min(1),
+  reference_url: z.string().min(1).nullable(),
   created_at: z.string().min(1)
 });
 
@@ -147,6 +148,7 @@ export const postgrestTaskNoteRowSchema = z.object({
   id: z.number().int().positive(),
   task_id: z.number().int().positive(),
   body: z.string().min(1),
+  reference_url: z.string().min(1).nullable(),
   created_at: z.string().min(1)
 });
 
@@ -214,19 +216,23 @@ export const createTaskResponseSchema = z.object({
 });
 
 export const createProjectNoteBodySchema = z.object({
-  body: z.string().min(1).max(5000)
+  body: z.string().min(1).max(5000),
+  reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
 export const createTaskNoteBodySchema = z.object({
-  body: z.string().min(1).max(5000)
+  body: z.string().min(1).max(5000),
+  reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
 export const updateProjectNoteBodySchema = z.object({
-  body: z.string().min(1).max(5000)
+  body: z.string().min(1).max(5000),
+  reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
 export const updateTaskNoteBodySchema = z.object({
-  body: z.string().min(1).max(5000)
+  body: z.string().min(1).max(5000),
+  reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
 export const createProjectNoteResponseSchema = z.object({
@@ -270,6 +276,7 @@ export function projectNoteFromPostgrestRow(row) {
     id: row.id,
     projectId: row.project_id,
     body: row.body,
+    referenceUrl: row.reference_url ?? null,
     createdAt: normalizePostgrestTimestamp(row.created_at)
   });
 }
@@ -279,6 +286,7 @@ export function taskNoteFromPostgrestRow(row) {
     id: row.id,
     taskId: row.task_id,
     body: row.body,
+    referenceUrl: row.reference_url ?? null,
     createdAt: normalizePostgrestTimestamp(row.created_at)
   });
 }

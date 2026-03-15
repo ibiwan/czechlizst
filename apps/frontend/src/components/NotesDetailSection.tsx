@@ -11,16 +11,19 @@ type NotesDetailSectionProps = {
   titleNode?: ReactNode;
   inputPlaceholder: string;
   newNoteBody: string;
+  newNoteReferenceUrl: string;
   notes: NoteView[];
   notesError: boolean;
   notesLoading: boolean;
   onChangeNoteBody: (body: string) => void;
+  onChangeNoteReferenceUrl: (value: string) => void;
   onCreateNote: (event: React.FormEvent<HTMLFormElement>) => void;
   onDeleteNote?: (noteId: number) => void;
-  onUpdateNote?: (noteId: number, body: string) => void;
+  onUpdateNote?: (noteId: number, body: string, referenceUrl: string | null) => void;
   onToggleOpen: (open: boolean) => void;
   open: boolean;
   resetNoteBody: () => void;
+  resetNoteReferenceUrl: () => void;
   testIdPrefix?: string;
   title: string;
   beforeList?: ReactNode;
@@ -35,16 +38,19 @@ export function NotesDetailSection({
   headerAction,
   inputPlaceholder,
   newNoteBody,
+  newNoteReferenceUrl,
   notes,
   notesError,
   notesLoading,
   onChangeNoteBody,
+  onChangeNoteReferenceUrl,
   onCreateNote,
   onDeleteNote,
   onUpdateNote,
   onToggleOpen,
   open,
   resetNoteBody,
+  resetNoteReferenceUrl,
   testIdPrefix,
   title,
   titleNode,
@@ -53,6 +59,7 @@ export function NotesDetailSection({
 }: NotesDetailSectionProps) {
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingBody, setEditingBody] = useState('');
+  const [editingReferenceUrl, setEditingReferenceUrl] = useState('');
   const testId = (suffix: string) => (testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined);
 
   return (
@@ -76,6 +83,13 @@ export function NotesDetailSection({
             autoFocus
             data-testid={testId('add-input')}
           />
+          <input
+            className="text-input"
+            value={newNoteReferenceUrl}
+            onChange={(event) => onChangeNoteReferenceUrl(event.target.value)}
+            placeholder="Reference (optional)"
+            data-testid={testId('add-reference')}
+          />
           <button
             className="mini-btn"
             type="submit"
@@ -90,6 +104,7 @@ export function NotesDetailSection({
             onClick={() => {
               onToggleOpen(false);
               resetNoteBody();
+              resetNoteReferenceUrl();
             }}
             data-testid={testId('add-cancel')}
           >
@@ -146,9 +161,11 @@ export function NotesDetailSection({
                       if (!trimmed) {
                         return;
                       }
-                      onUpdateNote?.(note.id, trimmed);
+                      const refValue = editingReferenceUrl.trim();
+                      onUpdateNote?.(note.id, trimmed, refValue ? refValue : null);
                       setEditingNoteId(null);
                       setEditingBody('');
+                      setEditingReferenceUrl('');
                     }}
                     data-testid={testId(`edit-form-${note.id}`)}
                   >
@@ -158,6 +175,13 @@ export function NotesDetailSection({
                       onChange={(event) => setEditingBody(event.target.value)}
                       autoFocus
                       data-testid={testId(`edit-input-${note.id}`)}
+                    />
+                    <input
+                      className="text-input"
+                      value={editingReferenceUrl}
+                      onChange={(event) => setEditingReferenceUrl(event.target.value)}
+                      placeholder="Reference (optional)"
+                      data-testid={testId(`edit-reference-${note.id}`)}
                     />
                     <button
                       className="mini-btn"
@@ -173,6 +197,7 @@ export function NotesDetailSection({
                       onClick={() => {
                         setEditingNoteId(null);
                         setEditingBody('');
+                        setEditingReferenceUrl('');
                       }}
                       data-testid={testId(`edit-cancel-${note.id}`)}
                     >
@@ -182,7 +207,14 @@ export function NotesDetailSection({
                 ) : (
                   <>
                     <div className="note-item-header">
-                      <p>{note.body}</p>
+                      <div className="note-item-content">
+                        <p>{note.body}</p>
+                        {note.referenceUrl && (
+                          <p className="note-reference" data-testid={testId(`ref-${note.id}`)}>
+                            {note.referenceUrl}
+                          </p>
+                        )}
+                      </div>
                       {(onUpdateNote || onDeleteNote) && (
                         <div className="note-actions">
                           {onUpdateNote && (
@@ -192,6 +224,7 @@ export function NotesDetailSection({
                               onClick={() => {
                                 setEditingNoteId(note.id);
                                 setEditingBody(note.body);
+                                setEditingReferenceUrl(note.referenceUrl ?? '');
                               }}
                               disabled={updateNoteLoading}
                               data-testid={testId(`edit-button-${note.id}`)}

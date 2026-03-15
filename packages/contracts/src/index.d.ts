@@ -52,6 +52,7 @@ export declare const projectNoteSchema: z.ZodObject<{
   id: z.ZodNumber;
   projectId: z.ZodNumber;
   body: z.ZodString;
+  referenceUrl: z.ZodNullable<z.ZodString>;
   createdAt: z.ZodString;
 }>;
 
@@ -59,6 +60,7 @@ export declare const taskNoteSchema: z.ZodObject<{
   id: z.ZodNumber;
   taskId: z.ZodNumber;
   body: z.ZodString;
+  referenceUrl: z.ZodNullable<z.ZodString>;
   createdAt: z.ZodString;
 }>;
 
@@ -81,6 +83,7 @@ export declare const postgrestProjectNoteRowSchema: z.ZodObject<{
   id: z.ZodNumber;
   project_id: z.ZodNumber;
   body: z.ZodString;
+  reference_url: z.ZodNullable<z.ZodString>;
   created_at: z.ZodString;
 }>;
 
@@ -88,6 +91,7 @@ export declare const postgrestTaskNoteRowSchema: z.ZodObject<{
   id: z.ZodNumber;
   task_id: z.ZodNumber;
   body: z.ZodString;
+  reference_url: z.ZodNullable<z.ZodString>;
   created_at: z.ZodString;
 }>;
 
@@ -123,10 +127,22 @@ export declare const updateTaskBodySchema: z.ZodObject<{
   status: z.ZodOptional<typeof workStatusSchema>;
 }>;
 export declare const updateTaskStatusBodySchema: z.ZodObject<{ status: typeof workStatusSchema }>;
-export declare const createProjectNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
-export declare const createTaskNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
-export declare const updateProjectNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
-export declare const updateTaskNoteBodySchema: z.ZodObject<{ body: z.ZodString }>;
+export declare const createProjectNoteBodySchema: z.ZodObject<{
+  body: z.ZodString;
+  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+}>;
+export declare const createTaskNoteBodySchema: z.ZodObject<{
+  body: z.ZodString;
+  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+}>;
+export declare const updateProjectNoteBodySchema: z.ZodObject<{
+  body: z.ZodString;
+  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+}>;
+export declare const updateTaskNoteBodySchema: z.ZodObject<{
+  body: z.ZodString;
+  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+}>;
 
 export declare const createProjectResponseSchema: z.ZodObject<{ project: typeof projectSchema }>;
 export declare const createTaskResponseSchema: z.ZodObject<{ task: typeof taskSchema }>;

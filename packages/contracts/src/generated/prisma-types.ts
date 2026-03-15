@@ -20,6 +20,7 @@ export type ProjectNoteRow = {
   id: number;
   projectId: number;
   body: string;
+  referenceUrl: string | null;
   createdAt: string;
 };
 
@@ -27,6 +28,7 @@ export type TaskNoteRow = {
   id: number;
   taskId: number;
   body: string;
+  referenceUrl: string | null;
   createdAt: string;
 };
 

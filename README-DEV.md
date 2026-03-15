@@ -38,6 +38,7 @@
   `curl -s "http://localhost:3002/projects?select=id&limit=1"`
 - If schema changed and frontend types are stale:
   `npm run types:generate`
+- If `prisma migrate dev` reports `P1001` (can't reach DB), ensure Docker is running and `postgrest:start` has been run. In sandboxed environments, the command also needs local network access to `localhost:5433`.
 
 ## Playbook: Add A New Entity
 Use this when introducing a new model (example: `Milestone`) and you want an agent to complete all required follow-up work.
@@ -59,7 +60,7 @@ Add a new Prisma model and make it usable end-to-end in:
 5. Update shared contract adapters in `packages/contracts/src/index.mjs` (manual wrapper layer):
    - add route constants/helpers if needed
    - add/adjust response parsing adapters if field mappings changed
-6. Update frontend API layer in `apps/frontend/src/api.ts`:
+6. Update frontend API layer in `apps/frontend/src/api/*`:
    - add list/create (and update/delete if needed) endpoints
    - ensure request/response typing uses contracts
 7. Update frontend state wiring in `apps/frontend/src/store.ts` if endpoint slices/tags change.
@@ -69,6 +70,37 @@ Add a new Prisma model and make it usable end-to-end in:
    - frontend/API/store tests in `apps/frontend/src/test/`
 10. Run full validation gate:
    - `npm run check:all`
+
+### Migration Fallback
+If `npm run prisma:migrate` fails but you need to keep moving:
+1. Create a forward-only SQL migration in `packages/db/prisma/migrations/<timestamp>_<name>/migration.sql`.
+2. Apply with `npm run postgrest:start`.
+3. Still run `npm run types:generate` and update contracts/UI/test wiring.
+
+## Playbook: Add Or Modify A Field
+Use this when adding or changing a field on an existing model (example: add `reference_url` to notes).
+
+### Execution Checklist
+1. Update Prisma schema in `packages/db/prisma/schema.prisma`.
+2. Create migration with `npm run prisma:migrate` (or use the Migration Fallback).
+3. Apply migrations in running stack with `npm run postgrest:start`.
+4. Regenerate base contracts from Prisma with `npm run types:generate`:
+   - generated TS row types: `packages/contracts/src/generated/prisma-types.ts`
+   - generated Zod model/enum schemas: `packages/contracts/src/generated/prisma-zod.mjs`
+5. Update shared contract adapters in `packages/contracts/src/index.mjs` (manual wrapper layer):
+   - update payload/response schemas
+   - map snake_case DB fields to camelCase view models
+6. Update frontend API layer in `apps/frontend/src/api/*` to send/receive the new field.
+7. Update UI flows/components to surface and edit the field.
+8. Add/extend tests (backend E2E and/or frontend tests as appropriate).
+9. Run `npm run check:all`.
+
+### Done Criteria
+- Migration exists and applies cleanly.
+- Contracts expose generated Zod + TS typing for the updated model.
+- Frontend can read/write the field.
+- Tests pass and cover new behavior.
+- `npm run check:all` passes after the change.
 
 ### Done Criteria
 - Migration exists and applies cleanly.
