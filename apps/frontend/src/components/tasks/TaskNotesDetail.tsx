@@ -38,21 +38,9 @@ export function TaskNotesDetail({
   taskNotesLoading,
   updateTaskNoteLoading
 }: TaskNotesDetailProps) {
-  const beforeList = activeTask ? (
-    <div className="detail-actions">
-      <div className="detail-action-row">
-        <span className="status-label">Task:</span>
-        <span className="detail-text" data-testid="task-notes-title">
-          {activeTask.title}
-        </span>
-      </div>
-    </div>
-  ) : null;
-
   return (
     <NotesDetailSection
       addNoteLabel="New note"
-      beforeList={beforeList}
       createNoteLoading={createTaskNoteLoading}
       inputPlaceholder="Add a task note"
       newNoteBody={newTaskNoteBody}

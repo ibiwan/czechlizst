@@ -2,7 +2,21 @@
   margin: 0 0 var(--space-3);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
+}
+
+.status-row-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.4rem;
+}
+
+.status-row-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .status-pill-wrap {

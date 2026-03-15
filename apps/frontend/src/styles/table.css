@@ -6,6 +6,30 @@
   min-height: 0;
 }
 
+.task-list-wrap {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding-right: 10px;
+  scrollbar-gutter: stable;
+}
+
+.task-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.task-list-item.is-selected .task-card {
+  background: var(--color-row-selected);
+  border-color: rgb(255 255 255 / 20%);
+}
+
+.task-list-item:hover .task-card {
+  background: var(--color-row-hover);
+}
+
 
 .data-table {
   width: 100%;
@@ -88,6 +112,12 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.task-card-multiline .task-card-title {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .project-card-meta,
@@ -209,6 +239,53 @@
   transition: background 120ms ease, border-color 120ms ease;
 }
 
+.task-card-readonly {
+  padding: var(--space-2) var(--space-2);
+}
+
+.task-card-one-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: var(--space-3);
+  min-width: 0;
+}
+
+.task-card-status-slot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+}
+
+.task-card-gap {
+  min-width: var(--space-2);
+}
+
+.task-card-spacer {
+  min-width: 0;
+}
+
+.task-card-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.task-card-right {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.task-card-one-line .task-card-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .data-table tbody tr.is-selected .task-card {
   background: var(--color-row-selected);
   border-color: rgba(255, 255, 255, 0.2);
@@ -226,4 +303,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.task-card-edit-textarea {
+  min-height: 3.5rem;
+  resize: vertical;
 }

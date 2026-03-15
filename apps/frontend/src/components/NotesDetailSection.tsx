@@ -69,50 +69,6 @@ export function NotesDetailSection({
         {headerAction}
       </div>
 
-      {open && (
-        <form
-          onSubmit={onCreateNote}
-          className="inline-form note-adder"
-          data-testid={testId('add-form')}
-        >
-          <input
-            className="text-input"
-            value={newNoteBody}
-            onChange={(event) => onChangeNoteBody(event.target.value)}
-            placeholder={inputPlaceholder}
-            autoFocus
-            data-testid={testId('add-input')}
-          />
-          <input
-            className="text-input"
-            value={newNoteReferenceUrl}
-            onChange={(event) => onChangeNoteReferenceUrl(event.target.value)}
-            placeholder="Reference (optional)"
-            data-testid={testId('add-reference')}
-          />
-          <button
-            className="mini-btn"
-            type="submit"
-            disabled={createNoteLoading}
-            data-testid={testId('add-save')}
-          >
-            Save
-          </button>
-          <button
-            className="mini-btn"
-            type="button"
-            onClick={() => {
-              onToggleOpen(false);
-              resetNoteBody();
-              resetNoteReferenceUrl();
-            }}
-            data-testid={testId('add-cancel')}
-          >
-            Cancel
-          </button>
-        </form>
-      )}
-
       {beforeList}
 
       {notesLoading && <p className="state-copy">Loading notes...</p>}
@@ -146,6 +102,57 @@ export function NotesDetailSection({
             )}
           </div>
           <ul className="note-list" data-testid={testId('list')}>
+            {open && (
+              <li className="note-item" data-testid={testId('add-form')}>
+                <form className="note-edit-form" onSubmit={onCreateNote}>
+                  <div className="note-edit-fields">
+                    <input
+                      className="text-input"
+                      value={newNoteBody}
+                      onChange={(event) => onChangeNoteBody(event.target.value)}
+                      placeholder={inputPlaceholder}
+                      autoFocus
+                      data-testid={testId('add-input')}
+                    />
+                    <input
+                      className="text-input"
+                      value={newNoteReferenceUrl}
+                      onChange={(event) => onChangeNoteReferenceUrl(event.target.value)}
+                      placeholder="Reference (optional)"
+                      data-testid={testId('add-reference')}
+                    />
+                  </div>
+                  <div className="note-edit-actions">
+                    <button
+                      className="icon-btn"
+                      type="submit"
+                      aria-label="Save note"
+                      disabled={createNoteLoading}
+                      data-testid={testId('add-save')}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
+                      </svg>
+                    </button>
+                    <button
+                      className="icon-btn"
+                      type="button"
+                      aria-label="Cancel note"
+                      onClick={() => {
+                        onToggleOpen(false);
+                        resetNoteBody();
+                        resetNoteReferenceUrl();
+                      }}
+                      data-testid={testId('add-cancel')}
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              </li>
+            )}
             {notes.map((note) => (
               <li
                 key={note.id}
@@ -154,7 +161,7 @@ export function NotesDetailSection({
               >
                 {editingNoteId === note.id ? (
                   <form
-                    className="inline-form in-row"
+                    className="note-edit-form"
                     onSubmit={(event) => {
                       event.preventDefault();
                       const trimmed = editingBody.trim();
@@ -169,40 +176,50 @@ export function NotesDetailSection({
                     }}
                     data-testid={testId(`edit-form-${note.id}`)}
                   >
-                    <input
-                      className="text-input"
-                      value={editingBody}
-                      onChange={(event) => setEditingBody(event.target.value)}
-                      autoFocus
-                      data-testid={testId(`edit-input-${note.id}`)}
-                    />
-                    <input
-                      className="text-input"
-                      value={editingReferenceUrl}
-                      onChange={(event) => setEditingReferenceUrl(event.target.value)}
-                      placeholder="Reference (optional)"
-                      data-testid={testId(`edit-reference-${note.id}`)}
-                    />
-                    <button
-                      className="mini-btn"
-                      type="submit"
-                      disabled={updateNoteLoading}
-                      data-testid={testId(`edit-save-${note.id}`)}
-                    >
-                      Save
-                    </button>
-                    <button
-                      className="mini-btn"
-                      type="button"
-                      onClick={() => {
-                        setEditingNoteId(null);
-                        setEditingBody('');
-                        setEditingReferenceUrl('');
-                      }}
-                      data-testid={testId(`edit-cancel-${note.id}`)}
-                    >
-                      Cancel
-                    </button>
+                    <div className="note-edit-fields">
+                      <input
+                        className="text-input"
+                        value={editingBody}
+                        onChange={(event) => setEditingBody(event.target.value)}
+                        autoFocus
+                        data-testid={testId(`edit-input-${note.id}`)}
+                      />
+                      <input
+                        className="text-input"
+                        value={editingReferenceUrl}
+                        onChange={(event) => setEditingReferenceUrl(event.target.value)}
+                        placeholder="Reference (optional)"
+                        data-testid={testId(`edit-reference-${note.id}`)}
+                      />
+                    </div>
+                    <div className="note-edit-actions">
+                      <button
+                        className="icon-btn"
+                        type="submit"
+                        aria-label="Save note"
+                        disabled={updateNoteLoading}
+                        data-testid={testId(`edit-save-${note.id}`)}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
+                        </svg>
+                      </button>
+                      <button
+                        className="icon-btn"
+                        type="button"
+                        aria-label="Cancel edit"
+                        onClick={() => {
+                          setEditingNoteId(null);
+                          setEditingBody('');
+                          setEditingReferenceUrl('');
+                        }}
+                        data-testid={testId(`edit-cancel-${note.id}`)}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
+                        </svg>
+                      </button>
+                    </div>
                   </form>
                 ) : (
                   <>
@@ -219,8 +236,9 @@ export function NotesDetailSection({
                         <div className="note-actions">
                           {onUpdateNote && (
                             <button
-                              className="mini-btn"
+                              className="icon-btn"
                               type="button"
+                              aria-label="Edit note"
                               onClick={() => {
                                 setEditingNoteId(note.id);
                                 setEditingBody(note.body);
@@ -229,7 +247,9 @@ export function NotesDetailSection({
                               disabled={updateNoteLoading}
                               data-testid={testId(`edit-button-${note.id}`)}
                             >
-                              Edit
+                              <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M4 17.25V20h2.75l8.1-8.1-2.75-2.75L4 17.25zm15.71-9.04c.39-.39.39-1.02 0-1.41l-1.5-1.5a1 1 0 0 0-1.41 0l-1.13 1.13 2.75 2.75 1.29-1.29z" />
+                              </svg>
                             </button>
                           )}
                           {onDeleteNote && (
@@ -253,6 +273,60 @@ export function NotesDetailSection({
             ))}
           </ul>
         </>
+      )}
+
+      {notes.length === 0 && open && (
+        <ul className="note-list" data-testid={testId('list')}>
+          <li className="note-item" data-testid={testId('add-form')}>
+            <form className="note-edit-form" onSubmit={onCreateNote}>
+              <div className="note-edit-fields">
+                <input
+                  className="text-input"
+                  value={newNoteBody}
+                  onChange={(event) => onChangeNoteBody(event.target.value)}
+                  placeholder={inputPlaceholder}
+                  autoFocus
+                  data-testid={testId('add-input')}
+                />
+                <input
+                  className="text-input"
+                  value={newNoteReferenceUrl}
+                  onChange={(event) => onChangeNoteReferenceUrl(event.target.value)}
+                  placeholder="Reference (optional)"
+                  data-testid={testId('add-reference')}
+                />
+              </div>
+              <div className="note-edit-actions">
+                <button
+                  className="icon-btn"
+                  type="submit"
+                  aria-label="Save note"
+                  disabled={createNoteLoading}
+                  data-testid={testId('add-save')}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
+                  </svg>
+                </button>
+                <button
+                  className="icon-btn"
+                  type="button"
+                  aria-label="Cancel note"
+                  onClick={() => {
+                    onToggleOpen(false);
+                    resetNoteBody();
+                    resetNoteReferenceUrl();
+                  }}
+                  data-testid={testId('add-cancel')}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </li>
+        </ul>
       )}
     </section>
   );

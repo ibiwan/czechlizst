@@ -1,10 +1,9 @@
-import { type WorkStatus } from '@app/contracts';
+import { InlineEditRow } from '../InlineEditRow';
 import { type ProjectView } from '../../types/view';
 
 type ProjectDetailHeaderProps = {
   activeProject: ProjectView;
   onDeleteProject: (projectId: number) => void;
-  onSetProjectStatus: (projectId: number, nextStatus: WorkStatus) => void;
   onToggleProjectRename: (open: boolean) => void;
   onUpdateProjectName: (event: React.FormEvent<HTMLFormElement>) => void;
   onChangeProjectRename: (name: string) => void;
@@ -16,7 +15,6 @@ type ProjectDetailHeaderProps = {
 export function ProjectDetailHeader({
   activeProject,
   onDeleteProject,
-  onSetProjectStatus,
   onToggleProjectRename,
   onUpdateProjectName,
   onChangeProjectRename,
@@ -28,42 +26,23 @@ export function ProjectDetailHeader({
     <div className="detail-title-bar">
       <div className="detail-title-left">
         {projectRenameOpen ? (
-          <form
-            className="inline-form in-row detail-title-edit"
+          <InlineEditRow
+            formClassName="inline-form in-row detail-title-edit"
+            inputClassName="text-input detail-title-input"
+            value={projectRenameValue}
+            placeholder="Project name"
+            autoFocus
+            loading={updateProjectLoading}
             onSubmit={onUpdateProjectName}
-            data-testid="project-rename-form"
-          >
-            <input
-              className="text-input detail-title-input"
-              value={projectRenameValue}
-              onChange={(event) => onChangeProjectRename(event.target.value)}
-              placeholder="Project name"
-              autoFocus
-              data-testid="project-rename-input"
-            />
-            <button
-              className="icon-btn detail-rename-action"
-              type="submit"
-              aria-label="Save project name"
-              disabled={updateProjectLoading}
-              data-testid="project-rename-save"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
-              </svg>
-            </button>
-            <button
-              className="icon-btn detail-rename-action"
-              type="button"
-              aria-label="Cancel rename"
-              onClick={() => onToggleProjectRename(false)}
-              data-testid="project-rename-cancel"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
-              </svg>
-            </button>
-          </form>
+            onCancel={() => onToggleProjectRename(false)}
+            onChange={onChangeProjectRename}
+            saveLabel="Save project name"
+            cancelLabel="Cancel rename"
+            formTestId="project-rename-form"
+            inputTestId="project-rename-input"
+            saveTestId="project-rename-save"
+            cancelTestId="project-rename-cancel"
+          />
         ) : (
           <div className="detail-title-row">
             <h3
@@ -86,28 +65,7 @@ export function ProjectDetailHeader({
           </div>
         )}
       </div>
-      <div className="detail-title-center">
-        {!projectRenameOpen && activeProject.status === 'started' && (
-          <button
-            className="activate-btn activate-btn-active"
-            type="button"
-            onClick={() => onSetProjectStatus(activeProject.id, 'active')}
-            data-testid="project-activate"
-          >
-            Activate
-          </button>
-        )}
-        {!projectRenameOpen && activeProject.status === 'active' && (
-          <button
-            className="activate-btn activate-btn-hwb"
-            type="button"
-            onClick={() => onSetProjectStatus(activeProject.id, 'started')}
-            data-testid="project-suspend"
-          >
-            Suspend
-          </button>
-        )}
-      </div>
+      <div className="detail-title-center" aria-hidden="true" />
       <div className="detail-title-right">
         <button
           className="icon-btn detail-delete"

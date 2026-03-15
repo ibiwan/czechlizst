@@ -3,6 +3,7 @@ import { AddSpinnerButton } from '../AddSpinnerButton';
 import { ProjectNotesDetail } from './ProjectNotesDetail';
 import { ProjectRow } from './ProjectRow';
 import { ProjectsPanelProvider, useProjectsPanel } from './ProjectsPanelContext';
+import { Flipper } from 'react-flip-toolkit';
 
 export function ProjectsListPane() {
   const model = useProjectsPanel();
@@ -23,6 +24,9 @@ export function ProjectsListPane() {
     }
     return right.createdAt.localeCompare(left.createdAt);
   });
+  const projectFlipKey = sortedProjects
+    .map((project) => `${project.id}-${project.status}`)
+    .join('|');
 
   return (
     <>
@@ -52,8 +56,9 @@ export function ProjectsListPane() {
 
       <div className="table-wrap" data-testid="projects-table-wrap">
         <div className="project-list-scroll" data-testid="projects-list-scroll">
-          <table className="data-table project-table" data-testid="projects-table">
-            <tbody>
+          <Flipper flipKey={projectFlipKey}>
+            <table className="data-table project-table" data-testid="projects-table">
+              <tbody>
               {model.projectInputOpen && (
                 <AddEntityRow
                   addLabel="+ New project"
@@ -78,8 +83,9 @@ export function ProjectsListPane() {
                   project={project}
                 />
               ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </Flipper>
         </div>
       </div>
     </>

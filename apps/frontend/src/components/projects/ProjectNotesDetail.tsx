@@ -34,7 +34,6 @@ export function ProjectNotesDetail() {
     <ProjectDetailHeader
       activeProject={activeProject}
       onDeleteProject={onDeleteProject}
-      onSetProjectStatus={setProjectStatus}
       onToggleProjectRename={setProjectRenameOpen}
       onUpdateProjectName={onUpdateProjectName}
       onChangeProjectRename={setProjectRenameValue}
@@ -48,6 +47,7 @@ export function ProjectNotesDetail() {
     <ProjectStatusRow
       activeProject={activeProject}
       effectiveProjectStatus={effectiveProjectStatus}
+      onSetProjectStatus={setProjectStatus}
       onUpdateProjectStatus={onUpdateProjectStatus}
       updateProjectStatusLoading={updateProjectStatusState.isLoading}
     />

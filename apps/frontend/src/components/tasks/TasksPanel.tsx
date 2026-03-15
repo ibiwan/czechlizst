@@ -1,13 +1,34 @@
-import { AddEntityRow } from '../AddEntityRow';
+import { AddEntityCard } from '../AddEntityCard';
 import { AddSpinnerButton } from '../AddSpinnerButton';
 import { TaskNotesDetail } from './TaskNotesDetail';
-import { TaskRow } from './TaskRow';
+import { TaskCard } from './TaskCard';
+import { TaskListItem } from './TaskListItem';
 import { useTasksPanelModel } from './useTasksPanelModel';
+import { Flipper } from 'react-flip-toolkit';
 
 export type TasksPanelModel = ReturnType<typeof useTasksPanelModel>;
 
 export function TasksListPane({ model }: { model: TasksPanelModel }) {
   const loading = model.createTaskState.isLoading;
+  const statusPriority: Record<string, number> = {
+    active: 0,
+    started: 1,
+    todo: 2,
+    blocked: 3,
+    done: 4,
+    dropped: 5
+  };
+  const sortedTasks = [...model.tasks].sort((left, right) => {
+    const leftPriority = statusPriority[left.status] ?? 99;
+    const rightPriority = statusPriority[right.status] ?? 99;
+    if (leftPriority !== rightPriority) {
+      return leftPriority - rightPriority;
+    }
+    return right.createdAt.localeCompare(left.createdAt);
+  });
+  const taskFlipKey = `${model.tasksQuery.dataUpdatedAt ?? 0}|${sortedTasks
+    .map((task) => `${task.id}-${task.status}`)
+    .join('|')}`;
 
   return (
     <>
@@ -41,11 +62,11 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
             </p>
           )}
 
-          <div className="table-wrap" data-testid="tasks-table-wrap">
-            <table className="data-table task-table" data-testid="tasks-table">
-              <tbody>
+          <div className="task-list-wrap" data-testid="tasks-table-wrap">
+            <Flipper flipKey={taskFlipKey}>
+              <div className="task-list" data-testid="tasks-table">
                 {model.taskInputOpen && (
-                  <AddEntityRow
+                  <AddEntityCard
                     addLabel="+ New task"
                     inputPlaceholder="Task title"
                     isSaving={model.createTaskState.isLoading}
@@ -56,11 +77,10 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
                     resetValue={() => model.setNewTaskTitle('')}
                     value={model.newTaskTitle}
                     testIdPrefix="tasks-add"
-                    colSpan={1}
                   />
                 )}
-                {model.tasks.map((task) => (
-                  <TaskRow
+                {sortedTasks.map((task) => (
+                  <TaskListItem
                     key={task.id}
                     onDeleteTask={model.onDeleteTask}
                     onUpdateTaskTitle={model.onUpdateTaskTitle}
@@ -72,8 +92,8 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
                     updateTaskStatusLoading={model.updateTaskStatusState.isLoading}
                   />
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </Flipper>
           </div>
         </>
       )}
@@ -99,24 +119,38 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   }
 
   return (
-    <TaskNotesDetail
-      activeTask={model.activeTask}
-      createTaskNoteLoading={model.createTaskNoteState.isLoading}
-      newTaskNoteBody={model.newTaskNoteBody}
-      newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}
-      onChangeTaskNoteBody={model.setNewTaskNoteBody}
-      onChangeTaskNoteReferenceUrl={model.setNewTaskNoteReferenceUrl}
-      onCreateTaskNote={model.onCreateTaskNote}
-      onUpdateTaskNote={model.onUpdateTaskNote}
-      onToggleOpen={model.setTaskNoteInputOpen}
-      open={model.taskNoteInputOpen}
-      resetTaskNoteBody={() => model.setNewTaskNoteBody('')}
-      resetTaskNoteReferenceUrl={() => model.setNewTaskNoteReferenceUrl('')}
-      taskNotes={model.taskNotes}
-      taskNotesError={Boolean(model.taskNotesQuery.error)}
-      taskNotesLoading={model.taskNotesQuery.isLoading}
-      updateTaskNoteLoading={model.updateTaskNoteState.isLoading}
-    />
+    <>
+      {model.activeTask && (
+        <TaskCard
+          onDeleteTask={model.onDeleteTask}
+          onUpdateTaskStatus={model.onUpdateTaskStatus}
+          onUpdateTaskTitle={model.onUpdateTaskTitle}
+          isSelected
+          multiline
+          task={model.activeTask}
+          updateTaskLoading={model.updateTaskState.isLoading}
+          updateTaskStatusLoading={model.updateTaskStatusState.isLoading}
+        />
+      )}
+      <TaskNotesDetail
+        activeTask={model.activeTask}
+        createTaskNoteLoading={model.createTaskNoteState.isLoading}
+        newTaskNoteBody={model.newTaskNoteBody}
+        newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}
+        onChangeTaskNoteBody={model.setNewTaskNoteBody}
+        onChangeTaskNoteReferenceUrl={model.setNewTaskNoteReferenceUrl}
+        onCreateTaskNote={model.onCreateTaskNote}
+        onUpdateTaskNote={model.onUpdateTaskNote}
+        onToggleOpen={model.setTaskNoteInputOpen}
+        open={model.taskNoteInputOpen}
+        resetTaskNoteBody={() => model.setNewTaskNoteBody('')}
+        resetTaskNoteReferenceUrl={() => model.setNewTaskNoteReferenceUrl('')}
+        taskNotes={model.taskNotes}
+        taskNotesError={Boolean(model.taskNotesQuery.error)}
+        taskNotesLoading={model.taskNotesQuery.isLoading}
+        updateTaskNoteLoading={model.updateTaskNoteState.isLoading}
+      />
+    </>
   );
 }
 

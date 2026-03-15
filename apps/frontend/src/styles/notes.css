@@ -6,6 +6,26 @@
   gap: var(--space-2);
 }
 
+.notes-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.notes-header-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.note-empty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
 .note-item {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
@@ -29,6 +49,24 @@
   display: flex;
   gap: var(--space-2);
   flex-shrink: 0;
+}
+
+.note-edit-form {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.note-edit-fields {
+  flex: 1;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.note-edit-actions {
+  display: flex;
+  gap: var(--space-1);
+  padding-top: 0.15rem;
 }
 
 .note-item p {

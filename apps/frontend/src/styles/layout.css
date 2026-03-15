@@ -1,12 +1,14 @@
 .app-shell {
-  width: min(1100px, 100% - 2rem);
-  margin: var(--space-6) auto;
+  width: 100%;
+  max-width: 100%;
+  margin: var(--space-4) 0;
+  padding: 0 var(--space-4);
   display: grid;
   gap: var(--space-5);
 }
 
 .app-shell.main-layout {
-  grid-template-columns: minmax(260px, 1.2fr) minmax(0, 1.8fr);
+  grid-template-columns: minmax(15rem, 25%) minmax(0, 1fr);
   align-items: start;
   height: calc(100vh - (var(--space-6) * 2));
 }
@@ -42,7 +44,7 @@
   gap: var(--space-4);
 }
 
-@media (max-width: 720px) {
+@media (width <= 720px) {
   .app-shell {
     width: calc(100% - 1rem);
     margin: var(--space-4) auto;

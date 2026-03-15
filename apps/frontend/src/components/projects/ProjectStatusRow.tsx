@@ -5,6 +5,7 @@ import { type ProjectView } from '../../types/view';
 type ProjectStatusRowProps = {
   activeProject: ProjectView | null;
   effectiveProjectStatus: WorkStatus;
+  onSetProjectStatus: (projectId: number, nextStatus: WorkStatus) => void;
   onUpdateProjectStatus: (currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   updateProjectStatusLoading: boolean;
 };
@@ -12,30 +13,57 @@ type ProjectStatusRowProps = {
 export function ProjectStatusRow({
   activeProject,
   effectiveProjectStatus,
+  onSetProjectStatus,
   onUpdateProjectStatus,
   updateProjectStatusLoading
 }: ProjectStatusRowProps) {
   return (
     <div className="status-row">
-      <div className="status-pill-wrap">
-        {activeProject ? (
-          <span className={`status-select-pill status-${activeProject.status}`}>
-            <StatusOptionSelect
-              className={`status-select status-select-${activeProject.status} status-select-pill-input`}
-              currentStatus={activeProject.status}
-              disabled={updateProjectStatusLoading}
-              onChange={(nextStatus) => onUpdateProjectStatus(activeProject.status, nextStatus)}
-              testId="project-status-select"
-            />
-          </span>
-        ) : (
-          <span
-            className={`status-pill status-${effectiveProjectStatus}`}
-            data-testid="project-status-pill"
+      <div className="status-row-left">
+        {activeProject && activeProject.status === 'started' && (
+          <button
+            className="activate-btn activate-btn-activate"
+            type="button"
+            onClick={() => onSetProjectStatus(activeProject.id, 'active')}
+            disabled={updateProjectStatusLoading}
+            data-testid="project-activate"
           >
-            {effectiveProjectStatus}
-          </span>
+            Activate
+          </button>
         )}
+        {activeProject && activeProject.status === 'active' && (
+          <button
+            className="activate-btn activate-btn-suspend"
+            type="button"
+            onClick={() => onSetProjectStatus(activeProject.id, 'started')}
+            disabled={updateProjectStatusLoading}
+            data-testid="project-suspend"
+          >
+            Suspend
+          </button>
+        )}
+      </div>
+      <div className="status-row-right">
+        <div className="status-pill-wrap">
+          {activeProject ? (
+            <span className={`status-select-pill status-${activeProject.status}`}>
+              <StatusOptionSelect
+                className={`status-select status-select-${activeProject.status} status-select-pill-input`}
+                currentStatus={activeProject.status}
+                disabled={updateProjectStatusLoading}
+                onChange={(nextStatus) => onUpdateProjectStatus(activeProject.status, nextStatus)}
+                testId="project-status-select"
+              />
+            </span>
+          ) : (
+            <span
+              className={`status-pill status-${effectiveProjectStatus}`}
+              data-testid="project-status-pill"
+            >
+              {effectiveProjectStatus}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );

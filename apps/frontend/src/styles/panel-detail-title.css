@@ -1,0 +1,81 @@
+.detail-title {
+  font-size: 0.95rem;
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.detail-title-bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.detail-title-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.detail-title-center {
+  display: flex;
+  justify-content: center;
+}
+
+.detail-title-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.detail-title-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.detail-title-edit {
+  margin: 0;
+  flex: 1;
+}
+
+.detail-title-input {
+  min-width: 0;
+}
+
+.detail-rename {
+  opacity: 0.7;
+  transition: opacity 120ms ease;
+}
+
+.detail-rename-action {
+  width: 1.8rem;
+  height: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-rename-action svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.detail-rename:hover {
+  opacity: 1;
+}
+
+.detail-delete {
+  opacity: 0.4;
+  transition: opacity 120ms ease;
+}
+
+.detail-delete:hover {
+  opacity: 1;
+}

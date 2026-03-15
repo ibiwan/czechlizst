@@ -1,0 +1,53 @@
+.detail-activate {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+
+.activate-btn {
+  border-radius: 999px;
+  color: var(--color-text);
+  font-family: var(--font-family-sans);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 1.2rem;
+  cursor: pointer;
+}
+
+.activate-btn-activate {
+  border: 1px solid var(--status-active-border-strong);
+  background: var(--status-active);
+  color: #fff;
+  background-image: none;
+  box-shadow:
+    0 0 1.1rem rgb(242 143 42 / 65%),
+    0 0 2rem rgb(242 143 42 / 45%),
+    inset 0 0 0.5rem rgb(255 255 255 / 25%);
+}
+
+.activate-btn-activate:hover {
+  border-color: rgb(255 255 255 / 35%);
+}
+
+:root {
+  --suspend-start: #f28f2ac5;
+  --suspend-end: #6dba94c5;
+}
+
+.activate-btn-suspend {
+  border: 1px solid transparent;
+  background: linear-gradient(
+    100deg in hwb,
+    var(--suspend-start) 0%,
+    color-mix(in oklch, var(--suspend-start) 60%, var(--suspend-end)) 45%,
+    color-mix(in oklch, var(--suspend-start) 40%, var(--suspend-end)) 55%,
+    var(--suspend-end) 100%
+  );
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 25%);
+}
+
+.activate-btn-suspend:hover {
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 70%);
+}
