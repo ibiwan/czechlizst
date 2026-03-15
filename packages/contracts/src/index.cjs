@@ -6,6 +6,16 @@ const {
   TaskRowSchema,
   WorkStatusSchema
 } = require('./generated/prisma-zod.cjs');
+const {
+  ProjectNotePostgrestRow,
+  ProjectNoteRowModel,
+  ProjectPostgrestRow,
+  ProjectRowModel,
+  TaskNotePostgrestRow,
+  TaskNoteRowModel,
+  TaskPostgrestRow,
+  TaskRowModel
+} = require('./generated/prisma-classes.cjs');
 
 const routes = {
   healthProbe: '/projects?select=*&limit=1',
@@ -382,6 +392,14 @@ module.exports = {
   postgrestTaskRowsSchema,
   postgrestProjectNoteRowsSchema,
   postgrestTaskNoteRowsSchema,
+  ProjectRowModel,
+  TaskRowModel,
+  ProjectNoteRowModel,
+  TaskNoteRowModel,
+  ProjectPostgrestRow,
+  TaskPostgrestRow,
+  ProjectNotePostgrestRow,
+  TaskNotePostgrestRow,
   listProjectsResponseSchema,
   createProjectBodySchema,
   updateProjectBodySchema,

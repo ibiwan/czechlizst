@@ -6,6 +6,16 @@ import {
   TaskRowSchema,
   WorkStatusSchema
 } from './generated/prisma-zod.mjs';
+import {
+  ProjectNotePostgrestRow,
+  ProjectNoteRowModel,
+  ProjectPostgrestRow,
+  ProjectRowModel,
+  TaskNotePostgrestRow,
+  TaskNoteRowModel,
+  TaskPostgrestRow,
+  TaskRowModel
+} from './generated/prisma-classes.mjs';
 
 export const routes = {
   healthProbe: '/projects?select=*&limit=1',
@@ -120,6 +130,17 @@ export const projectSchema = ProjectRowSchema;
 export const taskSchema = TaskRowSchema;
 export const projectNoteSchema = ProjectNoteRowSchema;
 export const taskNoteSchema = TaskNoteRowSchema;
+
+export {
+  ProjectRowModel,
+  TaskRowModel,
+  ProjectNoteRowModel,
+  TaskNoteRowModel,
+  ProjectPostgrestRow,
+  TaskPostgrestRow,
+  ProjectNotePostgrestRow,
+  TaskNotePostgrestRow
+};
 
 export const postgrestProjectRowSchema = z.object({
   id: z.number().int().positive(),

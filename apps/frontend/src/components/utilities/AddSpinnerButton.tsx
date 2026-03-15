@@ -1,4 +1,5 @@
-import { AddSpinnerIcon, AddSpinnerLoader } from './icons/AddSpinnerIcons';
+import { AddSpinnerIcon } from './icons/AddSpinnerIcon';
+import { AddSpinnerLoader } from './icons/AddSpinnerLoader';
 
 type AddSpinnerButtonProps = {
   label: string;

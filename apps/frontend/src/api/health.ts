@@ -1,8 +1,13 @@
-import { healthResponseSchema, postgrestProjectRowsSchema, routes } from '@app/contracts';
+import {
+  healthResponseSchema,
+  postgrestProjectRowsSchema,
+  routes,
+  type HealthResponse
+} from '@app/contracts';
 import { api } from './base';
 
 type HealthTypes = {
-  Result: ReturnType<typeof healthResponseSchema.parse>;
+  Result: HealthResponse;
   Arg: void;
 };
 

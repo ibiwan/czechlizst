@@ -4,7 +4,12 @@ import {
   parsePostgrestListProjectsResponse,
   updateProjectBodySchema,
   updateProjectStatusBodySchema,
-  routes
+  routes,
+  type CreateProjectBody,
+  type CreateProjectResponse,
+  type ListProjectsResponse,
+  type UpdateProjectBody,
+  type UpdateProjectStatusBody
 } from '@app/contracts';
 import {
   api,
@@ -16,12 +21,12 @@ import {
 } from './base';
 
 type ProjectTypes = {
-  ListResult: ReturnType<typeof parsePostgrestListProjectsResponse>;
+  ListResult: ListProjectsResponse;
   ListArg: void;
-  CreateResult: ReturnType<typeof parsePostgrestCreateProjectResponse>;
-  CreateArg: ReturnType<typeof createProjectBodySchema.parse>;
-  UpdateStatus: ReturnType<typeof updateProjectBodySchema.parse>['status'];
-  UpdateStatusArg: ReturnType<typeof updateProjectStatusBodySchema.parse>['status'];
+  CreateResult: CreateProjectResponse;
+  CreateArg: CreateProjectBody;
+  UpdateStatus: UpdateProjectBody['status'];
+  UpdateStatusArg: UpdateProjectStatusBody['status'];
   UpdateArg: { projectId: number; name?: string; status?: ProjectTypes['UpdateStatus'] };
   DeleteArg: { projectId: number };
   UpdateStatusMutationArg: { projectId: number; status: ProjectTypes['UpdateStatusArg'] };

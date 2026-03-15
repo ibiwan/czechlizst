@@ -6,7 +6,10 @@ const trackedFiles = [
   'packages/contracts/src/generated/prisma-types.d.ts',
   'packages/contracts/src/generated/prisma-zod.mjs',
   'packages/contracts/src/generated/prisma-zod.cjs',
-  'packages/contracts/src/generated/prisma-zod.d.ts'
+  'packages/contracts/src/generated/prisma-zod.d.ts',
+  'packages/contracts/src/generated/prisma-classes.mjs',
+  'packages/contracts/src/generated/prisma-classes.cjs',
+  'packages/contracts/src/generated/prisma-classes.d.ts'
 ];
 
 function snapshotFiles() {

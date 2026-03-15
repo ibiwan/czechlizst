@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { api } from './api';
+import { api } from '../api';
 import { mainPageReducer } from './mainPageSlice';
 
 export const store = configureStore({

@@ -64,6 +64,17 @@ export declare const taskNoteSchema: z.ZodObject<{
   createdAt: z.ZodString;
 }>;
 
+export {
+  ProjectRowModel,
+  TaskRowModel,
+  ProjectNoteRowModel,
+  TaskNoteRowModel,
+  ProjectPostgrestRow,
+  TaskPostgrestRow,
+  ProjectNotePostgrestRow,
+  TaskNotePostgrestRow
+} from './generated/prisma-classes';
+
 export declare const postgrestProjectRowSchema: z.ZodObject<{
   id: z.ZodNumber;
   name: z.ZodString;
@@ -193,5 +204,27 @@ export type Project = z.infer<typeof projectSchema>;
 export type Task = z.infer<typeof taskSchema>;
 export type ProjectNote = z.infer<typeof projectNoteSchema>;
 export type TaskNote = z.infer<typeof taskNoteSchema>;
+export type PostgrestProjectRow = z.infer<typeof postgrestProjectRowSchema>;
+export type PostgrestTaskRow = z.infer<typeof postgrestTaskRowSchema>;
+export type PostgrestProjectNoteRow = z.infer<typeof postgrestProjectNoteRowSchema>;
+export type PostgrestTaskNoteRow = z.infer<typeof postgrestTaskNoteRowSchema>;
+export type ListProjectsResponse = z.infer<typeof listProjectsResponseSchema>;
+export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
+export type ListProjectNotesResponse = z.infer<typeof listProjectNotesResponseSchema>;
+export type ListTaskNotesResponse = z.infer<typeof listTaskNotesResponseSchema>;
+export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;
+export type UpdateProjectBody = z.infer<typeof updateProjectBodySchema>;
+export type UpdateProjectStatusBody = z.infer<typeof updateProjectStatusBodySchema>;
+export type CreateTaskBody = z.infer<typeof createTaskBodySchema>;
+export type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
+export type UpdateTaskStatusBody = z.infer<typeof updateTaskStatusBodySchema>;
+export type CreateProjectNoteBody = z.infer<typeof createProjectNoteBodySchema>;
+export type UpdateProjectNoteBody = z.infer<typeof updateProjectNoteBodySchema>;
+export type CreateTaskNoteBody = z.infer<typeof createTaskNoteBodySchema>;
+export type UpdateTaskNoteBody = z.infer<typeof updateTaskNoteBodySchema>;
+export type CreateProjectResponse = z.infer<typeof createProjectResponseSchema>;
+export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
+export type CreateProjectNoteResponse = z.infer<typeof createProjectNoteResponseSchema>;
+export type CreateTaskNoteResponse = z.infer<typeof createTaskNoteResponseSchema>;
 
 export type { PrismaRowModels, ProjectNoteRow, ProjectRow, TaskNoteRow, TaskRow } from './generated/prisma-types';

@@ -7,7 +7,11 @@ import {
   parsePostgrestListTaskNotesResponse,
   updateProjectNoteBodySchema,
   updateTaskNoteBodySchema,
-  routes
+  routes,
+  type CreateProjectNoteResponse,
+  type CreateTaskNoteResponse,
+  type ListProjectNotesResponse,
+  type ListTaskNotesResponse
 } from '@app/contracts';
 import {
   api,
@@ -19,11 +23,11 @@ import {
 } from './base';
 
 type NoteTypes = {
-  ListProjectResult: ReturnType<typeof parsePostgrestListProjectNotesResponse>;
+  ListProjectResult: ListProjectNotesResponse;
   ListProjectArg: number;
-  ListTaskResult: ReturnType<typeof parsePostgrestListTaskNotesResponse>;
+  ListTaskResult: ListTaskNotesResponse;
   ListTaskArg: number;
-  CreateProjectResult: ReturnType<typeof parsePostgrestCreateProjectNoteResponse>;
+  CreateProjectResult: CreateProjectNoteResponse;
   CreateProjectArg: { projectId: number; body: string; referenceUrl?: string | null };
   UpdateProjectArg: {
     noteId: number;
@@ -32,7 +36,7 @@ type NoteTypes = {
     referenceUrl?: string | null;
   };
   DeleteProjectArg: { noteId: number; projectId: number };
-  CreateTaskResult: ReturnType<typeof parsePostgrestCreateTaskNoteResponse>;
+  CreateTaskResult: CreateTaskNoteResponse;
   CreateTaskArg: { taskId: number; body: string; referenceUrl?: string | null };
   UpdateTaskArg: {
     noteId: number;

@@ -1,5 +1,5 @@
-import { InlineEditRow } from '../InlineEditRow';
-import { type ProjectView } from '../../types/view';
+import { ProjectView } from '/view';
+import { InlineEditRow } from '@utilities/InlineEditRow';
 
 type ProjectDetailHeaderProps = {
   activeProject: ProjectView;

@@ -1,8 +1,9 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { type WorkStatus } from '@app/contracts';
-import { StatusOptionSelect } from '../StatusOptionSelect';
-import { formatProjectTimestamp } from '../../lib/format';
-import { type TaskView } from '../../types/view';
+import { StatusOptionSelect } from '@utilities/StatusOptionSelect';
+import { formatProjectTimestamp } from '@lib/format';
+import { type TaskView } from '@app-types/view';
+
 
 type TaskCardProps = {
   onDeleteTask: (taskId: number) => void;
@@ -47,9 +48,8 @@ export function TaskCard({
 
   return (
     <div
-      className={`task-card${multiline ? ' task-card-multiline' : ''}${
-        readOnly ? ' task-card-readonly' : ''
-      }`}
+      className={`task-card${multiline ? ' task-card-multiline' : ''}${readOnly ? ' task-card-readonly' : ''
+        }`}
       onClick={onInnerClick}
     >
       {readOnly ? (

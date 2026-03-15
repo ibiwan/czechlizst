@@ -1,7 +1,9 @@
-import { ProjectDetailPane, ProjectsListPane } from './projects/ProjectsPanel';
-import { ProjectsPanelProvider } from './projects/ProjectsPanelContext';
-import { TaskNotesPane, TasksListPane } from './tasks/TasksPanel';
-import { useTasksPanelModel } from './tasks/useTasksPanelModel';
+import { ProjectsPanelProvider } from './state/projects/ProjectsPanelProvider';
+import { useTasksPanelModel } from './state/tasks/useTasksPanelModel';
+import { ProjectsListPane } from './MainPage/ProjectsListPane';
+import { ProjectDetailPane } from './MainPage/ProjectDetailPane';
+import { TasksListPane } from './MainPage/TasksListPane';
+import { TaskNotesPane } from './MainPage/TaskNotesPane';
 
 export function MainPage() {
   const tasksModel = useTasksPanelModel();

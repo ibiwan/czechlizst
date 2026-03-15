@@ -1,8 +1,11 @@
 import { useEffect, useMemo } from 'react';
-import { useListProjectsQuery } from './api';
-import { getActiveProjectId } from './activeProject';
+
+import { useListProjectsQuery } from '@api';
+
 import { useAppDispatch, useAppSelector } from './hooks';
+import { getActiveProjectId } from './activeProject';
 import { setSelectedProjectId } from './mainPageSlice';
+
 
 export function useActiveProjectSelection() {
   const dispatch = useAppDispatch();

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { type ReactNode } from 'react';
-import { formatTimestamp } from '../lib/format';
-import { type NoteView } from '../types/view';
+import { formatTimestamp } from '@lib/format';
+import { type NoteView } from '@app-types/view';
 import { AddSpinnerButton } from './AddSpinnerButton';
 
 type NotesDetailSectionProps = {

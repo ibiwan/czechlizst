@@ -4,7 +4,12 @@ import {
   parsePostgrestListTasksResponse,
   updateTaskBodySchema,
   updateTaskStatusBodySchema,
-  routes
+  routes,
+  type CreateTaskBody,
+  type CreateTaskResponse,
+  type ListTasksResponse,
+  type UpdateTaskBody,
+  type UpdateTaskStatusBody
 } from '@app/contracts';
 import {
   api,
@@ -17,12 +22,12 @@ import {
 } from './base';
 
 type TaskTypes = {
-  ListResult: ReturnType<typeof parsePostgrestListTasksResponse>;
+  ListResult: ListTasksResponse;
   ListArg: number;
-  CreateResult: ReturnType<typeof parsePostgrestCreateTaskResponse>;
-  CreateArg: { projectId: number; title: string };
-  UpdateStatus: ReturnType<typeof updateTaskBodySchema.parse>['status'];
-  UpdateStatusArg: ReturnType<typeof updateTaskStatusBodySchema.parse>['status'];
+  CreateResult: CreateTaskResponse;
+  CreateArg: { projectId: number } & CreateTaskBody;
+  UpdateStatus: UpdateTaskBody['status'];
+  UpdateStatusArg: UpdateTaskStatusBody['status'];
   UpdateArg: {
     taskId: number;
     projectId: number;

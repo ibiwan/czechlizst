@@ -1,7 +1,7 @@
 import { type WorkStatus } from '@app/contracts';
 import { Flipped } from 'react-flip-toolkit';
-import { formatProjectTimestamp } from '../../lib/format';
-import { type ProjectView } from '../../types/view';
+import { formatProjectTimestamp } from '@lib/format';
+import { type ProjectView } from '/view';
 
 type ProjectRowProps = {
   activeProjectId: number | null;

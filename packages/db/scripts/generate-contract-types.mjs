@@ -24,6 +24,18 @@ const outputZodDtsPath = resolve(
   __dirname,
   '../../contracts/src/generated/prisma-zod.d.ts'
 );
+const outputClassesMjsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/prisma-classes.mjs'
+);
+const outputClassesCjsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/prisma-classes.cjs'
+);
+const outputClassesDtsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/prisma-classes.d.ts'
+);
 
 const SCALAR_TYPE_MAP = {
   String: 'string',
@@ -96,6 +108,8 @@ function parseModels(schemaText, enumTypeMap) {
       }
 
       const [, fieldName, fieldType, optionalToken, listToken, remainder] = fieldMatch;
+      const mapMatch = remainder.match(/@map\(\"([^\"]+)\"\)/);
+      const dbName = mapMatch ? mapMatch[1] : fieldName;
       const isScalarOrEnum =
         Object.prototype.hasOwnProperty.call(SCALAR_TYPE_MAP, fieldType) ||
         Object.prototype.hasOwnProperty.call(enumTypeMap, fieldType);
@@ -107,6 +121,7 @@ function parseModels(schemaText, enumTypeMap) {
 
       fields.push({
         name: fieldName,
+        dbName,
         fieldType,
         isOptional: Boolean(optionalToken),
         isList: Boolean(listToken),
@@ -145,6 +160,95 @@ function render(models) {
     lines.push(`  ${model.name}: ${pascalToRowType(model.name)};`);
   }
   lines.push('};', '');
+
+  return lines.join('\n');
+}
+
+function renderClassesMjs(models) {
+  const lines = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.',
+    '// Source: packages/db/prisma/schema.prisma',
+    ''
+  ];
+
+  for (const model of models) {
+    const rowClassName = `${model.name}RowModel`;
+    const postgrestClassName = `${model.name}PostgrestRow`;
+
+    lines.push(`export class ${rowClassName} {`);
+    lines.push('  constructor(data) {');
+    for (const field of model.fields) {
+      lines.push(`    this.${field.name} = data.${field.name};`);
+    }
+    lines.push('  }');
+    lines.push('}', '');
+
+    lines.push(`export class ${postgrestClassName} {`);
+    lines.push('  constructor(data) {');
+    for (const field of model.fields) {
+      lines.push(`    this.${field.dbName} = data.${field.dbName};`);
+    }
+    lines.push('  }');
+    lines.push('}', '');
+  }
+
+  return lines.join('\n');
+}
+
+function renderClassesCjs(models) {
+  const mjs = renderClassesMjs(models);
+  return (
+    mjs
+      .replace(/export class /g, 'class ')
+      .replace(/\nexport class /g, '\nclass ') +
+    `\nmodule.exports = {\n${models
+      .flatMap((model) => [
+        `  ${model.name}RowModel`,
+        `  ${model.name}PostgrestRow`
+      ])
+      .join(',\n')}\n};\n`
+  );
+}
+
+function renderClassesDts(models) {
+  const lines = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.',
+    '// Source: packages/db/prisma/schema.prisma',
+    ''
+  ];
+
+  for (const model of models) {
+    const rowClassName = `${model.name}RowModel`;
+    const postgrestClassName = `${model.name}PostgrestRow`;
+    const rowDataName = `${model.name}RowModelData`;
+    const postgrestDataName = `${model.name}PostgrestRowData`;
+
+    lines.push(`export type ${rowDataName} = {`);
+    for (const field of model.fields) {
+      lines.push(`  ${field.name}: ${field.tsType};`);
+    }
+    lines.push('};', '');
+
+    lines.push(`export declare class ${rowClassName} {`);
+    lines.push(`  constructor(data: ${rowDataName});`);
+    for (const field of model.fields) {
+      lines.push(`  ${field.name}: ${field.tsType};`);
+    }
+    lines.push('}', '');
+
+    lines.push(`export type ${postgrestDataName} = {`);
+    for (const field of model.fields) {
+      lines.push(`  ${field.dbName}: ${field.tsType};`);
+    }
+    lines.push('};', '');
+
+    lines.push(`export declare class ${postgrestClassName} {`);
+    lines.push(`  constructor(data: ${postgrestDataName});`);
+    for (const field of model.fields) {
+      lines.push(`  ${field.dbName}: ${field.tsType};`);
+    }
+    lines.push('}', '');
+  }
 
   return lines.join('\n');
 }
@@ -273,6 +377,9 @@ const output = render(models);
 const zodOutputMjs = renderZodMjs(models, enums);
 const zodOutputCjs = renderZodCjs(models, enums);
 const zodOutputDts = renderZodDts(models, enums);
+const classesOutputMjs = renderClassesMjs(models);
+const classesOutputCjs = renderClassesCjs(models);
+const classesOutputDts = renderClassesDts(models);
 
 mkdirSync(dirname(outputTsPath), { recursive: true });
 writeFileSync(outputTsPath, output, 'utf8');
@@ -280,9 +387,15 @@ writeFileSync(outputDtsPath, output, 'utf8');
 writeFileSync(outputZodMjsPath, zodOutputMjs, 'utf8');
 writeFileSync(outputZodCjsPath, zodOutputCjs, 'utf8');
 writeFileSync(outputZodDtsPath, zodOutputDts, 'utf8');
+writeFileSync(outputClassesMjsPath, classesOutputMjs, 'utf8');
+writeFileSync(outputClassesCjsPath, classesOutputCjs, 'utf8');
+writeFileSync(outputClassesDtsPath, classesOutputDts, 'utf8');
 
 console.log(`Generated ${outputTsPath}`);
 console.log(`Generated ${outputDtsPath}`);
 console.log(`Generated ${outputZodMjsPath}`);
 console.log(`Generated ${outputZodCjsPath}`);
 console.log(`Generated ${outputZodDtsPath}`);
+console.log(`Generated ${outputClassesMjsPath}`);
+console.log(`Generated ${outputClassesCjsPath}`);
+console.log(`Generated ${outputClassesDtsPath}`);

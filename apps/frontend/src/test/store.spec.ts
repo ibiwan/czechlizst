@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../api';
-import { store } from '../store';
+import { store } from '../store/store';
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

@@ -1,5 +1,6 @@
-import { NotesDetailSection } from '../NotesDetailSection';
-import { type NoteView, type TaskView } from '../../types/view';
+import { type NoteView, type TaskView } from '@app-types/view';
+import { NotesDetailSection } from '@utilities/NotesDetailSection';
+
 
 type TaskNotesDetailProps = {
   activeTask: TaskView | null;

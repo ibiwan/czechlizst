@@ -16,6 +16,8 @@ This document records architecture-level decisions for the current local-first p
 - Base model/enum contract generation:
   - TS row types: `packages/contracts/src/generated/prisma-types.ts`
   - Zod schemas: `packages/contracts/src/generated/prisma-zod.mjs`
+  - Generated classes (domain + PostgREST shapes):
+    - `packages/contracts/src/generated/prisma-classes.mjs`
 - Manual wrapper layer (intentional):
   - route constants
   - PostgREST response adapters
@@ -25,6 +27,8 @@ This document records architecture-level decisions for the current local-first p
 Rationale:
 - Keep schema authored once in Prisma.
 - Keep app/API semantics and adapters centralized in shared contracts.
+- Keep concrete, named contract types in `packages/contracts/src/index.d.ts` so consumers
+  don’t re-derive `ReturnType<typeof ...>` or `z.infer` locally.
 
 ## Data Model Decisions
 - `projects` and `tasks` use shared enum `WorkStatus`:
@@ -82,9 +86,24 @@ Rationale:
   - tasks table
   - task notes detail block
 - State orchestration:
-  - shared app state in RTK slice (`apps/frontend/src/mainPageSlice.ts`)
+  - shared app state in RTK slice (`apps/frontend/src/store/mainPageSlice.ts`)
   - panel-specific model hooks (`useProjectsPanelModel`, `useTasksPanelModel`)
-  - active project selection hook (`apps/frontend/src/useActiveProjectSelection.ts`)
+  - active project selection hook (`apps/frontend/src/store/useActiveProjectSelection.ts`)
+- Component organization:
+  - `apps/frontend/src/components/MainPage.tsx` is the top-level entry.
+  - `apps/frontend/src/components/main-page/*` contains pane components.
+  - Child components live in a folder named after the parent component:
+    - example: `ProjectDetailPane.tsx` + `ProjectDetailPane/ProjectNotesDetail.tsx`
+  - Shared UI pieces live in `apps/frontend/src/components/utilities`.
+  - Shared state hooks live in `apps/frontend/src/components/state`.
+- Alias usage (frontend):
+  - `@/` for `src/*`
+  - `@api` for `src/api`
+  - `@store` for `src/store`
+  - `@utilities` for `src/components/utilities`
+  - `@state` for `src/components/state`
+  - `@lib` for `src/lib`
+  - `@app-types` for `src/types`
 - Data-entry affordances:
   - subtle “adder rows” for new project/task
   - subtle note adder links

@@ -10,8 +10,8 @@ import {
   useUpdateProjectMutation,
   useUpdateProjectNoteMutation,
   useUpdateProjectStatusMutation
-} from '../../api';
-import { useActiveProjectSelection } from '../../useActiveProjectSelection';
+} from '@api';
+import { useActiveProjectSelection } from '@store/useActiveProjectSelection';
 
 export function useProjectsPanelModel() {
   const { activeProjectId, projects, projectsQuery, selectProject } = useActiveProjectSelection();

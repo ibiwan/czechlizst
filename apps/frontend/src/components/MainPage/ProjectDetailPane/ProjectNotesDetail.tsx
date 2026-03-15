@@ -1,7 +1,8 @@
-import { NotesDetailSection } from '../NotesDetailSection';
-import { ProjectDetailHeader } from './ProjectDetailHeader';
-import { ProjectStatusRow } from './ProjectStatusRow';
-import { useProjectsPanel } from './ProjectsPanelContext';
+import { useProjectsPanel } from '@state/projects/useProjectsPanel';
+import { NotesDetailSection } from '@utilities/NotesDetailSection';
+
+import { ProjectDetailHeader } from './ProjectNotesDetail/ProjectDetailHeader';
+import { ProjectStatusRow } from './ProjectNotesDetail/ProjectStatusRow';
 
 export function ProjectNotesDetail() {
   const {

@@ -40,6 +40,27 @@
   `npm run types:generate`
 - If `prisma migrate dev` reports `P1001` (can't reach DB), ensure Docker is running and `postgrest:start` has been run. In sandboxed environments, the command also needs local network access to `localhost:5433`.
 
+## Frontend Organization and Aliases
+Component organization is intentionally hierarchical and colocated with the parent component:
+- Top-level entry: `apps/frontend/src/components/MainPage.tsx`
+- Pane components: `apps/frontend/src/components/main-page/*`
+- Child components live in a folder named after the parent component:
+  - example: `ProjectDetailPane.tsx` and `ProjectDetailPane/ProjectNotesDetail.tsx`
+- Shared UI: `apps/frontend/src/components/utilities`
+- Shared state hooks: `apps/frontend/src/components/state`
+
+Prefer frontend path aliases over deep relative imports:
+- `@/` → `apps/frontend/src/*`
+- `@api` → `apps/frontend/src/api`
+- `@store` → `apps/frontend/src/store`
+- `@utilities` → `apps/frontend/src/components/utilities`
+- `@state` → `apps/frontend/src/components/state`
+- `@lib` → `apps/frontend/src/lib`
+- `@app-types` → `apps/frontend/src/types`
+
+If aliases appear broken in the editor, restart the TypeScript server and ensure
+`apps/frontend/tsconfig.json` is the active project configuration.
+
 ## Playbook: Add A New Entity
 Use this when introducing a new model (example: `Milestone`) and you want an agent to complete all required follow-up work.
 

@@ -1,6 +1,6 @@
 import { type WorkStatus } from '@app/contracts';
-import { StatusOptionSelect } from '../StatusOptionSelect';
-import { type ProjectView } from '../../types/view';
+import { StatusOptionSelect } from '@utilities/StatusOptionSelect';
+import { type ProjectView } from '/view';
 
 type ProjectStatusRowProps = {
   activeProject: ProjectView | null;

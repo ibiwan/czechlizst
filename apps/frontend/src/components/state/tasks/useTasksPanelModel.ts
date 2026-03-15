@@ -12,10 +12,10 @@ import {
   useUpdateTaskNoteMutation,
   useUpdateTaskStatusMutation,
   useUpdateProjectStatusMutation
-} from '../../api';
-import { useAppDispatch, useAppSelector } from '../../hooks';
-import { setSelectedTaskId } from '../../mainPageSlice';
-import { useActiveProjectSelection } from '../../useActiveProjectSelection';
+} from '@api';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { setSelectedTaskId } from '@store/mainPageSlice';
+import { useActiveProjectSelection } from '@store/useActiveProjectSelection';
 
 export function useTasksPanelModel() {
   const dispatch = useAppDispatch();

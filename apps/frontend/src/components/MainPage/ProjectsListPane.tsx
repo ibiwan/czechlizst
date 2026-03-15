@@ -1,8 +1,7 @@
-import { AddEntityRow } from '../AddEntityRow';
-import { AddSpinnerButton } from '../AddSpinnerButton';
-import { ProjectNotesDetail } from './ProjectNotesDetail';
-import { ProjectRow } from './ProjectRow';
-import { ProjectsPanelProvider, useProjectsPanel } from './ProjectsPanelContext';
+import { AddEntityRow } from '@utilities/AddEntityRow';
+import { AddSpinnerButton } from '@utilities/AddSpinnerButton';
+import { ProjectRow } from './ProjectsListPane/ProjectRow';
+import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { Flipper } from 'react-flip-toolkit';
 
 export function ProjectsListPane() {
@@ -24,6 +23,7 @@ export function ProjectsListPane() {
     }
     return right.createdAt.localeCompare(left.createdAt);
   });
+
   const projectFlipKey = sortedProjects
     .map((project) => `${project.id}-${project.status}`)
     .join('|');
@@ -59,59 +59,35 @@ export function ProjectsListPane() {
           <Flipper flipKey={projectFlipKey}>
             <table className="data-table project-table" data-testid="projects-table">
               <tbody>
-              {model.projectInputOpen && (
-                <AddEntityRow
-                  addLabel="+ New project"
-                  inputPlaceholder="Project name"
-                  isSaving={model.createProjectState.isLoading}
-                  onChangeValue={model.setNewProjectName}
-                  onSubmit={model.onCreateProject}
-                  onToggleOpen={model.setProjectInputOpen}
-                  open={model.projectInputOpen}
-                  resetValue={() => model.setNewProjectName('')}
-                  value={model.newProjectName}
-                  testIdPrefix="projects-add"
-                  colSpan={1}
-                />
-              )}
-              {sortedProjects.map((project) => (
-                <ProjectRow
-                  key={project.id}
-                  activeProjectId={model.activeProjectId}
-                  effectiveProjectStatus={model.effectiveProjectStatus}
-                  onSelectProject={model.selectProject}
-                  project={project}
-                />
-              ))}
+                {model.projectInputOpen && (
+                  <AddEntityRow
+                    addLabel="+ New project"
+                    inputPlaceholder="Project name"
+                    isSaving={model.createProjectState.isLoading}
+                    onChangeValue={model.setNewProjectName}
+                    onSubmit={model.onCreateProject}
+                    onToggleOpen={model.setProjectInputOpen}
+                    open={model.projectInputOpen}
+                    resetValue={() => model.setNewProjectName('')}
+                    value={model.newProjectName}
+                    testIdPrefix="projects-add"
+                    colSpan={1}
+                  />
+                )}
+                {sortedProjects.map((project) => (
+                  <ProjectRow
+                    key={project.id}
+                    activeProjectId={model.activeProjectId}
+                    effectiveProjectStatus={model.effectiveProjectStatus}
+                    onSelectProject={model.selectProject}
+                    project={project}
+                  />
+                ))}
               </tbody>
             </table>
           </Flipper>
         </div>
       </div>
     </>
-  );
-}
-
-export function ProjectDetailPane() {
-  const model = useProjectsPanel();
-  if (model.activeProjectId === null) {
-    return (
-      <p className="state-copy" data-testid="project-detail-empty">
-        Select a project first.
-      </p>
-    );
-  }
-
-  return <ProjectNotesDetail />;
-}
-
-export function ProjectsPanel() {
-  return (
-    <section className="panel">
-      <ProjectsPanelProvider>
-        <ProjectsListPane />
-        <ProjectDetailPane />
-      </ProjectsPanelProvider>
-    </section>
   );
 }

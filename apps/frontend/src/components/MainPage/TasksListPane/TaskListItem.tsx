@@ -1,9 +1,9 @@
 import { type WorkStatus } from '@app/contracts';
 import { Flipped } from 'react-flip-toolkit';
 import { TaskCard } from './TaskCard';
-import { type TaskView } from '../../types/view';
+import { type TaskView } from '@app-types/view';
 
-type TaskRowProps = {
+type TaskListItemProps = {
   onDeleteTask: (taskId: number) => void;
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
@@ -14,7 +14,7 @@ type TaskRowProps = {
   updateTaskStatusLoading: boolean;
 };
 
-export function TaskRow({
+export function TaskListItem({
   onDeleteTask,
   onUpdateTaskStatus,
   onUpdateTaskTitle,
@@ -23,18 +23,16 @@ export function TaskRow({
   task,
   updateTaskLoading,
   updateTaskStatusLoading
-}: TaskRowProps) {
+}: TaskListItemProps) {
   const isSelected = task.id === selectedTaskId;
 
   return (
-    <Flipped
-      flipId={`task-${task.id}`}
-      element="tr"
-      className={isSelected ? 'is-selected' : ''}
-      onClick={() => setSelectedTaskIdForRow(task.id)}
-      data-testid={`task-row-${task.id}`}
-    >
-      <td>
+    <Flipped flipId={`task-${task.id}`}>
+      <div
+        className={`task-list-item${isSelected ? ' is-selected' : ''}`}
+        onClick={() => setSelectedTaskIdForRow(task.id)}
+        data-testid={`task-row-${task.id}`}
+      >
         <TaskCard
           onDeleteTask={onDeleteTask}
           onUpdateTaskStatus={onUpdateTaskStatus}
@@ -45,7 +43,7 @@ export function TaskRow({
           updateTaskLoading={updateTaskLoading}
           updateTaskStatusLoading={updateTaskStatusLoading}
         />
-      </td>
+      </div>
     </Flipped>
   );
 }

@@ -1,12 +1,8 @@
-import { AddEntityCard } from '../AddEntityCard';
-import { AddSpinnerButton } from '../AddSpinnerButton';
-import { TaskNotesDetail } from './TaskNotesDetail';
-import { TaskCard } from './TaskCard';
-import { TaskListItem } from './TaskListItem';
-import { useTasksPanelModel } from './useTasksPanelModel';
+import { AddEntityCard } from '@utilities/AddEntityCard';
+import { AddSpinnerButton } from '@utilities/AddSpinnerButton';
+import { TaskListItem } from './TasksListPane/TaskListItem';
+import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
 import { Flipper } from 'react-flip-toolkit';
-
-export type TasksPanelModel = ReturnType<typeof useTasksPanelModel>;
 
 export function TasksListPane({ model }: { model: TasksPanelModel }) {
   const loading = model.createTaskState.isLoading;
@@ -26,16 +22,16 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
     }
     return right.createdAt.localeCompare(left.createdAt);
   });
-  const taskFlipKey = `${model.tasksQuery.dataUpdatedAt ?? 0}|${sortedTasks
+  const taskFlipKey = `${model.tasksQuery.fulfilledTimeStamp ?? 0}|${sortedTasks
     .map((task) => `${task.id}-${task.status}`)
     .join('|')}`;
 
   return (
     <>
       <div className="panel-header panel-header-with-add" data-testid="tasks-header">
-        <h2 className="panel-title" data-testid="tasks-title">
+        <h3 className="panel-title" data-testid="tasks-title">
           Tasks
-        </h2>
+        </h3>
         <AddSpinnerButton
           label="New Task"
           loadingLabel="Loading"
@@ -98,69 +94,5 @@ export function TasksListPane({ model }: { model: TasksPanelModel }) {
         </>
       )}
     </>
-  );
-}
-
-export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
-  if (model.activeProjectId === null) {
-    return (
-      <p className="state-copy" data-testid="task-notes-empty-project">
-        Select a project first.
-      </p>
-    );
-  }
-
-  if (model.selectedTaskId === null) {
-    return (
-      <p className="state-copy" data-testid="task-notes-empty-task">
-        Select a task first.
-      </p>
-    );
-  }
-
-  return (
-    <>
-      {model.activeTask && (
-        <TaskCard
-          onDeleteTask={model.onDeleteTask}
-          onUpdateTaskStatus={model.onUpdateTaskStatus}
-          onUpdateTaskTitle={model.onUpdateTaskTitle}
-          isSelected
-          multiline
-          task={model.activeTask}
-          updateTaskLoading={model.updateTaskState.isLoading}
-          updateTaskStatusLoading={model.updateTaskStatusState.isLoading}
-        />
-      )}
-      <TaskNotesDetail
-        activeTask={model.activeTask}
-        createTaskNoteLoading={model.createTaskNoteState.isLoading}
-        newTaskNoteBody={model.newTaskNoteBody}
-        newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}
-        onChangeTaskNoteBody={model.setNewTaskNoteBody}
-        onChangeTaskNoteReferenceUrl={model.setNewTaskNoteReferenceUrl}
-        onCreateTaskNote={model.onCreateTaskNote}
-        onUpdateTaskNote={model.onUpdateTaskNote}
-        onToggleOpen={model.setTaskNoteInputOpen}
-        open={model.taskNoteInputOpen}
-        resetTaskNoteBody={() => model.setNewTaskNoteBody('')}
-        resetTaskNoteReferenceUrl={() => model.setNewTaskNoteReferenceUrl('')}
-        taskNotes={model.taskNotes}
-        taskNotesError={Boolean(model.taskNotesQuery.error)}
-        taskNotesLoading={model.taskNotesQuery.isLoading}
-        updateTaskNoteLoading={model.updateTaskNoteState.isLoading}
-      />
-    </>
-  );
-}
-
-export function TasksPanel() {
-  const model = useTasksPanelModel();
-
-  return (
-    <section className="panel">
-      <TasksListPane model={model} />
-      <TaskNotesPane model={model} />
-    </section>
   );
 }

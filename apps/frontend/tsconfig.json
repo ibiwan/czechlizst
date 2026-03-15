@@ -1,11 +1,42 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "types": ["vite/client", "vitest/globals"]
+    "paths": {
+      "@api": [
+        "src/api/index.ts"
+      ],
+      "@api/*": [
+        "src/api/*"
+      ],
+      "@store/*": [
+        "src/store/*"
+      ],
+      "@utilities/*": [
+        "src/components/utilities/*"
+      ],
+      "@state/*": [
+        "src/components/state/*"
+      ],
+      "@lib/*": [
+        "src/lib/*"
+      ],
+      "@app-types/*": [
+        "src/types/*"
+      ]
+    },
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ]
   },
-  "include": ["src"],
-  "exclude": ["src/test/browser/**"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/test/browser/**"
+  ]
 }
