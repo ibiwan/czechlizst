@@ -63,7 +63,7 @@
   color: var(--color-text);
 }
 
-@media (width <= 720px) {
+@media (width <=720px) {
   .panel {
     padding: var(--space-3);
   }

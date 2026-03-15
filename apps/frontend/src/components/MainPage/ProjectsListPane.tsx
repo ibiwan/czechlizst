@@ -61,39 +61,37 @@ export function ProjectsListPane() {
         </p>
       )}
 
-      <div className="table-wrap" data-testid="projects-table-wrap">
+      <div className="project-list-wrap" data-testid="projects-table-wrap">
         <div className="project-list-scroll" data-testid="projects-list-scroll">
           <Flipper flipKey={projectFlipKey}>
-            <table className="data-table project-table" data-testid="projects-table">
-              <tbody>
-                {projectInputOpen && (
-                  <AddEntityRow
-                    addLabel="+ New project"
-                    inputPlaceholder="Project name"
-                    isSaving={isCreating}
-                    onChangeValue={(value) => dispatch(setNewProjectName(value))}
-                    onSubmit={async (event) => {
-                      event.preventDefault();
-                      const { success } = await createProject(newProjectName);
-                      if (!success) {
-                        return;
-                      }
-                      dispatch(setNewProjectName(''));
-                      dispatch(setProjectInputOpen(false));
-                    }}
-                    onToggleOpen={(open) => dispatch(setProjectInputOpen(open))}
-                    open={projectInputOpen}
-                    resetValue={() => dispatch(setNewProjectName(''))}
-                    value={newProjectName}
-                    testIdPrefix="projects-add"
-                    colSpan={1}
-                  />
-                )}
-                {sortedProjects.map((project) => (
-                  <ProjectRow key={project.id} project={project} />
-                ))}
-              </tbody>
-            </table>
+            <div className="project-list" data-testid="projects-table">
+              {projectInputOpen && (
+                <AddEntityRow
+                  addLabel="+ New project"
+                  inputPlaceholder="Project name"
+                  isSaving={isCreating}
+                  onChangeValue={(value) => dispatch(setNewProjectName(value))}
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    const { success } = await createProject(newProjectName);
+                    if (!success) {
+                      return;
+                    }
+                    dispatch(setNewProjectName(''));
+                    dispatch(setProjectInputOpen(false));
+                  }}
+                  onToggleOpen={(open) => dispatch(setProjectInputOpen(open))}
+                  open={projectInputOpen}
+                  resetValue={() => dispatch(setNewProjectName(''))}
+                  value={newProjectName}
+                  testIdPrefix="projects-add"
+                  colSpan={1}
+                />
+              )}
+              {sortedProjects.map((project) => (
+                <ProjectRow key={project.id} project={project} />
+              ))}
+            </div>
           </Flipper>
         </div>
       </div>

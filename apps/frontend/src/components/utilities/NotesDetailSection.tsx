@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { type ReactNode } from 'react';
 import { type NoteView } from '@app-types/view';
 import { NotesDetailSectionEmpty } from './NotesDetailSection/NotesDetailSectionEmpty';
@@ -6,6 +5,7 @@ import { NotesDetailSectionHeader } from './NotesDetailSection/NotesDetailSectio
 import { NotesDetailSectionList } from './NotesDetailSection/NotesDetailSectionList';
 import { NotesDetailSectionListHeader } from './NotesDetailSection/NotesDetailSectionListHeader';
 import { NotesDetailSectionStatus } from './NotesDetailSection/NotesDetailSectionStatus';
+import { useNotesDetailSection } from './NotesDetailSection/useNotesDetailSection';
 
 type NotesDetailSectionProps = {
   addNoteLabel?: string;
@@ -44,50 +44,27 @@ export function NotesDetailSection({
   updateNoteLoading = false,
   deleteNoteLoading = false
 }: NotesDetailSectionProps) {
-  const [isAddingNote, setIsAddingNote] = useState(false);
-  const [newNoteBody, setNewNoteBody] = useState('');
-  const [newNoteReferenceUrl, setNewNoteReferenceUrl] = useState('');
-  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
-  const [editingBody, setEditingBody] = useState('');
-  const [editingReferenceUrl, setEditingReferenceUrl] = useState('');
+  const {
+    isAddingNote,
+    newNoteBody,
+    newNoteReferenceUrl,
+    setIsAddingNote,
+    setNewNoteBody,
+    setNewNoteReferenceUrl,
+    editingNoteId,
+    editingBody,
+    editingReferenceUrl,
+    setEditingBody,
+    setEditingReferenceUrl,
+    onStartEdit,
+    onCancelEdit,
+    onSubmitEdit,
+    onCreateNote: handleCreateNote,
+  } = useNotesDetailSection();
 
   const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
 
-  const resetNewNoteForm = () => {
-    setNewNoteBody('');
-    setNewNoteReferenceUrl('');
-    setIsAddingNote(false);
-  };
-
-  const handleCreateNote = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = newNoteBody.trim();
-    if (!trimmed) return;
-    const ref = newNoteReferenceUrl.trim() || null;
-    await onCreateNote(trimmed, ref);
-    resetNewNoteForm();
-  };
-
-  const onCancelEdit = () => {
-    setEditingNoteId(null);
-    setEditingBody('');
-    setEditingReferenceUrl('');
-  };
-
-  const onStartEdit = (note: NoteView) => {
-    setEditingNoteId(note.id);
-    setEditingBody(note.body);
-    setEditingReferenceUrl(note.referenceUrl ?? '');
-  };
-
-  const onSubmitEdit = (note: NoteView, event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimmed = editingBody.trim();
-    if (!trimmed) return;
-    const ref = editingReferenceUrl.trim() || null;
-    onUpdateNote?.(note.id, trimmed, ref);
-    onCancelEdit();
-  };
+  const wrappedOnSubmitEdit = (note: NoteView) => onSubmitEdit(note, onUpdateNote ?? (() => { }));
 
   return (
     <section className="detail-block" data-testid={testIdPrefix}>
@@ -127,10 +104,10 @@ export function NotesDetailSection({
               onChangeEditReferenceUrl={setEditingReferenceUrl}
               onChangeNoteBody={setNewNoteBody}
               onChangeNoteReferenceUrl={setNewNoteReferenceUrl}
-              onCreateNote={handleCreateNote}
+              onCreateNote={handleCreateNote(onCreateNote)}
               onDeleteNote={onDeleteNote}
               onStartEdit={onStartEdit}
-              onSubmitEdit={onSubmitEdit}
+              onSubmitEdit={wrappedOnSubmitEdit}
               onToggleOpen={setIsAddingNote}
               open={isAddingNote}
               resetNoteBody={() => setNewNoteBody('')}
@@ -164,10 +141,10 @@ export function NotesDetailSection({
             onChangeEditReferenceUrl={setEditingReferenceUrl}
             onChangeNoteBody={setNewNoteBody}
             onChangeNoteReferenceUrl={setNewNoteReferenceUrl}
-            onCreateNote={handleCreateNote}
+            onCreateNote={handleCreateNote(onCreateNote)}
             onDeleteNote={onDeleteNote}
             onStartEdit={onStartEdit}
-            onSubmitEdit={onSubmitEdit}
+            onSubmitEdit={wrappedOnSubmitEdit}
             onToggleOpen={setIsAddingNote}
             open={isAddingNote}
             resetNoteBody={() => setNewNoteBody('')}

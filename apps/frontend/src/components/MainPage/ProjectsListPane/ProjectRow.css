@@ -13,6 +13,9 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+
+  /* Allow the title to shrink more aggressively */
+  flex: 1 1 auto;
 }
 
 .project-card-meta {
@@ -21,18 +24,27 @@
   gap: var(--space-2);
   color: var(--color-text-dim);
   font-size: 0.85rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+
+  /* Allow meta content to wrap */
 }
 
 .project-created {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 6.1rem;
-  width: 6.1rem;
+  min-width: 4rem;
+
+  /* Reduce minimum width */
+  width: auto;
+
+  /* Let it shrink naturally */
   margin-left: auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+
+  /* Don't let this grow, but allow shrinking */
 }
 
 .project-delete {
@@ -45,61 +57,31 @@
   opacity: 1;
 }
 
-.project-list-scroll {
-  flex: 1;
+.project-list-wrap {
   overflow-y: auto;
-  padding: var(--space-3);
-  padding-bottom: 2rem;
-  min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-right: 12px;
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-3);
+  padding-bottom: var(--space-6);
   scrollbar-gutter: stable;
 }
 
-/* Project table styles */
-.project-table th,
-.project-table td {
-  white-space: normal;
+.project-list {
+  display: grid;
+  gap: var(--space-2);
 }
 
-.project-table {
-  min-width: 0;
-}
-
-.project-table th {
-  white-space: nowrap;
-}
-
-.project-table td {
-  padding: 0;
-  border-bottom: none;
-}
-
-.project-table tbody tr+tr td {
-  padding-top: var(--space-2);
-}
-
-.project-table tbody tr {
+.project-list-item {
   cursor: pointer;
 }
 
-.project-table tbody tr:hover {
-  background: transparent;
-}
-
-.project-table tbody tr.is-selected {
-  background: transparent;
-}
-
-/* Shared with tasks - hover/selected states */
-.data-table tbody tr.is-selected .project-card,
-.data-table tbody tr.is-selected .task-card {
+.project-list-item.is-selected .project-card {
   background: var(--color-row-selected);
   border-color: rgb(255 255 255 / 20%);
 }
 
-.data-table tbody tr:hover .project-card,
-.data-table tbody tr:hover .task-card {
+.project-list-item:hover .project-card {
   background: var(--color-row-hover);
 }

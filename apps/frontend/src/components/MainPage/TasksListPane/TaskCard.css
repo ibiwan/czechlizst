@@ -74,18 +74,19 @@
   gap: var(--space-2);
   color: var(--color-text-dim);
   font-size: 0.85rem;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .task-created {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 6.1rem;
-  width: 6.1rem;
+  min-width: 4rem;
+  width: auto;
   margin-left: auto;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
 }
 
 .task-card-title-row {

@@ -125,7 +125,8 @@ Plan:
 
 ### 7) Panel Hook Shared Helper Extraction
 
-* Extract generic local patterns (draft/reset/toggle) while keeping feature-specific orchestration in each panel model hook.
+* Status: completed (useNotesDetailSection extracted from NotesDetailSection, capturing draft/reset/toggle patterns for notes editing).
+* Location: `apps/frontend/src/components/utilities/NotesDetailSection/useNotesDetailSection.ts`
 
 ## Later
 
