@@ -1,20 +1,22 @@
 import { AddSpinnerButton } from '../AddSpinnerButton';
 
 type NotesDetailSectionListHeaderProps = {
-  addNoteLabel: string;
-  createNoteLoading: boolean;
+  addNoteLabel?: string;
+  createNoteLoading?: boolean;
   open: boolean;
   onToggleOpen: (open: boolean) => void;
-  testIdAdd?: string;
+  testIdPrefix?: string;
 };
 
 export function NotesDetailSectionListHeader({
-  addNoteLabel,
-  createNoteLoading,
+  addNoteLabel = 'Add note',
+  createNoteLoading = false,
   open,
   onToggleOpen,
-  testIdAdd
+  testIdPrefix
 }: NotesDetailSectionListHeaderProps) {
+  const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+
   return (
     <div className="notes-header">
       <span className="notes-header-title">Notes</span>
@@ -24,7 +26,7 @@ export function NotesDetailSectionListHeader({
           loadingLabel="Loading"
           loading={createNoteLoading}
           onClick={() => onToggleOpen(true)}
-          testId={testIdAdd}
+          testId={testId('add-button')}
         />
       )}
     </div>

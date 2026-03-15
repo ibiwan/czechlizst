@@ -4,12 +4,12 @@ import { NotesDetailSectionAddForm } from './NotesDetailSectionAddForm';
 import { NotesDetailSectionItem } from './NotesDetailSectionItem';
 
 type NotesDetailSectionListProps = {
-  createNoteLoading: boolean;
-  deleteNoteLoading: boolean;
+  createNoteLoading?: boolean;
+  deleteNoteLoading?: boolean;
   editingBody: string;
   editingNoteId: number | null;
   editingReferenceUrl: string;
-  inputPlaceholder: string;
+  inputPlaceholder?: string;
   newNoteBody: string;
   newNoteReferenceUrl: string;
   notes: NoteView[];
@@ -26,22 +26,8 @@ type NotesDetailSectionListProps = {
   open: boolean;
   resetNoteBody: () => void;
   resetNoteReferenceUrl: () => void;
-  testIdAdd?: string;
-  testIdAddCancel?: string;
-  testIdAddInput?: string;
-  testIdAddReference?: string;
-  testIdAddSave?: string;
-  testIdItem?: (noteId: number) => string | undefined;
-  testIdEditButton?: (noteId: number) => string | undefined;
-  testIdDeleteButton?: (noteId: number) => string | undefined;
-  testIdEditCancel?: (noteId: number) => string | undefined;
-  testIdEditForm?: (noteId: number) => string | undefined;
-  testIdEditInput?: (noteId: number) => string | undefined;
-  testIdEditReference?: (noteId: number) => string | undefined;
-  testIdEditSave?: (noteId: number) => string | undefined;
-  testIdReference?: (noteId: number) => string | undefined;
-  testIdList?: string;
-  updateNoteLoading: boolean;
+  testIdPrefix?: string;
+  updateNoteLoading?: boolean;
 };
 
 export function NotesDetailSectionList({
@@ -67,25 +53,13 @@ export function NotesDetailSectionList({
   open,
   resetNoteBody,
   resetNoteReferenceUrl,
-  testIdAdd,
-  testIdAddCancel,
-  testIdAddInput,
-  testIdAddReference,
-  testIdAddSave,
-  testIdItem,
-  testIdDeleteButton,
-  testIdEditButton,
-  testIdEditCancel,
-  testIdEditForm,
-  testIdEditInput,
-  testIdEditReference,
-  testIdEditSave,
-  testIdReference,
-  testIdList,
+  testIdPrefix,
   updateNoteLoading
 }: NotesDetailSectionListProps) {
+  const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+
   return (
-    <ul className="note-list" data-testid={testIdList}>
+    <ul className="note-list" data-testid={testId('list')}>
       {open && (
         <NotesDetailSectionAddForm
           createNoteLoading={createNoteLoading}
@@ -98,11 +72,7 @@ export function NotesDetailSectionList({
           onToggleOpen={onToggleOpen}
           resetNoteBody={resetNoteBody}
           resetNoteReferenceUrl={resetNoteReferenceUrl}
-          testIdAdd={testIdAdd}
-          testIdAddCancel={testIdAddCancel}
-          testIdAddInput={testIdAddInput}
-          testIdAddReference={testIdAddReference}
-          testIdAddSave={testIdAddSave}
+          testIdPrefix={testIdPrefix}
         />
       )}
       {notes.map((note) => (
@@ -119,15 +89,7 @@ export function NotesDetailSectionList({
           onDeleteNote={onDeleteNote}
           onStartEdit={() => onStartEdit(note)}
           onSubmitEdit={(event) => onSubmitEdit(note, event)}
-          testIdDeleteButton={testIdDeleteButton?.(note.id)}
-          testIdEditButton={testIdEditButton?.(note.id)}
-          testIdEditCancel={testIdEditCancel?.(note.id)}
-          testIdEditForm={testIdEditForm?.(note.id)}
-          testIdEditInput={testIdEditInput?.(note.id)}
-          testIdEditReference={testIdEditReference?.(note.id)}
-          testIdEditSave={testIdEditSave?.(note.id)}
-          testIdItem={testIdItem?.(note.id)}
-          testIdReference={testIdReference?.(note.id)}
+          testIdPrefix={testIdPrefix}
           updateNoteLoading={updateNoteLoading}
         />
       ))}

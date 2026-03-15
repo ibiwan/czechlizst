@@ -1,5 +1,5 @@
 import { TaskCard } from './TasksListPane/TaskCard';
-import { TaskNotesDetail } from './TaskNotesPane/TaskNotesDetail';
+import { NotesDetailSection } from '@utilities/NotesDetailSection';
 import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
 
 export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
@@ -19,6 +19,16 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
     );
   }
 
+  async function handleCreateNote(body: string, referenceUrl: string | null) {
+    if (!body || model.selectedTaskId === null) return;
+    // The existing onCreateTaskNote reads from local state, so we need to call the mutation directly
+    // First set the state, then call the handler
+    model.setNewTaskNoteBody(body);
+    model.setNewTaskNoteReferenceUrl(referenceUrl || '');
+    // Now call onCreateTaskNote which expects a form event
+    await model.onCreateTaskNote({ preventDefault: () => { } } as React.FormEvent<HTMLFormElement>);
+  }
+
   return (
     <>
       {model.activeTask && (
@@ -33,22 +43,18 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
           updateTaskStatusLoading={model.updateTaskStatusState.isLoading}
         />
       )}
-      <TaskNotesDetail
-        createTaskNoteLoading={model.createTaskNoteState.isLoading}
-        newTaskNoteBody={model.newTaskNoteBody}
-        newTaskNoteReferenceUrl={model.newTaskNoteReferenceUrl}
-        onChangeTaskNoteBody={model.setNewTaskNoteBody}
-        onChangeTaskNoteReferenceUrl={model.setNewTaskNoteReferenceUrl}
-        onCreateTaskNote={model.onCreateTaskNote}
-        onUpdateTaskNote={model.onUpdateTaskNote}
-        onToggleOpen={model.setTaskNoteInputOpen}
-        open={model.taskNoteInputOpen}
-        resetTaskNoteBody={() => model.setNewTaskNoteBody('')}
-        resetTaskNoteReferenceUrl={() => model.setNewTaskNoteReferenceUrl('')}
-        taskNotes={model.taskNotes}
-        taskNotesError={Boolean(model.taskNotesQuery.error)}
-        taskNotesLoading={model.taskNotesQuery.isLoading}
-        updateTaskNoteLoading={model.updateTaskNoteState.isLoading}
+      <NotesDetailSection
+        addNoteLabel="New note"
+        createNoteLoading={model.createTaskNoteState.isLoading}
+        inputPlaceholder="Add a task note"
+        notes={model.taskNotes}
+        notesError={Boolean(model.taskNotesQuery.error)}
+        notesLoading={model.taskNotesQuery.isLoading}
+        onCreateNote={handleCreateNote}
+        onUpdateNote={model.onUpdateTaskNote}
+        testIdPrefix="task-notes"
+        title="Task Notes"
+        updateNoteLoading={model.updateTaskNoteState.isLoading}
       />
     </>
   );

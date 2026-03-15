@@ -1,0 +1,105 @@
+.project-card {
+  background: rgb(255 255 255 / 6%);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--radius-sm) + 0.08rem);
+  padding: var(--space-2) var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.project-card-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.project-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-dim);
+  font-size: 0.85rem;
+  flex-wrap: nowrap;
+}
+
+.project-created {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 6.1rem;
+  width: 6.1rem;
+  margin-left: auto;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.project-delete {
+  margin-left: auto;
+  opacity: 0.3;
+  transition: opacity 120ms ease;
+}
+
+.project-delete:hover {
+  opacity: 1;
+}
+
+.project-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  padding-bottom: 2rem;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-right: 12px;
+  scrollbar-gutter: stable;
+}
+
+/* Project table styles */
+.project-table th,
+.project-table td {
+  white-space: normal;
+}
+
+.project-table {
+  min-width: 0;
+}
+
+.project-table th {
+  white-space: nowrap;
+}
+
+.project-table td {
+  padding: 0;
+  border-bottom: none;
+}
+
+.project-table tbody tr+tr td {
+  padding-top: var(--space-2);
+}
+
+.project-table tbody tr {
+  cursor: pointer;
+}
+
+.project-table tbody tr:hover {
+  background: transparent;
+}
+
+.project-table tbody tr.is-selected {
+  background: transparent;
+}
+
+/* Shared with tasks - hover/selected states */
+.data-table tbody tr.is-selected .project-card,
+.data-table tbody tr.is-selected .task-card {
+  background: var(--color-row-selected);
+  border-color: rgb(255 255 255 / 20%);
+}
+
+.data-table tbody tr:hover .project-card,
+.data-table tbody tr:hover .task-card {
+  background: var(--color-row-hover);
+}

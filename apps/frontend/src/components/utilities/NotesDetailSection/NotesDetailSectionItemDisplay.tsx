@@ -2,14 +2,12 @@ import { formatTimestamp } from '@lib/format';
 import { type NoteView } from '@app-types/view';
 
 type NotesDetailSectionItemDisplayProps = {
-  deleteNoteLoading: boolean;
+  deleteNoteLoading?: boolean;
   note: NoteView;
   onDeleteNote?: (noteId: number) => void;
   onStartEdit?: () => void;
-  testIdEditButton?: string;
-  testIdDeleteButton?: string;
-  testIdReference?: string;
-  updateNoteLoading: boolean;
+  testIdPrefix?: string;
+  updateNoteLoading?: boolean;
 };
 
 export function NotesDetailSectionItemDisplay({
@@ -17,18 +15,18 @@ export function NotesDetailSectionItemDisplay({
   note,
   onDeleteNote,
   onStartEdit,
-  testIdEditButton,
-  testIdDeleteButton,
-  testIdReference,
+  testIdPrefix,
   updateNoteLoading
 }: NotesDetailSectionItemDisplayProps) {
+  const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+
   return (
     <>
       <div className="note-item-header">
         <div className="note-item-content">
           <p>{note.body}</p>
           {note.referenceUrl && (
-            <p className="note-reference" data-testid={testIdReference}>
+            <p className="note-reference" data-testid={testId('reference')}>
               {note.referenceUrl}
             </p>
           )}
@@ -42,7 +40,7 @@ export function NotesDetailSectionItemDisplay({
                 aria-label="Edit note"
                 onClick={onStartEdit}
                 disabled={updateNoteLoading}
-                data-testid={testIdEditButton}
+                data-testid={testId('edit-button')}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 17.25V20h2.75l8.1-8.1-2.75-2.75L4 17.25zm15.71-9.04c.39-.39.39-1.02 0-1.41l-1.5-1.5a1 1 0 0 0-1.41 0l-1.13 1.13 2.75 2.75 1.29-1.29z" />
@@ -55,7 +53,7 @@ export function NotesDetailSectionItemDisplay({
                 type="button"
                 onClick={() => onDeleteNote(note.id)}
                 disabled={deleteNoteLoading}
-                data-testid={testIdDeleteButton}
+                data-testid={testId('delete-button')}
               >
                 Delete
               </button>

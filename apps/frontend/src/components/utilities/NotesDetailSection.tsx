@@ -8,25 +8,17 @@ import { NotesDetailSectionListHeader } from './NotesDetailSection/NotesDetailSe
 import { NotesDetailSectionStatus } from './NotesDetailSection/NotesDetailSectionStatus';
 
 type NotesDetailSectionProps = {
-  addNoteLabel: string;
-  createNoteLoading: boolean;
+  addNoteLabel?: string;
+  createNoteLoading?: boolean;
   headerAction?: ReactNode;
   titleNode?: ReactNode;
-  inputPlaceholder: string;
-  newNoteBody: string;
-  newNoteReferenceUrl: string;
+  inputPlaceholder?: string;
   notes: NoteView[];
-  notesError: boolean;
-  notesLoading: boolean;
-  onChangeNoteBody: (body: string) => void;
-  onChangeNoteReferenceUrl: (value: string) => void;
-  onCreateNote: (event: React.FormEvent<HTMLFormElement>) => void;
+  notesError?: boolean;
+  notesLoading?: boolean;
+  onCreateNote: (body: string, referenceUrl: string | null) => Promise<void>;
   onDeleteNote?: (noteId: number) => void;
   onUpdateNote?: (noteId: number, body: string, referenceUrl: string | null) => void;
-  onToggleOpen: (open: boolean) => void;
-  open: boolean;
-  resetNoteBody: () => void;
-  resetNoteReferenceUrl: () => void;
   testIdPrefix?: string;
   title: string;
   beforeList?: ReactNode;
@@ -35,35 +27,46 @@ type NotesDetailSectionProps = {
 };
 
 export function NotesDetailSection({
-  addNoteLabel,
+  addNoteLabel = 'Add note',
   beforeList,
-  createNoteLoading,
+  createNoteLoading = false,
   headerAction,
-  inputPlaceholder,
-  newNoteBody,
-  newNoteReferenceUrl,
+  inputPlaceholder = 'Add a note',
   notes,
-  notesError,
-  notesLoading,
-  onChangeNoteBody,
-  onChangeNoteReferenceUrl,
+  notesError = false,
+  notesLoading = false,
   onCreateNote,
   onDeleteNote,
   onUpdateNote,
-  onToggleOpen,
-  open,
-  resetNoteBody,
-  resetNoteReferenceUrl,
   testIdPrefix,
   title,
   titleNode,
   updateNoteLoading = false,
   deleteNoteLoading = false
 }: NotesDetailSectionProps) {
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteBody, setNewNoteBody] = useState('');
+  const [newNoteReferenceUrl, setNewNoteReferenceUrl] = useState('');
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editingBody, setEditingBody] = useState('');
   const [editingReferenceUrl, setEditingReferenceUrl] = useState('');
-  const testId = (suffix: string) => (testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined);
+
+  const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+
+  const resetNewNoteForm = () => {
+    setNewNoteBody('');
+    setNewNoteReferenceUrl('');
+    setIsAddingNote(false);
+  };
+
+  const handleCreateNote = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = newNoteBody.trim();
+    if (!trimmed) return;
+    const ref = newNoteReferenceUrl.trim() || null;
+    await onCreateNote(trimmed, ref);
+    resetNewNoteForm();
+  };
 
   const onCancelEdit = () => {
     setEditingNoteId(null);
@@ -80,11 +83,9 @@ export function NotesDetailSection({
   const onSubmitEdit = (note: NoteView, event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = editingBody.trim();
-    if (!trimmed) {
-      return;
-    }
-    const refValue = editingReferenceUrl.trim();
-    onUpdateNote?.(note.id, trimmed, refValue ? refValue : null);
+    if (!trimmed) return;
+    const ref = editingReferenceUrl.trim() || null;
+    onUpdateNote?.(note.id, trimmed, ref);
     onCancelEdit();
   };
 
@@ -106,12 +107,11 @@ export function NotesDetailSection({
           <NotesDetailSectionEmpty
             addNoteLabel={addNoteLabel}
             createNoteLoading={createNoteLoading}
-            open={open}
-            onToggleOpen={onToggleOpen}
-            testId={testId('empty')}
-            testIdAdd={testId('add-button')}
+            open={isAddingNote}
+            onToggleOpen={setIsAddingNote}
+            testIdPrefix={testIdPrefix}
           />
-          {open && (
+          {isAddingNote && (
             <NotesDetailSectionList
               createNoteLoading={createNoteLoading}
               deleteNoteLoading={deleteNoteLoading}
@@ -125,22 +125,17 @@ export function NotesDetailSection({
               onCancelEdit={onCancelEdit}
               onChangeEditBody={setEditingBody}
               onChangeEditReferenceUrl={setEditingReferenceUrl}
-              onChangeNoteBody={onChangeNoteBody}
-              onChangeNoteReferenceUrl={onChangeNoteReferenceUrl}
-              onCreateNote={onCreateNote}
+              onChangeNoteBody={setNewNoteBody}
+              onChangeNoteReferenceUrl={setNewNoteReferenceUrl}
+              onCreateNote={handleCreateNote}
               onDeleteNote={onDeleteNote}
               onStartEdit={onStartEdit}
               onSubmitEdit={onSubmitEdit}
-              onToggleOpen={onToggleOpen}
-              open={open}
-              resetNoteBody={resetNoteBody}
-              resetNoteReferenceUrl={resetNoteReferenceUrl}
-              testIdAdd={testId('add-form')}
-              testIdAddCancel={testId('add-cancel')}
-              testIdAddInput={testId('add-input')}
-              testIdAddReference={testId('add-reference')}
-              testIdAddSave={testId('add-save')}
-              testIdList={testId('list')}
+              onToggleOpen={setIsAddingNote}
+              open={isAddingNote}
+              resetNoteBody={() => setNewNoteBody('')}
+              resetNoteReferenceUrl={() => setNewNoteReferenceUrl('')}
+              testIdPrefix={testIdPrefix}
               updateNoteLoading={updateNoteLoading}
             />
           )}
@@ -150,9 +145,9 @@ export function NotesDetailSection({
           <NotesDetailSectionListHeader
             addNoteLabel={addNoteLabel}
             createNoteLoading={createNoteLoading}
-            open={open}
-            onToggleOpen={onToggleOpen}
-            testIdAdd={testId('add-button')}
+            open={isAddingNote}
+            onToggleOpen={setIsAddingNote}
+            testIdPrefix={testIdPrefix}
           />
           <NotesDetailSectionList
             createNoteLoading={createNoteLoading}
@@ -167,31 +162,17 @@ export function NotesDetailSection({
             onCancelEdit={onCancelEdit}
             onChangeEditBody={setEditingBody}
             onChangeEditReferenceUrl={setEditingReferenceUrl}
-            onChangeNoteBody={onChangeNoteBody}
-            onChangeNoteReferenceUrl={onChangeNoteReferenceUrl}
-            onCreateNote={onCreateNote}
+            onChangeNoteBody={setNewNoteBody}
+            onChangeNoteReferenceUrl={setNewNoteReferenceUrl}
+            onCreateNote={handleCreateNote}
             onDeleteNote={onDeleteNote}
             onStartEdit={onStartEdit}
             onSubmitEdit={onSubmitEdit}
-            onToggleOpen={onToggleOpen}
-            open={open}
-            resetNoteBody={resetNoteBody}
-            resetNoteReferenceUrl={resetNoteReferenceUrl}
-            testIdAdd={testId('add-form')}
-            testIdAddCancel={testId('add-cancel')}
-            testIdAddInput={testId('add-input')}
-            testIdAddReference={testId('add-reference')}
-            testIdAddSave={testId('add-save')}
-            testIdDeleteButton={(noteId) => testId(`delete-button-${noteId}`)}
-            testIdEditButton={(noteId) => testId(`edit-button-${noteId}`)}
-            testIdEditCancel={(noteId) => testId(`edit-cancel-${noteId}`)}
-            testIdEditForm={(noteId) => testId(`edit-form-${noteId}`)}
-            testIdEditInput={(noteId) => testId(`edit-input-${noteId}`)}
-            testIdEditReference={(noteId) => testId(`edit-reference-${noteId}`)}
-            testIdEditSave={(noteId) => testId(`edit-save-${noteId}`)}
-            testIdItem={(noteId) => testId(`item-${noteId}`)}
-            testIdList={testId('list')}
-            testIdReference={(noteId) => testId(`ref-${noteId}`)}
+            onToggleOpen={setIsAddingNote}
+            open={isAddingNote}
+            resetNoteBody={() => setNewNoteBody('')}
+            resetNoteReferenceUrl={() => setNewNoteReferenceUrl('')}
+            testIdPrefix={testIdPrefix}
             updateNoteLoading={updateNoteLoading}
           />
         </>

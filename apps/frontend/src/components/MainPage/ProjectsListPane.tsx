@@ -3,9 +3,16 @@ import { AddSpinnerButton } from '@utilities/AddSpinnerButton';
 import { ProjectRow } from './ProjectsListPane/ProjectRow';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { Flipper } from 'react-flip-toolkit';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { setNewProjectName, setProjectInputOpen } from '@store/mainPageSlice';
+import { useCreateProject } from '@state/projects/useCreateProject';
 
 export function ProjectsListPane() {
   const model = useProjectsPanel();
+  const { createProject, isLoading: isCreating } = useCreateProject();
+  const dispatch = useAppDispatch();
+  const projectInputOpen = useAppSelector((state) => state.mainPage.projectInputOpen);
+  const newProjectName = useAppSelector((state) => state.mainPage.newProjectName);
   const statusPriority: Record<string, number> = {
     active: 0,
     started: 1,
@@ -37,8 +44,8 @@ export function ProjectsListPane() {
         <AddSpinnerButton
           label="New Project"
           loadingLabel="Loading"
-          loading={model.createProjectState.isLoading}
-          onClick={() => model.setProjectInputOpen(true)}
+          loading={isCreating}
+          onClick={() => dispatch(setProjectInputOpen(true))}
           testId="projects-add-button"
         />
       </div>
@@ -59,17 +66,25 @@ export function ProjectsListPane() {
           <Flipper flipKey={projectFlipKey}>
             <table className="data-table project-table" data-testid="projects-table">
               <tbody>
-                {model.projectInputOpen && (
+                {projectInputOpen && (
                   <AddEntityRow
                     addLabel="+ New project"
                     inputPlaceholder="Project name"
-                    isSaving={model.createProjectState.isLoading}
-                    onChangeValue={model.setNewProjectName}
-                    onSubmit={model.onCreateProject}
-                    onToggleOpen={model.setProjectInputOpen}
-                    open={model.projectInputOpen}
-                    resetValue={() => model.setNewProjectName('')}
-                    value={model.newProjectName}
+                    isSaving={isCreating}
+                    onChangeValue={(value) => dispatch(setNewProjectName(value))}
+                    onSubmit={async (event) => {
+                      event.preventDefault();
+                      const { success } = await createProject(newProjectName);
+                      if (!success) {
+                        return;
+                      }
+                      dispatch(setNewProjectName(''));
+                      dispatch(setProjectInputOpen(false));
+                    }}
+                    onToggleOpen={(open) => dispatch(setProjectInputOpen(open))}
+                    open={projectInputOpen}
+                    resetValue={() => dispatch(setNewProjectName(''))}
+                    value={newProjectName}
                     testIdPrefix="projects-add"
                     colSpan={1}
                   />

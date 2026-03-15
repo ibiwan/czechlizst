@@ -1,14 +1,13 @@
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { setProjectRenameOpen, setProjectRenameValue } from '@store/mainPageSlice';
+import { useProjectRename } from '@state/projects/useProjectRename';
 
 export function ProjectRenameRow() {
-  const {
-    activeProject,
-    onUpdateProjectName,
-    projectRenameValue,
-    setProjectRenameOpen,
-    setProjectRenameValue,
-    updateProjectState
-  } = useProjectsPanel();
+  const { activeProject } = useProjectsPanel();
+  const { onUpdateProjectName, updateProjectState } = useProjectRename(activeProject?.id ?? null);
+  const dispatch = useAppDispatch();
+  const projectRenameValue = useAppSelector((state) => state.mainPage.projectRenameValue);
 
   if (!activeProject) {
     return null;
@@ -17,13 +16,17 @@ export function ProjectRenameRow() {
   return (
     <form
       className="inline-form in-row detail-title-edit"
-      onSubmit={onUpdateProjectName}
+      onSubmit={async (event) => {
+        event.preventDefault();
+        await onUpdateProjectName(projectRenameValue);
+        dispatch(setProjectRenameOpen(false));
+      }}
       data-testid="project-rename-form"
     >
       <input
         className="text-input detail-title-input"
         value={projectRenameValue}
-        onChange={(event) => setProjectRenameValue(event.target.value)}
+        onChange={(event) => dispatch(setProjectRenameValue(event.target.value))}
         placeholder="Project name"
         autoFocus
         data-testid="project-rename-input"
@@ -43,7 +46,7 @@ export function ProjectRenameRow() {
         className="icon-btn detail-rename-action"
         type="button"
         aria-label="Cancel rename"
-        onClick={() => setProjectRenameOpen(false)}
+        onClick={() => dispatch(setProjectRenameOpen(false))}
         data-testid="project-rename-cancel"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">

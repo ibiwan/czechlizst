@@ -1,5 +1,7 @@
 import { Flipped } from 'react-flip-toolkit';
 import { formatProjectTimestamp } from '@lib/format';
+
+import './ProjectRow.css';
 import { type ProjectView } from '@app-types/view';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 

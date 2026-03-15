@@ -1,13 +1,24 @@
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { ProjectRenameRow } from './ProjectDetailHeader/ProjectRenameRow';
+import { useEffect } from 'react';
+import { useAppDispatch, useAppSelector } from '@store/hooks';
+import { setProjectRenameOpen, setProjectRenameValue } from '@store/mainPageSlice';
+import { useProjectDelete } from '@state/projects/useProjectDelete';
 
 export function ProjectDetailHeader() {
-  const {
-    activeProject,
-    onDeleteProject,
-    projectRenameOpen,
-    setProjectRenameOpen
-  } = useProjectsPanel();
+  const { activeProject } = useProjectsPanel();
+  const { onDeleteProject } = useProjectDelete();
+  const dispatch = useAppDispatch();
+  const projectRenameOpen = useAppSelector((state) => state.mainPage.projectRenameOpen);
+
+  useEffect(() => {
+    if (activeProject) {
+      dispatch(setProjectRenameValue(activeProject.name));
+    } else {
+      dispatch(setProjectRenameValue(''));
+    }
+    dispatch(setProjectRenameOpen(false));
+  }, [activeProject, dispatch]);
 
   if (!activeProject) {
     return null;
@@ -30,7 +41,7 @@ export function ProjectDetailHeader() {
               className="icon-btn detail-rename"
               type="button"
               aria-label={`Rename ${activeProject.name}`}
-              onClick={() => setProjectRenameOpen(true)}
+              onClick={() => dispatch(setProjectRenameOpen(true))}
               data-testid="project-rename-toggle"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">

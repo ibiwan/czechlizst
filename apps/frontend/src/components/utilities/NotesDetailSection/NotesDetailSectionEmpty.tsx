@@ -1,24 +1,24 @@
 import { AddSpinnerButton } from '../AddSpinnerButton';
 
 type NotesDetailSectionEmptyProps = {
-  addNoteLabel: string;
-  createNoteLoading: boolean;
+  addNoteLabel?: string;
+  createNoteLoading?: boolean;
   open: boolean;
   onToggleOpen: (open: boolean) => void;
-  testId?: string;
-  testIdAdd?: string;
+  testIdPrefix?: string;
 };
 
 export function NotesDetailSectionEmpty({
-  addNoteLabel,
-  createNoteLoading,
+  addNoteLabel = 'Add note',
+  createNoteLoading = false,
   open,
   onToggleOpen,
-  testId,
-  testIdAdd
+  testIdPrefix
 }: NotesDetailSectionEmptyProps) {
+  const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+
   return (
-    <div className="note-empty" data-testid={testId}>
+    <div className="note-empty" data-testid={testId('empty')}>
       <span className="state-copy">No notes yet.</span>
       {!open && (
         <AddSpinnerButton
@@ -26,7 +26,7 @@ export function NotesDetailSectionEmpty({
           loadingLabel="Loading"
           loading={createNoteLoading}
           onClick={() => onToggleOpen(true)}
-          testId={testIdAdd}
+          testId={testId('add-button')}
         />
       )}
     </div>

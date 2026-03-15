@@ -1,14 +1,12 @@
 import { StatusOptionSelect } from '@utilities/StatusOptionSelect';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
+import { useProjectStatus } from '@state/projects/useProjectStatus';
 
 export function ProjectStatusRow() {
-  const {
-    activeProject,
-    effectiveProjectStatus,
-    onUpdateProjectStatus,
-    setProjectStatus,
-    updateProjectStatusState
-  } = useProjectsPanel();
+  const { activeProject, effectiveProjectStatus } = useProjectsPanel();
+  const { onUpdateProjectStatus, setProjectStatus, updateProjectStatusState } = useProjectStatus(
+    activeProject?.id ?? null
+  );
   const updateProjectStatusLoading = updateProjectStatusState.isLoading;
 
   return (

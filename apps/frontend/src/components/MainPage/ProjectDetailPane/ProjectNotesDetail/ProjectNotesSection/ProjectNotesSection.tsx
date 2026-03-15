@@ -1,6 +1,8 @@
 import { type FC, type ReactNode } from 'react';
 import { NotesDetailSection } from '@utilities/NotesDetailSection';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
+import { useCreateProjectNote } from '@state/projects/useCreateProjectNote';
+import { useProjectNoteUpdate } from '@state/projects/useProjectNoteUpdate';
 
 type ProjectNotesSectionProps = {
   beforeList?: ReactNode;
@@ -13,42 +15,28 @@ export const ProjectNotesSection: FC<ProjectNotesSectionProps> = ({
   headerAction,
   titleNode
 }) => {
-  const {
-    activeProject,
-    createProjectNoteState,
-    newProjectNoteBody,
-    newProjectNoteReferenceUrl,
-    onCreateProjectNote,
-    onUpdateProjectNote,
-    projectNoteInputOpen,
-    projectNotes,
-    projectNotesQuery,
-    setNewProjectNoteBody,
-    setNewProjectNoteReferenceUrl,
-    setProjectNoteInputOpen,
-    updateProjectNoteState
-  } = useProjectsPanel();
+  const { activeProject, projectNotes, projectNotesQuery } = useProjectsPanel();
+  const { createNote, isLoading: isCreating } = useCreateProjectNote(activeProject?.id ?? null);
+  const { onUpdateProjectNote, updateProjectNoteState } = useProjectNoteUpdate(
+    activeProject?.id ?? null
+  );
+
+  async function handleCreateNote(body: string, referenceUrl: string | null) {
+    await createNote(body, referenceUrl || '');
+  }
 
   return (
     <NotesDetailSection
       addNoteLabel="New note"
       beforeList={beforeList}
-      createNoteLoading={createProjectNoteState.isLoading}
+      createNoteLoading={isCreating}
       headerAction={headerAction}
       inputPlaceholder="Add a project note"
-      newNoteBody={newProjectNoteBody}
-      newNoteReferenceUrl={newProjectNoteReferenceUrl}
       notes={projectNotes}
       notesError={Boolean(projectNotesQuery.error)}
       notesLoading={projectNotesQuery.isLoading}
+      onCreateNote={handleCreateNote}
       onUpdateNote={onUpdateProjectNote}
-      onChangeNoteBody={setNewProjectNoteBody}
-      onChangeNoteReferenceUrl={setNewProjectNoteReferenceUrl}
-      onCreateNote={onCreateProjectNote}
-      onToggleOpen={setProjectNoteInputOpen}
-      open={projectNoteInputOpen}
-      resetNoteBody={() => setNewProjectNoteBody('')}
-      resetNoteReferenceUrl={() => setNewProjectNoteReferenceUrl('')}
       testIdPrefix="project-notes"
       titleNode={titleNode}
       title={activeProject ? activeProject.name : 'Project Notes'}
