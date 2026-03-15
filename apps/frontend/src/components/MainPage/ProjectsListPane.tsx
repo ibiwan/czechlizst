@@ -75,13 +75,7 @@ export function ProjectsListPane() {
                   />
                 )}
                 {sortedProjects.map((project) => (
-                  <ProjectRow
-                    key={project.id}
-                    activeProjectId={model.activeProjectId}
-                    effectiveProjectStatus={model.effectiveProjectStatus}
-                    onSelectProject={model.selectProject}
-                    project={project}
-                  />
+                  <ProjectRow key={project.id} project={project} />
                 ))}
               </tbody>
             </table>

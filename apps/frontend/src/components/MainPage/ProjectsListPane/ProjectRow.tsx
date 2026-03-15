@@ -1,27 +1,20 @@
-import { type WorkStatus } from '@app/contracts';
 import { Flipped } from 'react-flip-toolkit';
 import { formatProjectTimestamp } from '@lib/format';
-import { type ProjectView } from '/view';
+import { type ProjectView } from '@app-types/view';
+import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 
 type ProjectRowProps = {
-  activeProjectId: number | null;
-  effectiveProjectStatus: WorkStatus;
-  onSelectProject: (projectId: number) => void;
   project: ProjectView;
 };
 
-export function ProjectRow({
-  activeProjectId,
-  effectiveProjectStatus,
-  onSelectProject,
-  project
-}: ProjectRowProps) {
+export function ProjectRow({ project }: ProjectRowProps) {
+  const { activeProjectId, effectiveProjectStatus, selectProject } = useProjectsPanel();
   const shownStatus = project.id === activeProjectId ? effectiveProjectStatus : project.status;
 
   return (
     <tr
       className={project.id === activeProjectId ? 'is-selected' : ''}
-      onClick={() => onSelectProject(project.id)}
+      onClick={() => selectProject(project.id)}
       data-testid={`project-row-${project.id}`}
     >
       <td>

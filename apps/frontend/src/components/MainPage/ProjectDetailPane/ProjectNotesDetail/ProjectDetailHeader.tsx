@@ -1,27 +1,24 @@
-import { ProjectView } from '/view';
 import { InlineEditRow } from '@utilities/InlineEditRow';
+import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 
-type ProjectDetailHeaderProps = {
-  activeProject: ProjectView;
-  onDeleteProject: (projectId: number) => void;
-  onToggleProjectRename: (open: boolean) => void;
-  onUpdateProjectName: (event: React.FormEvent<HTMLFormElement>) => void;
-  onChangeProjectRename: (name: string) => void;
-  projectRenameOpen: boolean;
-  projectRenameValue: string;
-  updateProjectLoading: boolean;
-};
+type ProjectDetailHeaderProps = {};
 
-export function ProjectDetailHeader({
-  activeProject,
-  onDeleteProject,
-  onToggleProjectRename,
-  onUpdateProjectName,
-  onChangeProjectRename,
-  projectRenameOpen,
-  projectRenameValue,
-  updateProjectLoading
-}: ProjectDetailHeaderProps) {
+export function ProjectDetailHeader(_props: ProjectDetailHeaderProps) {
+  const {
+    activeProject,
+    onDeleteProject,
+    onUpdateProjectName,
+    projectRenameOpen,
+    projectRenameValue,
+    setProjectRenameOpen,
+    setProjectRenameValue,
+    updateProjectState
+  } = useProjectsPanel();
+
+  if (!activeProject) {
+    return null;
+  }
+
   return (
     <div className="detail-title-bar">
       <div className="detail-title-left">
@@ -32,10 +29,10 @@ export function ProjectDetailHeader({
             value={projectRenameValue}
             placeholder="Project name"
             autoFocus
-            loading={updateProjectLoading}
+            loading={updateProjectState.isLoading}
             onSubmit={onUpdateProjectName}
-            onCancel={() => onToggleProjectRename(false)}
-            onChange={onChangeProjectRename}
+            onCancel={() => setProjectRenameOpen(false)}
+            onChange={setProjectRenameValue}
             saveLabel="Save project name"
             cancelLabel="Cancel rename"
             formTestId="project-rename-form"
@@ -55,7 +52,7 @@ export function ProjectDetailHeader({
               className="icon-btn detail-rename"
               type="button"
               aria-label={`Rename ${activeProject.name}`}
-              onClick={() => onToggleProjectRename(true)}
+              onClick={() => setProjectRenameOpen(true)}
               data-testid="project-rename-toggle"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -1,22 +1,16 @@
-import { type WorkStatus } from '@app/contracts';
 import { StatusOptionSelect } from '@utilities/StatusOptionSelect';
-import { type ProjectView } from '/view';
+import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 
-type ProjectStatusRowProps = {
-  activeProject: ProjectView | null;
-  effectiveProjectStatus: WorkStatus;
-  onSetProjectStatus: (projectId: number, nextStatus: WorkStatus) => void;
-  onUpdateProjectStatus: (currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
-  updateProjectStatusLoading: boolean;
-};
+export function ProjectStatusRow() {
+  const {
+    activeProject,
+    effectiveProjectStatus,
+    onUpdateProjectStatus,
+    setProjectStatus,
+    updateProjectStatusState
+  } = useProjectsPanel();
+  const updateProjectStatusLoading = updateProjectStatusState.isLoading;
 
-export function ProjectStatusRow({
-  activeProject,
-  effectiveProjectStatus,
-  onSetProjectStatus,
-  onUpdateProjectStatus,
-  updateProjectStatusLoading
-}: ProjectStatusRowProps) {
   return (
     <div className="status-row">
       <div className="status-row-left">
@@ -24,7 +18,7 @@ export function ProjectStatusRow({
           <button
             className="activate-btn activate-btn-activate"
             type="button"
-            onClick={() => onSetProjectStatus(activeProject.id, 'active')}
+            onClick={() => setProjectStatus(activeProject.id, 'active')}
             disabled={updateProjectStatusLoading}
             data-testid="project-activate"
           >
@@ -35,7 +29,7 @@ export function ProjectStatusRow({
           <button
             className="activate-btn activate-btn-suspend"
             type="button"
-            onClick={() => onSetProjectStatus(activeProject.id, 'started')}
+            onClick={() => setProjectStatus(activeProject.id, 'started')}
             disabled={updateProjectStatusLoading}
             data-testid="project-suspend"
           >
@@ -47,13 +41,13 @@ export function ProjectStatusRow({
         <div className="status-pill-wrap">
           {activeProject ? (
             <span className={`status-select-pill status-${activeProject.status}`}>
-              <StatusOptionSelect
-                className={`status-select status-select-${activeProject.status} status-select-pill-input`}
-                currentStatus={activeProject.status}
-                disabled={updateProjectStatusLoading}
-                onChange={(nextStatus) => onUpdateProjectStatus(activeProject.status, nextStatus)}
-                testId="project-status-select"
-              />
+                <StatusOptionSelect
+                  className={`status-select status-select-${activeProject.status} status-select-pill-input`}
+                  currentStatus={activeProject.status}
+                  disabled={updateProjectStatusLoading}
+                  onChange={(nextStatus) => onUpdateProjectStatus(activeProject.status, nextStatus)}
+                  testId="project-status-select"
+                />
             </span>
           ) : (
             <span
