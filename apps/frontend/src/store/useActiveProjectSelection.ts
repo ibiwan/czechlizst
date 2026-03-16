@@ -1,9 +1,8 @@
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useListProjectsQuery } from '@api';
 
 import { useAppDispatch, useAppSelector } from './hooks';
-import { getActiveProjectId } from './activeProject';
 import { setSelectedProjectId } from './mainPageSlice';
 
 
@@ -16,16 +15,13 @@ export function useActiveProjectSelection() {
     () => projectsQuery.data?.projects ?? [],
     [projectsQuery.data?.projects]
   );
-  const activeProjectId = useMemo(
-    () => getActiveProjectId(projects, selectedProjectId),
-    [projects, selectedProjectId]
-  );
 
-  useEffect(() => {
-    if (activeProjectId !== selectedProjectId) {
-      dispatch(setSelectedProjectId(activeProjectId));
+  const activeProjectId = useMemo(() => {
+    if (selectedProjectId === null) {
+      return null;
     }
-  }, [activeProjectId, dispatch, selectedProjectId]);
+    return projects.some((project) => project.id === selectedProjectId) ? selectedProjectId : null;
+  }, [projects, selectedProjectId]);
 
   function selectProject(projectId: number | null) {
     dispatch(setSelectedProjectId(projectId));

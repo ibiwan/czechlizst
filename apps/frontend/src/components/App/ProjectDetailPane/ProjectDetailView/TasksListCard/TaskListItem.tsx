@@ -34,7 +34,6 @@ export function TaskListItem({
         data-testid={`task-row-${task.id}`}
       >
         <TaskCard
-          onDeleteTask={onDeleteTask}
           onUpdateTaskStatus={onUpdateTaskStatus}
           onUpdateTaskTitle={onUpdateTaskTitle}
           isSelected={isSelected}
@@ -42,6 +41,7 @@ export function TaskListItem({
           task={task}
           updateTaskLoading={updateTaskLoading}
           updateTaskStatusLoading={updateTaskStatusLoading}
+          onInnerClick={() => setSelectedTaskIdForRow(task.id)}
         />
       </div>
     </Flipped>

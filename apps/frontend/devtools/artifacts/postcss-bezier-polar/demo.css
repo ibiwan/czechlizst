@@ -1,0 +1,6 @@
+/* Demo for the postcss-bezier-polar plugin */
+.demo {
+  transition: transform 300ms bezier-polar(0.5 0.6 0.5 0.6);
+  transition-timing-function: bezier-polar(0.16, 1, 0.3, 1);
+}
+

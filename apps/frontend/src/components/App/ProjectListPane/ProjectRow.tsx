@@ -13,11 +13,25 @@ export function ProjectRow({ project }: ProjectRowProps) {
   const { activeProjectId, effectiveProjectStatus, selectProject } = useProjectsPanel();
   const shownStatus = project.id === activeProjectId ? effectiveProjectStatus : project.status;
 
+  const handleClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    // Command/Ctrl + Click to deselect
+    if (event.metaKey || event.ctrlKey) {
+      if (activeProjectId === project.id) {
+        selectProject(null);
+      } else {
+        selectProject(project.id);
+      }
+    } else {
+      selectProject(project.id);
+    }
+  };
+
   return (
     <Flipped flipId={`project-${project.id}`}>
       <div
         className={`project-list-item${project.id === activeProjectId ? ' is-selected' : ''}`}
-        onClick={() => selectProject(project.id)}
+        onClick={handleClick}
         data-testid={`project-row-${project.id}`}
       >
         <div className="project-card">

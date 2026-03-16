@@ -11,7 +11,6 @@ import { TaskTimestamp } from './TaskTimestamp';
 
 
 type TaskCardProps = {
-  onDeleteTask: (taskId: number) => void;
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
   isSelected: boolean;
@@ -24,7 +23,6 @@ type TaskCardProps = {
 };
 
 export function TaskCard({
-  onDeleteTask,
   onUpdateTaskStatus,
   onUpdateTaskTitle,
   isSelected,

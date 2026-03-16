@@ -1,13 +1,13 @@
 import { AddEntityRow } from '@utilities/AddEntityRow';
 import { AddSpinnerButton } from '@utilities/AddSpinnerButton';
-import { ProjectRow } from './ProjectsListPane/ProjectRow';
+import { ProjectRow } from './ProjectListPane/ProjectRow';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { Flipper } from 'react-flip-toolkit';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
-import { setNewProjectName, setProjectInputOpen } from '@store/mainPageSlice';
+import { setNewProjectName, setProjectInputOpen, setSelectedProjectId } from '@store/mainPageSlice';
 import { useCreateProject } from '@state/projects/useCreateProject';
 
-export function ProjectsListPane() {
+export function ProjectListPane() {
   const model = useProjectsPanel();
   const { createProject, isLoading: isCreating } = useCreateProject();
   const dispatch = useAppDispatch();
@@ -61,10 +61,14 @@ export function ProjectsListPane() {
         </p>
       )}
 
-      <div className="project-list-wrap" data-testid="projects-table-wrap">
+      <div className="project-list-wrap" data-testid="projects-list-wrap">
         <div className="project-list-scroll" data-testid="projects-list-scroll">
           <Flipper flipKey={projectFlipKey}>
-            <div className="project-list" data-testid="projects-table">
+            <div
+              className="project-list"
+              data-testid="projects-list"
+              onClick={() => dispatch(setSelectedProjectId(null))}
+            >
               {projectInputOpen && (
                 <AddEntityRow
                   addLabel="+ New project"

@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cubic Bezier Playground</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b0e14;
+        --panel: rgba(255, 255, 255, 0.06);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.68);
+        --border: rgba(255, 255, 255, 0.14);
+        --accent: #7dd3fc;
+        --accent2: #a78bfa;
+        --danger: #fb7185;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+          monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+          "Segoe UI Emoji";
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f6f7fb;
+          --panel: rgba(0, 0, 0, 0.04);
+          --text: rgba(0, 0, 0, 0.9);
+          --muted: rgba(0, 0, 0, 0.62);
+          --border: rgba(0, 0, 0, 0.14);
+          --accent: #0ea5e9;
+          --accent2: #7c3aed;
+          --danger: #e11d48;
+        }
+      }
+      body {
+        margin: 0;
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        justify-content: space-between;
+      }
+      header h1 {
+        font-size: 16px;
+        margin: 0;
+        letter-spacing: 0.01em;
+      }
+      header .sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(340px, 430px) 1fr;
+        gap: 14px;
+        padding: 14px;
+      }
+      @media (width <= 980px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      .card {
+        border: 1px solid var(--border);
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .card h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      .grid {
+        display: grid;
+        gap: 10px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 92px 1fr 88px;
+        gap: 10px;
+        align-items: center;
+      }
+      .row label {
+        color: var(--muted);
+        font-size: 12px;
+        font-family: var(--mono);
+      }
+      input[type="range"] {
+        width: 100%;
+      }
+      input[type="number"] {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 8px;
+        background: transparent;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .toggles {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .toggle {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+        user-select: none;
+      }
+      .toggle input {
+        transform: translateY(1px);
+      }
+      .select {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      select {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 8px;
+        background: transparent;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .mono {
+        font-family: var(--mono);
+      }
+      .out {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .codebox {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.14);
+        padding: 10px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.4;
+        overflow: auto;
+        white-space: nowrap;
+      }
+      @media (prefers-color-scheme: light) {
+        .codebox {
+          background: rgba(255, 255, 255, 0.6);
+        }
+      }
+      button {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: transparent;
+        color: var(--text);
+        padding: 10px 12px;
+        font-size: 12px;
+        font-family: var(--mono);
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: rgba(255, 255, 255, 0.28);
+      }
+      .plot {
+        display: grid;
+        gap: 10px;
+      }
+      canvas {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.15);
+        touch-action: none;
+      }
+      @media (prefers-color-scheme: light) {
+        canvas {
+          background: rgba(255, 255, 255, 0.55);
+        }
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .stat {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      .stat .k {
+        font-family: var(--mono);
+        color: var(--muted);
+      }
+      .stat .v {
+        font-family: var(--mono);
+        color: var(--text);
+        margin-top: 4px;
+      }
+      .warn {
+        color: var(--danger);
+        font-size: 12px;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Cubic Bezier Playground</h1>
+        <p class="sub">Drag sliders in either representation; everything stays in sync.</p>
+      </div>
+      <div class="mono sub" id="ver"></div>
+    </header>
+
+    <main>
+      <section class="card controls" aria-label="Controls">
+        <div class="card">
+          <h2>Rectangular Controls</h2>
+          <div class="grid" id="rect-controls"></div>
+        </div>
+
+        <div class="card">
+          <h2>Polar Controls</h2>
+          <div class="toggles">
+            <span class="select">
+              <span class="mono">radius</span>
+              <select id="radius-mode">
+                <option value="angleScaled">angle-scaled (max fits square)</option>
+                <option value="globalSqrt2">global √2 (then fit)</option>
+              </select>
+            </span>
+            <label class="toggle">
+              <input id="link-fit" type="checkbox" checked />
+              <span class="mono">fit both proportionally</span>
+            </label>
+          </div>
+          <div class="grid" id="polar-controls" style="margin-top: 10px"></div>
+          <p class="warn" id="warn" style="display: none; margin-top: 10px"></p>
+        </div>
+
+        <div class="out">
+          <div class="codebox" id="css-out"></div>
+          <button id="copy">Copy</button>
+        </div>
+      </section>
+
+      <section class="card plot" aria-label="Plot">
+        <div class="card">
+          <h2>Curve</h2>
+          <canvas id="c" width="900" height="900"></canvas>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="k">Approx. start slope</div>
+            <div class="v" id="slope-in"></div>
+          </div>
+          <div class="stat">
+            <div class="k">Approx. end slope</div>
+            <div class="v" id="slope-out"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const fmt = (n) => {
+        if (!Number.isFinite(n)) return "∞";
+        const s = n.toFixed(4);
+        return s.replace(/\\.0+$/, "").replace(/(\\.\\d+?)0+$/, "$1");
+      };
+      const deg = (rad) => (rad * 180) / Math.PI;
+      const rad = (deg) => (deg * Math.PI) / 180;
+
+      const state = {
+        x1: 0.16,
+        y1: 1,
+        x2: 0.3,
+        y2: 1,
+        a1: 0.5,
+        r1n: 0.55,
+        a2: 0.5,
+        r2n: 0.55,
+        radiusMode: "angleScaled",
+        linkFit: true,
+        dragging: null,
+        hover: null,
+        dragScale: null,
+      };
+
+      const ver = document.getElementById("ver");
+      ver.textContent = "cubic-bezier(x1,y1,x2,y2)";
+
+      function bezierPoint(u, p0, p1, p2, p3) {
+        const t = 1 - u;
+        const a = t * t * t;
+        const b = 3 * t * t * u;
+        const c = 3 * t * u * u;
+        const d = u * u * u;
+        return {
+          x: a * p0.x + b * p1.x + c * p2.x + d * p3.x,
+          y: a * p0.y + b * p1.y + c * p2.y + d * p3.y,
+        };
+      }
+
+      function computePolarFromRect() {
+        const { x1, y1, x2, y2 } = state;
+        const theta1 = Math.atan2(y1, x1);
+        const r1 = Math.hypot(x1, y1);
+        const dx2 = 1 - x2;
+        const dy2 = 1 - y2;
+        const theta2 = Math.atan2(dy2, dx2);
+        const r2 = Math.hypot(dx2, dy2);
+
+        const a1 = clamp(theta1 / (Math.PI / 2), 0, 1);
+        const a2 = clamp(theta2 / (Math.PI / 2), 0, 1);
+
+        const r1max = 1 / Math.max(Math.cos(theta1), Math.sin(theta1) || 1);
+        const r2max = 1 / Math.max(Math.cos(theta2), Math.sin(theta2) || 1);
+
+        const r1n =
+          state.radiusMode === "angleScaled"
+            ? clamp(r1 / r1max, 0, 1)
+            : clamp(r1 / Math.SQRT2, 0, 1);
+        const r2n =
+          state.radiusMode === "angleScaled"
+            ? clamp(r2 / r2max, 0, 1)
+            : clamp(r2 / Math.SQRT2, 0, 1);
+
+        state.a1 = a1;
+        state.r1n = r1n;
+        state.a2 = a2;
+        state.r2n = r2n;
+      }
+
+      function computeRectFromPolar() {
+        const theta1 = state.a1 * (Math.PI / 2);
+        const theta2 = state.a2 * (Math.PI / 2);
+
+        const c1 = Math.cos(theta1);
+        const s1 = Math.sin(theta1);
+        const c2 = Math.cos(theta2);
+        const s2 = Math.sin(theta2);
+
+        const r1max = 1 / Math.max(c1, s1 || 1);
+        const r2max = 1 / Math.max(c2, s2 || 1);
+
+        let r1 =
+          state.radiusMode === "angleScaled" ? state.r1n * r1max : state.r1n * Math.SQRT2;
+        let r2 =
+          state.radiusMode === "angleScaled" ? state.r2n * r2max : state.r2n * Math.SQRT2;
+
+        if (state.radiusMode === "globalSqrt2") {
+          const k1 = r1 === 0 ? 1 : Math.min(1, r1max / r1);
+          const k2 = r2 === 0 ? 1 : Math.min(1, r2max / r2);
+          if (state.linkFit) {
+            const k = Math.min(k1, k2);
+            r1 *= k;
+            r2 *= k;
+          } else {
+            r1 *= k1;
+            r2 *= k2;
+          }
+        }
+
+        const x1 = r1 * c1;
+        const y1 = r1 * s1;
+        const x2 = 1 - r2 * c2;
+        const y2 = 1 - r2 * s2;
+
+        state.x1 = clamp(x1, 0, 1);
+        state.x2 = clamp(x2, 0, 1);
+        state.y1 = y1;
+        state.y2 = y2;
+      }
+
+      function makeRow({ root, id, label, min, max, step }) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const l = document.createElement("label");
+        l.textContent = label;
+        l.htmlFor = id + "-range";
+
+        const range = document.createElement("input");
+        range.type = "range";
+        range.id = id + "-range";
+        range.min = String(min);
+        range.max = String(max);
+        range.step = String(step);
+
+        const num = document.createElement("input");
+        num.type = "text";
+        num.inputMode = "decimal";
+        num.autocomplete = "off";
+        num.spellcheck = false;
+        num.id = id + "-num";
+        num.setAttribute("data-min", String(min));
+        num.setAttribute("data-max", String(max));
+        num.setAttribute("data-step", String(step));
+
+        row.appendChild(l);
+        row.appendChild(range);
+        row.appendChild(num);
+        root.appendChild(row);
+
+        return { range, num, min, max, step };
+      }
+
+      const rectRoot = document.getElementById("rect-controls");
+      const polarRoot = document.getElementById("polar-controls");
+
+      const rect = {
+        x1: makeRow({ root: rectRoot, id: "x1", label: "x1", min: 0, max: 1, step: 0.001 }),
+        y1: makeRow({ root: rectRoot, id: "y1", label: "y1", min: -1, max: 2, step: 0.001 }),
+        x2: makeRow({ root: rectRoot, id: "x2", label: "x2", min: 0, max: 1, step: 0.001 }),
+        y2: makeRow({ root: rectRoot, id: "y2", label: "y2", min: -1, max: 2, step: 0.001 }),
+      };
+
+      const polar = {
+        a1: makeRow({ root: polarRoot, id: "a1", label: "a1", min: 0, max: 1, step: 0.001 }),
+        r1n: makeRow({ root: polarRoot, id: "r1n", label: "r1", min: 0, max: 1, step: 0.001 }),
+        a2: makeRow({ root: polarRoot, id: "a2", label: "a2", min: 0, max: 1, step: 0.001 }),
+        r2n: makeRow({ root: polarRoot, id: "r2n", label: "r2", min: 0, max: 1, step: 0.001 }),
+      };
+
+      function setControl(control, value, activeId) {
+        control.range.value = String(value);
+        if (activeId !== control.num.id) {
+          control.num.value = String(value);
+        }
+      }
+
+      function parseMaybeNumber(text) {
+        const t = String(text ?? "").trim();
+        if (t === "" || t === "-" || t === "." || t === "-.") {
+          return null;
+        }
+        const normalized = t.replace(",", ".");
+        const v = Number(normalized);
+        return Number.isFinite(v) ? v : null;
+      }
+
+      const cssOut = document.getElementById("css-out");
+      const warn = document.getElementById("warn");
+      const slopeIn = document.getElementById("slope-in");
+      const slopeOut = document.getElementById("slope-out");
+
+      function updateOutputs() {
+        cssOut.textContent = `cubic-bezier(${fmt(state.x1)}, ${fmt(state.y1)}, ${fmt(state.x2)}, ${fmt(
+          state.y2
+        )})`;
+
+        const mIn = state.x1 === 0 ? Infinity : state.y1 / state.x1;
+        const mOut = state.x2 === 1 ? Infinity : (1 - state.y2) / (1 - state.x2);
+        slopeIn.textContent = fmt(mIn);
+        slopeOut.textContent = fmt(mOut);
+
+        const polarDeg1 = deg(state.a1 * (Math.PI / 2));
+        const polarDeg2 = deg(state.a2 * (Math.PI / 2));
+        const polarLabels = document.querySelectorAll('label[for="a1-range"], label[for="a2-range"]');
+        polarLabels[0].textContent = `a1 (${polarDeg1.toFixed(1)}°)`;
+        polarLabels[1].textContent = `a2 (${polarDeg2.toFixed(1)}°)`;
+
+        const xOk = state.x1 >= 0 && state.x1 <= 1 && state.x2 >= 0 && state.x2 <= 1;
+        warn.style.display = xOk ? "none" : "block";
+        warn.textContent = "Note: for CSS timing functions, x1 and x2 should be within [0,1].";
+      }
+
+      function draw() {
+        const canvas = document.getElementById("c");
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width;
+        const h = canvas.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const p0 = { x: 0, y: 0 };
+        const p1 = { x: state.x1, y: state.y1 };
+        const p2 = { x: state.x2, y: state.y2 };
+        const p3 = { x: 1, y: 1 };
+
+        const samples = [];
+        let minY = Math.min(0, 1, p1.y, p2.y);
+        let maxY = Math.max(0, 1, p1.y, p2.y);
+        for (let i = 0; i <= 320; i++) {
+          const u = i / 320;
+          const pt = bezierPoint(u, p0, p1, p2, p3);
+          samples.push(pt);
+          minY = Math.min(minY, pt.y);
+          maxY = Math.max(maxY, pt.y);
+        }
+        const pad = Math.max(0.18, (maxY - minY) * 0.12);
+        minY -= pad;
+        maxY += pad;
+
+        const margin = 60;
+        const plotW = w - margin * 2;
+        const plotH = h - margin * 2;
+
+        const scale = state.dragScale ?? { minY, maxY };
+        const xTo = (x) => margin + x * plotW;
+        const yTo = (y) =>
+          margin + (1 - (y - scale.minY) / (scale.maxY - scale.minY)) * plotH;
+        const xFrom = (px) => clamp((px - margin) / plotW, 0, 1);
+        const yFrom = (py) =>
+          scale.minY + (1 - (py - margin) / plotH) * (scale.maxY - scale.minY);
+
+        lastTransform = { w, h, margin, plotW, plotH, scale, xTo, yTo, xFrom, yFrom };
+
+        // grid
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "rgba(255,255,255,0.10)";
+        ctx.beginPath();
+        for (const gx of [0, 0.25, 0.5, 0.75, 1]) {
+          ctx.moveTo(xTo(gx), yTo(minY));
+          ctx.lineTo(xTo(gx), yTo(maxY));
+        }
+        for (const gy of [0, 0.25, 0.5, 0.75, 1]) {
+          ctx.moveTo(xTo(0), yTo(gy));
+          ctx.lineTo(xTo(1), yTo(gy));
+        }
+        ctx.stroke();
+
+        // axes box
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(xTo(0), yTo(maxY), plotW, yTo(minY) - yTo(maxY));
+
+        // diagonal
+        ctx.strokeStyle = "rgba(255,255,255,0.22)";
+        ctx.setLineDash([10, 10]);
+        ctx.beginPath();
+        ctx.moveTo(xTo(0), yTo(0));
+        ctx.lineTo(xTo(1), yTo(1));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // handles
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = "rgba(125,211,252,0.55)";
+        ctx.beginPath();
+        ctx.moveTo(xTo(p0.x), yTo(p0.y));
+        ctx.lineTo(xTo(p1.x), yTo(p1.y));
+        ctx.stroke();
+
+        ctx.strokeStyle = "rgba(167,139,250,0.55)";
+        ctx.beginPath();
+        ctx.moveTo(xTo(p3.x), yTo(p3.y));
+        ctx.lineTo(xTo(p2.x), yTo(p2.y));
+        ctx.stroke();
+
+        // curve
+        ctx.strokeStyle = "rgba(255,255,255,0.92)";
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        for (let i = 0; i < samples.length; i++) {
+          const pt = samples[i];
+          if (i === 0) ctx.moveTo(xTo(pt.x), yTo(pt.y));
+          else ctx.lineTo(xTo(pt.x), yTo(pt.y));
+        }
+        ctx.stroke();
+
+        // points
+        function dot(pt, fill, stroke, isActive) {
+          ctx.beginPath();
+          ctx.arc(xTo(pt.x), yTo(pt.y), 10, 0, Math.PI * 2);
+          ctx.fillStyle = fill;
+          ctx.fill();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = stroke;
+          ctx.stroke();
+
+          if (isActive) {
+            ctx.beginPath();
+            ctx.arc(xTo(pt.x), yTo(pt.y), 16, 0, Math.PI * 2);
+            ctx.strokeStyle = "rgba(251,113,133,0.55)";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+          }
+        }
+
+        dot(
+          p1,
+          "rgba(125,211,252,0.9)",
+          "rgba(0,0,0,0.35)",
+          state.hover === "p1" || state.dragging === "p1"
+        );
+        dot(
+          p2,
+          "rgba(167,139,250,0.9)",
+          "rgba(0,0,0,0.35)",
+          state.hover === "p2" || state.dragging === "p2"
+        );
+        dot(p0, "rgba(255,255,255,0.92)", "rgba(0,0,0,0.35)", false);
+        dot(p3, "rgba(255,255,255,0.92)", "rgba(0,0,0,0.35)", false);
+
+        // labels
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.font = "22px " + getComputedStyle(document.documentElement).getPropertyValue("--mono");
+        ctx.fillText("(0,0)", xTo(0) - 10, yTo(0) + 30);
+        ctx.fillText("(1,1)", xTo(1) - 70, yTo(1) - 16);
+      }
+
+      let lastTransform = null;
+
+      let updating = null;
+
+      function updateRectKey(key, value) {
+        updating = "rect";
+        state[key] = value;
+        computePolarFromRect();
+        renderControls();
+        updating = null;
+      }
+
+      function updatePolarKey(key, value) {
+        updating = "polar";
+        state[key] = value;
+        computeRectFromPolar();
+        renderControls();
+        updating = null;
+      }
+
+      function renderControls() {
+        const activeId = document.activeElement?.id ?? null;
+
+        setControl(rect.x1, state.x1, activeId);
+        setControl(rect.y1, state.y1, activeId);
+        setControl(rect.x2, state.x2, activeId);
+        setControl(rect.y2, state.y2, activeId);
+
+        setControl(polar.a1, state.a1, activeId);
+        setControl(polar.r1n, state.r1n, activeId);
+        setControl(polar.a2, state.a2, activeId);
+        setControl(polar.r2n, state.r2n, activeId);
+
+        updateOutputs();
+        draw();
+      }
+
+      for (const k of Object.keys(rect)) {
+        rect[k].range.addEventListener("input", () => {
+          if (updating) return;
+          const v = Number(rect[k].range.value);
+          updateRectKey(k, v);
+        });
+        rect[k].num.addEventListener("input", () => {
+          if (updating) return;
+          const parsed = parseMaybeNumber(rect[k].num.value);
+          if (parsed === null) return;
+          const v = clamp(parsed, rect[k].min, rect[k].max);
+          rect[k].range.value = String(v);
+          updateRectKey(k, v);
+        });
+        rect[k].num.addEventListener("blur", () => renderControls());
+      }
+      for (const k of Object.keys(polar)) {
+        polar[k].range.addEventListener("input", () => {
+          if (updating) return;
+          const v = Number(polar[k].range.value);
+          updatePolarKey(k, v);
+        });
+        polar[k].num.addEventListener("input", () => {
+          if (updating) return;
+          const parsed = parseMaybeNumber(polar[k].num.value);
+          if (parsed === null) return;
+          const v = clamp(parsed, polar[k].min, polar[k].max);
+          polar[k].range.value = String(v);
+          updatePolarKey(k, v);
+        });
+        polar[k].num.addEventListener("blur", () => renderControls());
+      }
+
+      const radiusMode = document.getElementById("radius-mode");
+      const linkFit = document.getElementById("link-fit");
+
+      radiusMode.addEventListener("change", () => {
+        state.radiusMode = radiusMode.value;
+        if (state.radiusMode === "angleScaled") {
+          linkFit.disabled = true;
+          linkFit.checked = true;
+          state.linkFit = true;
+        } else {
+          linkFit.disabled = false;
+          state.linkFit = linkFit.checked;
+        }
+        // keep current rect, recompute polar in new representation
+        computePolarFromRect();
+        renderControls();
+      });
+
+      linkFit.addEventListener("change", () => {
+        state.linkFit = linkFit.checked;
+        updating = "polar";
+        computeRectFromPolar();
+        renderControls();
+        updating = null;
+      });
+
+      function copyCss() {
+        const text = cssOut.textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+
+      document.getElementById("copy").addEventListener("click", copyCss);
+
+      function canvasPointFromEvent(event, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+        const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+        return { x, y };
+      }
+
+      function dist2(ax, ay, bx, by) {
+        const dx = ax - bx;
+        const dy = ay - by;
+        return dx * dx + dy * dy;
+      }
+
+      function handleUnderPointer(px, py) {
+        if (!lastTransform) return null;
+        const p1x = lastTransform.xTo(state.x1);
+        const p1y = lastTransform.yTo(state.y1);
+        const p2x = lastTransform.xTo(state.x2);
+        const p2y = lastTransform.yTo(state.y2);
+        const r = 18;
+        const r2 = r * r;
+        if (dist2(px, py, p1x, p1y) <= r2) return "p1";
+        if (dist2(px, py, p2x, p2y) <= r2) return "p2";
+        return null;
+      }
+
+      function beginDrag(which) {
+        state.dragging = which;
+        state.dragScale = lastTransform?.scale ?? null;
+      }
+
+      function endDrag() {
+        state.dragging = null;
+        state.dragScale = null;
+      }
+
+      function updateFromDrag(px, py) {
+        if (!lastTransform || !state.dragging) return;
+        const x = lastTransform.xFrom(px);
+        const y = lastTransform.yFrom(py);
+        const yClamped = clamp(y, -1, 2);
+
+        if (state.dragging === "p1") {
+          state.x1 = x;
+          state.y1 = yClamped;
+        } else if (state.dragging === "p2") {
+          state.x2 = x;
+          state.y2 = yClamped;
+        }
+
+        computePolarFromRect();
+        renderControls();
+      }
+
+      const canvas = document.getElementById("c");
+
+      canvas.addEventListener("pointerdown", (event) => {
+        const { x, y } = canvasPointFromEvent(event, canvas);
+        const which = handleUnderPointer(x, y);
+        if (!which) return;
+        canvas.setPointerCapture(event.pointerId);
+        beginDrag(which);
+        updateFromDrag(x, y);
+      });
+
+      canvas.addEventListener("pointermove", (event) => {
+        const { x, y } = canvasPointFromEvent(event, canvas);
+        if (state.dragging) {
+          updateFromDrag(x, y);
+          return;
+        }
+        const which = handleUnderPointer(x, y);
+        if (which !== state.hover) {
+          state.hover = which;
+          canvas.style.cursor = which ? "grab" : "default";
+          draw();
+        }
+      });
+
+      canvas.addEventListener("pointerup", (event) => {
+        if (!state.dragging) return;
+        canvas.releasePointerCapture(event.pointerId);
+        endDrag();
+        draw();
+      });
+
+      canvas.addEventListener("pointercancel", () => {
+        endDrag();
+        draw();
+      });
+
+      // initialize polar from rect defaults
+      computePolarFromRect();
+      radiusMode.value = state.radiusMode;
+      linkFit.checked = state.linkFit;
+      renderControls();
+    </script>
+  </body>
+</html>

@@ -1,10 +1,10 @@
 import { AddEntityCard } from '@utilities/AddEntityCard';
 import { AddSpinnerButton } from '@utilities/AddSpinnerButton';
-import { TaskListItem } from './TasksListPane/TaskListItem';
+import { TaskListItem } from './TasksListCard/TaskListItem';
 import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
 import { Flipper } from 'react-flip-toolkit';
 
-export function TasksListPane({ model }: { model: TasksPanelModel }) {
+export function TaskListCard({ model }: { model: TasksPanelModel }) {
   const loading = model.createTaskState.isLoading;
   const statusPriority: Record<string, number> = {
     active: 0,

@@ -25,8 +25,7 @@ export function AddEntityRow({
   open,
   resetValue,
   testIdPrefix,
-  value,
-  colSpan = 3
+  value
 }: AddEntityRowProps) {
   const rowTestId = testIdPrefix ? `${testIdPrefix}-row` : undefined;
   const formTestId = testIdPrefix ? `${testIdPrefix}-form` : undefined;
@@ -36,53 +35,49 @@ export function AddEntityRow({
 
   if (open) {
     return (
-      <tr className="add-row-edit" data-testid={rowTestId}>
-        <td colSpan={colSpan}>
-          <form onSubmit={onSubmit} className="inline-form in-row" data-testid={formTestId}>
-            <input
-              className="text-input"
-              value={value}
-              onChange={(event) => onChangeValue(event.target.value)}
-              placeholder={inputPlaceholder}
-              autoFocus
-              data-testid={inputTestId}
-            />
-            <button
-              className="icon-btn detail-rename-action"
-              type="submit"
-              aria-label={`Save ${addLabel.replace('+ ', '')}`}
-              disabled={isSaving}
-              data-testid={saveTestId}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
-              </svg>
-            </button>
-            <button
-              className="icon-btn detail-rename-action"
-              type="button"
-              aria-label={`Cancel ${addLabel.replace('+ ', '')}`}
-              onClick={() => {
-                onToggleOpen(false);
-                resetValue();
-              }}
-              data-testid={cancelTestId}
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
-              </svg>
-            </button>
-          </form>
-        </td>
-      </tr>
+      <div className="add-row-edit" data-testid={rowTestId}>
+        <form onSubmit={onSubmit} className="inline-form in-row" data-testid={formTestId}>
+          <input
+            className="text-input"
+            value={value}
+            onChange={(event) => onChangeValue(event.target.value)}
+            placeholder={inputPlaceholder}
+            autoFocus
+            data-testid={inputTestId}
+          />
+          <button
+            className="icon-btn detail-rename-action"
+            type="submit"
+            aria-label={`Save ${addLabel.replace('+ ', '')}`}
+            disabled={isSaving}
+            data-testid={saveTestId}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 16.17 4.83 12l-1.41 1.41L9 19l12-12-1.41-1.41z" />
+            </svg>
+          </button>
+          <button
+            className="icon-btn detail-rename-action"
+            type="button"
+            aria-label={`Cancel ${addLabel.replace('+ ', '')}`}
+            onClick={() => {
+              onToggleOpen(false);
+              resetValue();
+            }}
+            data-testid={cancelTestId}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.3 5.71 12 12l6.3 6.29-1.41 1.42L10.59 13.4 4.3 19.71 2.89 18.3 9.17 12 2.89 5.71 4.3 4.29l6.29 6.3 6.3-6.3z" />
+            </svg>
+          </button>
+        </form>
+      </div>
     );
   }
 
   return (
-    <tr className="add-row" onClick={() => onToggleOpen(true)} data-testid={rowTestId}>
-      <td colSpan={colSpan}>
-        {labelClassName ? <span className={labelClassName}>{addLabel}</span> : addLabel}
-      </td>
-    </tr>
+    <div className="add-row" onClick={() => onToggleOpen(true)} data-testid={rowTestId}>
+      {labelClassName ? <span className={labelClassName}>{addLabel}</span> : addLabel}
+    </div>
   );
 }

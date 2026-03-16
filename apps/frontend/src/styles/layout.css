@@ -13,15 +13,6 @@
   height: calc(100vh - (var(--space-6) * 2));
 }
 
-.pane-right {
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  gap: var(--space-5);
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-}
-
 .pane-left {
   display: flex;
   flex-direction: column;
@@ -29,8 +20,26 @@
   height: 100%;
 }
 
-.projects-pane {
+.pane-stack {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.pane-right {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: var(--space-5);
+  min-height: 0;
+  height: 100%;
+  overflow: visible;
+  transition: width 0.3s ease-in-out;
+  position: relative;
+}
+
+.project-list-pane {
   padding-bottom: 0;
+  position: relative;
+  z-index: 2;
 }
 
 .pane-top,
@@ -39,10 +48,67 @@
   overflow: auto;
 }
 
-.pane-stack {
-  display: grid;
-  gap: var(--space-4);
+.pane-top {
+  overflow: visible;
 }
+
+.project-detail-layer {
+  grid-area: stack;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.project-detail-surface {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-detail-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* #region fly-in animation */
+
+.project-detail-pane {
+  display: grid;
+  grid-template-areas: 'stack';
+  --project-detail-slide-ms: 300ms;
+  /* --project-detail-slide-ease: cubic-bezier(0.16, 1, 0.3, 1); */
+  position: relative;
+  overflow: visible;
+  height: 100%;
+  min-height: 0;
+}
+
+.project-detail-view {
+  transition:
+    transform var(--project-detail-slide-ms) var(--project-detail-slide-ease);
+  transform: translateX(calc(-100% - 20rem));
+  pointer-events: none;
+  will-change: transform;
+}
+
+.project-detail-pane.project-detail-mode .project-detail-view {
+  transition:
+    transform var(--project-detail-slide-ms) var(--project-detail-slide-ease);
+  transform: translateX(0);
+  pointer-events: auto;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .project-detail-view {
+    transition: none;
+  }
+}
+
+/* #endregion */
 
 @media (width <=1100px) {
   .app-shell {

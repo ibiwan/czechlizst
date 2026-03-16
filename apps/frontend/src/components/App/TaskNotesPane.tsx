@@ -1,6 +1,7 @@
-import { TaskCard } from './TasksListPane/TaskCard';
 import { NotesDetailSection } from '@utilities/NotesDetailSection';
 import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
+
+import { TaskCard } from './ProjectDetailPane/ProjectDetailView/TasksListCard/TaskCard';
 
 export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   if (model.activeProjectId === null) {
@@ -33,7 +34,6 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
     <>
       {model.activeTask && (
         <TaskCard
-          onDeleteTask={model.onDeleteTask}
           onUpdateTaskStatus={model.onUpdateTaskStatus}
           onUpdateTaskTitle={model.onUpdateTaskTitle}
           isSelected

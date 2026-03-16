@@ -31,7 +31,6 @@
 }
 
 .detail-block {
-  margin-top: var(--space-4);
   margin-bottom: var(--space-1);
   padding: var(--space-3);
   border: 1px solid var(--color-border);

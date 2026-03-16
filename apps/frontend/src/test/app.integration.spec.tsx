@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import App from '../App';
+import App from '../components/App';
 import { api } from '../api';
 import { mainPageReducer } from '../store/mainPageSlice';
 
