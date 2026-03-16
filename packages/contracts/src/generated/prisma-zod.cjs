@@ -10,6 +10,7 @@ const ProjectRowSchema = z.object({
   name: z.string(),
   status: WorkStatusSchema,
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 const TaskRowSchema = z.object({
@@ -18,6 +19,7 @@ const TaskRowSchema = z.object({
   title: z.string(),
   status: WorkStatusSchema,
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 const ProjectNoteRowSchema = z.object({
@@ -26,6 +28,7 @@ const ProjectNoteRowSchema = z.object({
   body: z.string(),
   referenceUrl: z.string().nullable(),
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 const TaskNoteRowSchema = z.object({
@@ -34,6 +37,7 @@ const TaskNoteRowSchema = z.object({
   body: z.string(),
   referenceUrl: z.string().nullable(),
   createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
 });
 
 const PrismaRowSchemas = {

@@ -16,7 +16,7 @@ export function ProjectDetailPane({ tasksModel }: { tasksModel: TasksPanelModel 
           'birds-eye-mode'}
       `}
     >
-      <BirdsEyeView isDetailOpen={isDetailOpen} />
+      <BirdsEyeView isDetailOpen={isDetailOpen} tasksModel={tasksModel} />
       <ProjectDetailView tasksModel={tasksModel} />
     </div>
   );

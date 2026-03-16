@@ -22,11 +22,13 @@ describe('PostgREST response adapters', () => {
         id: 1,
         name: 'Roadmap',
         status: 'todo',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     ]);
     expect(parsed.projects[0].name).toBe('Roadmap');
     expect(parsed.projects[0].createdAt).toBeTypeOf('string');
+    expect(parsed.projects[0].updatedAt).toBeTypeOf('string');
   });
 
   it('normalizes task rows', () => {
@@ -36,11 +38,13 @@ describe('PostgREST response adapters', () => {
         project_id: 1,
         title: 'Ship v1',
         status: 'todo',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     ]);
     expect(parsed.tasks[0].projectId).toBe(1);
     expect(parsed.tasks[0].status).toBe('todo');
     expect(parsed.tasks[0].createdAt).toBeTypeOf('string');
+    expect(parsed.tasks[0].updatedAt).toBeTypeOf('string');
   });
 });

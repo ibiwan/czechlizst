@@ -6,6 +6,7 @@ export type ProjectRowModelData = {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 };
 
 export declare class ProjectRowModel {
@@ -14,6 +15,7 @@ export declare class ProjectRowModel {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 }
 
 export type ProjectPostgrestRowData = {
@@ -21,6 +23,7 @@ export type ProjectPostgrestRowData = {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 };
 
 export declare class ProjectPostgrestRow {
@@ -29,6 +32,7 @@ export declare class ProjectPostgrestRow {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 }
 
 export type TaskRowModelData = {
@@ -37,6 +41,7 @@ export type TaskRowModelData = {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 };
 
 export declare class TaskRowModel {
@@ -46,6 +51,7 @@ export declare class TaskRowModel {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 }
 
 export type TaskPostgrestRowData = {
@@ -54,6 +60,7 @@ export type TaskPostgrestRowData = {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 };
 
 export declare class TaskPostgrestRow {
@@ -63,6 +70,7 @@ export declare class TaskPostgrestRow {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 }
 
 export type ProjectNoteRowModelData = {
@@ -71,6 +79,7 @@ export type ProjectNoteRowModelData = {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export declare class ProjectNoteRowModel {
@@ -80,6 +89,7 @@ export declare class ProjectNoteRowModel {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type ProjectNotePostgrestRowData = {
@@ -88,6 +98,7 @@ export type ProjectNotePostgrestRowData = {
   body: string;
   reference_url: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 export declare class ProjectNotePostgrestRow {
@@ -97,6 +108,7 @@ export declare class ProjectNotePostgrestRow {
   body: string;
   reference_url: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 export type TaskNoteRowModelData = {
@@ -105,6 +117,7 @@ export type TaskNoteRowModelData = {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export declare class TaskNoteRowModel {
@@ -114,6 +127,7 @@ export declare class TaskNoteRowModel {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export type TaskNotePostgrestRowData = {
@@ -122,6 +136,7 @@ export type TaskNotePostgrestRowData = {
   body: string;
   reference_url: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 export declare class TaskNotePostgrestRow {
@@ -131,4 +146,5 @@ export declare class TaskNotePostgrestRow {
   body: string;
   reference_url: string | null;
   created_at: string;
+  updated_at: string;
 }

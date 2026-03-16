@@ -5,6 +5,7 @@ export type ProjectView = {
   name: string;
   status: WorkStatus;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type TaskView = {
@@ -12,6 +13,7 @@ export type TaskView = {
   title: string;
   status: WorkStatus;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type NoteView = {
@@ -19,4 +21,5 @@ export type NoteView = {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };

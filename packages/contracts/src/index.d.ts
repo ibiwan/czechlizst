@@ -80,6 +80,7 @@ export declare const postgrestProjectRowSchema: z.ZodObject<{
   name: z.ZodString;
   status: typeof workStatusSchema;
   created_at: z.ZodString;
+  updated_at: z.ZodOptional<z.ZodString>;
 }>;
 
 export declare const postgrestTaskRowSchema: z.ZodObject<{
@@ -88,6 +89,7 @@ export declare const postgrestTaskRowSchema: z.ZodObject<{
   title: z.ZodString;
   status: typeof workStatusSchema;
   created_at: z.ZodString;
+  updated_at: z.ZodOptional<z.ZodString>;
 }>;
 
 export declare const postgrestProjectNoteRowSchema: z.ZodObject<{
@@ -96,6 +98,7 @@ export declare const postgrestProjectNoteRowSchema: z.ZodObject<{
   body: z.ZodString;
   reference_url: z.ZodNullable<z.ZodString>;
   created_at: z.ZodString;
+  updated_at: z.ZodOptional<z.ZodString>;
 }>;
 
 export declare const postgrestTaskNoteRowSchema: z.ZodObject<{
@@ -104,6 +107,7 @@ export declare const postgrestTaskNoteRowSchema: z.ZodObject<{
   body: z.ZodString;
   reference_url: z.ZodNullable<z.ZodString>;
   created_at: z.ZodString;
+  updated_at: z.ZodOptional<z.ZodString>;
 }>;
 
 export declare const postgrestProjectRowsSchema: z.ZodArray<typeof postgrestProjectRowSchema>;

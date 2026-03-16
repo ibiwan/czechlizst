@@ -67,6 +67,24 @@ try {
     const payload = JSON.stringify(rows).replace(/'/g, "''");
     const sql = `INSERT INTO api."${table}" SELECT * FROM jsonb_populate_recordset(NULL::api."${table}", '${payload}'::jsonb);`;
     runPsql(sql, `insert ${table}`);
+
+    const syncSeqSql = `
+DO $$
+DECLARE
+  table_name text := '${table}';
+  seq_name text;
+  max_id bigint;
+BEGIN
+  seq_name := pg_get_serial_sequence('api.' || quote_ident(table_name), 'id');
+  IF seq_name IS NULL THEN
+    -- Table doesn't use a serial/identity "id" column.
+    NULL;
+  ELSE
+    EXECUTE format('SELECT COALESCE(MAX(id), 1) FROM api.%I', table_name) INTO max_id;
+    EXECUTE format('SELECT setval(%L, %s, true)', seq_name, max_id);
+  END IF;
+END $$;`.trim();
+    runPsql(syncSeqSql, `sync sequence ${table}`);
   }
 
   console.log(`Imported snapshot from ${inputPath}`);

@@ -135,7 +135,8 @@ const postgrestProjectRowSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
   status: workStatusSchema,
-  created_at: z.string().min(1)
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional()
 });
 
 const postgrestTaskRowSchema = z.object({
@@ -143,7 +144,8 @@ const postgrestTaskRowSchema = z.object({
   project_id: z.number().int().positive(),
   title: z.string().min(1),
   status: workStatusSchema,
-  created_at: z.string().min(1)
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional()
 });
 
 const postgrestProjectNoteRowSchema = z.object({
@@ -151,7 +153,8 @@ const postgrestProjectNoteRowSchema = z.object({
   project_id: z.number().int().positive(),
   body: z.string().min(1),
   reference_url: z.string().min(1).nullable(),
-  created_at: z.string().min(1)
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional()
 });
 
 const postgrestTaskNoteRowSchema = z.object({
@@ -159,7 +162,8 @@ const postgrestTaskNoteRowSchema = z.object({
   task_id: z.number().int().positive(),
   body: z.string().min(1),
   reference_url: z.string().min(1).nullable(),
-  created_at: z.string().min(1)
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional()
 });
 
 const postgrestProjectRowsSchema = z.array(postgrestProjectRowSchema);
@@ -263,41 +267,49 @@ function normalizePostgrestTimestamp(value) {
 }
 
 function projectFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
   return projectSchema.parse({
     id: row.id,
     name: row.name,
     status: row.status,
-    createdAt: normalizePostgrestTimestamp(row.created_at)
+    createdAt,
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
   });
 }
 
 function taskFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
   return taskSchema.parse({
     id: row.id,
     projectId: row.project_id,
     title: row.title,
     status: row.status,
-    createdAt: normalizePostgrestTimestamp(row.created_at)
+    createdAt,
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
   });
 }
 
 function projectNoteFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
   return projectNoteSchema.parse({
     id: row.id,
     projectId: row.project_id,
     body: row.body,
     referenceUrl: row.reference_url ?? null,
-    createdAt: normalizePostgrestTimestamp(row.created_at)
+    createdAt,
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
   });
 }
 
 function taskNoteFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
   return taskNoteSchema.parse({
     id: row.id,
     taskId: row.task_id,
     body: row.body,
     referenceUrl: row.reference_url ?? null,
-    createdAt: normalizePostgrestTimestamp(row.created_at)
+    createdAt,
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
   });
 }
 

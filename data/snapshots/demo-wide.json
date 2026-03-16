@@ -1,0 +1,725 @@
+{
+  "meta": {
+    "generatedBy": "codex",
+    "generatedAt": "2026-03-16T00:00:00.000Z",
+    "resources": ["projects", "tasks", "project_notes", "task_notes"]
+  },
+  "data": {
+    "projects": [
+      {
+        "id": 1,
+        "name": "Website Redesign",
+        "status": "active",
+        "created_at": "2024-11-12T09:15:00.000",
+        "updated_at": "2026-03-10T18:22:00.000"
+      },
+      {
+        "id": 2,
+        "name": "Tax Filing 2025",
+        "status": "done",
+        "created_at": "2026-02-05T08:05:00.000",
+        "updated_at": "2026-03-01T11:40:00.000"
+      },
+      {
+        "id": 3,
+        "name": "Move Apartments",
+        "status": "blocked",
+        "created_at": "2025-06-01T10:00:00.000",
+        "updated_at": "2025-06-20T16:30:00.000"
+      },
+      {
+        "id": 4,
+        "name": "Learn Rust",
+        "status": "started",
+        "created_at": "2024-03-20T07:30:00.000",
+        "updated_at": "2026-01-12T19:10:00.000"
+      },
+      {
+        "id": 5,
+        "name": "Backlog Cleanup",
+        "status": "todo",
+        "created_at": "2023-12-01T12:00:00.000",
+        "updated_at": "2024-02-10T09:45:00.000"
+      },
+      {
+        "id": 6,
+        "name": "Trip Planning: Japan",
+        "status": "active",
+        "created_at": "2025-01-15T17:05:00.000",
+        "updated_at": "2026-03-14T20:01:00.000"
+      },
+      {
+        "id": 7,
+        "name": "Home Server Refresh",
+        "status": "active",
+        "created_at": "2026-03-01T14:25:00.000",
+        "updated_at": "2026-03-15T09:55:00.000"
+      },
+      {
+        "id": 8,
+        "name": "Reading List 2024",
+        "status": "todo",
+        "created_at": "2024-01-01T09:00:00.000",
+        "updated_at": "2024-01-02T09:00:00.000"
+      },
+      {
+        "id": 9,
+        "name": "Wellness Routine",
+        "status": "started",
+        "created_at": "2023-05-10T06:45:00.000",
+        "updated_at": "2025-12-30T07:20:00.000"
+      },
+      {
+        "id": 10,
+        "name": "Conference CFP",
+        "status": "dropped",
+        "created_at": "2025-09-10T10:10:00.000",
+        "updated_at": "2025-10-03T15:00:00.000"
+      },
+      {
+        "id": 11,
+        "name": "Garden Plan",
+        "status": "todo",
+        "created_at": "2026-01-28T13:15:00.000",
+        "updated_at": "2026-02-20T09:05:00.000"
+      },
+      {
+        "id": 12,
+        "name": "Data Migration Prototype",
+        "status": "done",
+        "created_at": "2024-08-03T11:00:00.000",
+        "updated_at": "2024-10-18T16:45:00.000"
+      }
+    ],
+    "tasks": [
+      {
+        "id": 1,
+        "project_id": 1,
+        "title": "Audit current pages and identify nav issues.",
+        "status": "done",
+        "created_at": "2024-11-12T09:20:00.000",
+        "updated_at": "2024-11-15T12:10:00.000"
+      },
+      {
+        "id": 2,
+        "project_id": 1,
+        "title": "Create new typography scale and spacing tokens.",
+        "status": "done",
+        "created_at": "2024-11-18T10:00:00.000",
+        "updated_at": "2024-12-02T18:00:00.000"
+      },
+      {
+        "id": 3,
+        "project_id": 1,
+        "title": "Implement responsive header + mobile menu.",
+        "status": "active",
+        "created_at": "2025-01-05T14:30:00.000",
+        "updated_at": "2026-03-10T18:22:00.000"
+      },
+      {
+        "id": 4,
+        "project_id": 1,
+        "title": "Refactor landing page sections into reusable components.",
+        "status": "started",
+        "created_at": "2025-02-12T09:45:00.000",
+        "updated_at": "2025-02-12T09:45:00.000"
+      },
+      {
+        "id": 5,
+        "project_id": 1,
+        "title": "Accessibility pass: headings, color contrast, focus states.",
+        "status": "todo",
+        "created_at": "2025-02-20T16:10:00.000",
+        "updated_at": "2025-02-20T16:10:00.000"
+      },
+      {
+        "id": 6,
+        "project_id": 1,
+        "title": "Ship: update screenshots and announcement copy.",
+        "status": "todo",
+        "created_at": "2026-03-02T08:15:00.000",
+        "updated_at": "2026-03-02T08:15:00.000"
+      },
+
+      {
+        "id": 7,
+        "project_id": 2,
+        "title": "Gather W-2 / 1099 forms and receipts.",
+        "status": "done",
+        "created_at": "2026-02-05T08:10:00.000",
+        "updated_at": "2026-02-07T11:00:00.000"
+      },
+      {
+        "id": 8,
+        "project_id": 2,
+        "title": "Confirm deductions and contributions.",
+        "status": "done",
+        "created_at": "2026-02-07T11:30:00.000",
+        "updated_at": "2026-02-09T15:45:00.000"
+      },
+      {
+        "id": 9,
+        "project_id": 2,
+        "title": "Fill draft return and run validation checks.",
+        "status": "done",
+        "created_at": "2026-02-12T09:00:00.000",
+        "updated_at": "2026-02-12T11:30:00.000"
+      },
+      {
+        "id": 10,
+        "project_id": 2,
+        "title": "File electronically and confirm acceptance.",
+        "status": "done",
+        "created_at": "2026-02-20T16:00:00.000",
+        "updated_at": "2026-02-20T18:00:00.000"
+      },
+      {
+        "id": 11,
+        "project_id": 2,
+        "title": "Archive PDFs in encrypted folder.",
+        "status": "done",
+        "created_at": "2026-03-01T11:40:00.000",
+        "updated_at": "2026-03-01T11:40:00.000"
+      },
+
+      {
+        "id": 12,
+        "project_id": 3,
+        "title": "Create a shortlist of neighborhoods and commute constraints.",
+        "status": "done",
+        "created_at": "2025-06-01T10:05:00.000",
+        "updated_at": "2025-06-02T09:10:00.000"
+      },
+      {
+        "id": 13,
+        "project_id": 3,
+        "title": "Schedule viewings for 6–8 places.",
+        "status": "done",
+        "created_at": "2025-06-03T13:00:00.000",
+        "updated_at": "2025-06-05T19:00:00.000"
+      },
+      {
+        "id": 14,
+        "project_id": 3,
+        "title": "Confirm move-in date with landlord and get written lease draft.",
+        "status": "blocked",
+        "created_at": "2025-06-06T10:45:00.000",
+        "updated_at": "2025-06-20T16:30:00.000"
+      },
+      {
+        "id": 15,
+        "project_id": 3,
+        "title": "Get renter's insurance quote.",
+        "status": "dropped",
+        "created_at": "2025-06-07T09:30:00.000",
+        "updated_at": "2025-06-10T10:00:00.000"
+      },
+      {
+        "id": 16,
+        "project_id": 3,
+        "title": "Arrange moving truck / help.",
+        "status": "done",
+        "created_at": "2025-06-10T12:00:00.000",
+        "updated_at": "2025-06-12T12:00:00.000"
+      },
+      {
+        "id": 17,
+        "project_id": 3,
+        "title": "Change address with USPS + services.",
+        "status": "done",
+        "created_at": "2025-06-12T18:00:00.000",
+        "updated_at": "2025-06-14T08:00:00.000"
+      },
+      {
+        "id": 18,
+        "project_id": 3,
+        "title": "Deep-clean and photo-document old unit before handoff.",
+        "status": "dropped",
+        "created_at": "2025-06-15T08:15:00.000",
+        "updated_at": "2025-06-15T08:15:00.000"
+      },
+
+      {
+        "id": 19,
+        "project_id": 4,
+        "title": "Set up toolchain: rustup, clippy, rustfmt.",
+        "status": "done",
+        "created_at": "2024-03-20T07:45:00.000",
+        "updated_at": "2024-03-20T08:30:00.000"
+      },
+      {
+        "id": 20,
+        "project_id": 4,
+        "title": "Complete 'The Rust Book' chapters 1–4.",
+        "status": "done",
+        "created_at": "2024-04-01T18:10:00.000",
+        "updated_at": "2024-04-20T19:00:00.000"
+      },
+      {
+        "id": 21,
+        "project_id": 4,
+        "title": "Implement a CLI: parse args, read config, write output.",
+        "status": "started",
+        "created_at": "2025-01-10T12:00:00.000",
+        "updated_at": "2026-01-12T19:10:00.000"
+      },
+      {
+        "id": 22,
+        "project_id": 4,
+        "title": "Experiment with lifetimes and borrow checker patterns.",
+        "status": "todo",
+        "created_at": "2025-02-01T09:00:00.000",
+        "updated_at": "2025-02-01T09:00:00.000"
+      },
+      {
+        "id": 23,
+        "project_id": 4,
+        "title": "Try async: tokio task scheduling and cancellation.",
+        "status": "todo",
+        "created_at": "2025-03-03T11:10:00.000",
+        "updated_at": "2025-03-03T11:10:00.000"
+      },
+      {
+        "id": 24,
+        "project_id": 4,
+        "title": "Ship tiny project: HTTP fetcher with retries.",
+        "status": "dropped",
+        "created_at": "2025-03-15T16:25:00.000",
+        "updated_at": "2025-04-01T10:00:00.000"
+      },
+
+      {
+        "id": 25,
+        "project_id": 5,
+        "title": "Tag stale tasks and archive obvious dead ends.",
+        "status": "done",
+        "created_at": "2023-12-01T12:10:00.000",
+        "updated_at": "2023-12-05T09:00:00.000"
+      },
+      {
+        "id": 26,
+        "project_id": 5,
+        "title": "Merge duplicates and normalize naming.",
+        "status": "done",
+        "created_at": "2023-12-05T09:20:00.000",
+        "updated_at": "2023-12-10T10:15:00.000"
+      },
+      {
+        "id": 27,
+        "project_id": 5,
+        "title": "Create a weekly review checklist.",
+        "status": "blocked",
+        "created_at": "2024-01-05T08:00:00.000",
+        "updated_at": "2024-01-05T08:00:00.000"
+      },
+      {
+        "id": 28,
+        "project_id": 5,
+        "title": "Decide default statuses for new tasks.",
+        "status": "todo",
+        "created_at": "2024-02-01T12:00:00.000",
+        "updated_at": "2024-02-01T12:00:00.000"
+      },
+      {
+        "id": 29,
+        "project_id": 5,
+        "title": "Document conventions in README.",
+        "status": "todo",
+        "created_at": "2024-02-10T09:45:00.000",
+        "updated_at": "2024-02-10T09:45:00.000"
+      },
+      {
+        "id": 30,
+        "project_id": 5,
+        "title": "Create a 'dropped' definition and examples.",
+        "status": "dropped",
+        "created_at": "2024-02-10T10:05:00.000",
+        "updated_at": "2024-02-10T10:05:00.000"
+      },
+
+      {
+        "id": 31,
+        "project_id": 6,
+        "title": "Pick travel window and confirm PTO constraints.",
+        "status": "done",
+        "created_at": "2025-01-15T17:10:00.000",
+        "updated_at": "2025-01-16T09:00:00.000"
+      },
+      {
+        "id": 32,
+        "project_id": 6,
+        "title": "Sketch a 10-day itinerary (Tokyo/Kyoto/Osaka).",
+        "status": "done",
+        "created_at": "2025-01-20T19:00:00.000",
+        "updated_at": "2025-01-25T20:00:00.000"
+      },
+      {
+        "id": 33,
+        "project_id": 6,
+        "title": "Book flights with change flexibility.",
+        "status": "active",
+        "created_at": "2026-03-10T08:00:00.000",
+        "updated_at": "2026-03-14T20:01:00.000"
+      },
+      {
+        "id": 34,
+        "project_id": 6,
+        "title": "Research rail pass and local transit options.",
+        "status": "started",
+        "created_at": "2026-03-01T13:00:00.000",
+        "updated_at": "2026-03-03T18:30:00.000"
+      },
+      {
+        "id": 35,
+        "project_id": 6,
+        "title": "Reserve first 3 nights lodging in Tokyo.",
+        "status": "todo",
+        "created_at": "2026-03-05T12:00:00.000",
+        "updated_at": "2026-03-05T12:00:00.000"
+      },
+      {
+        "id": 36,
+        "project_id": 6,
+        "title": "Build a restaurant shortlist and map pins.",
+        "status": "todo",
+        "created_at": "2026-03-07T10:10:00.000",
+        "updated_at": "2026-03-07T10:10:00.000"
+      },
+      {
+        "id": 37,
+        "project_id": 6,
+        "title": "Decide whether to add a side trip (Hakone/Nara).",
+        "status": "dropped",
+        "created_at": "2026-03-08T18:00:00.000",
+        "updated_at": "2026-03-09T08:00:00.000"
+      },
+
+      {
+        "id": 38,
+        "project_id": 7,
+        "title": "Inventory hardware and firmware versions.",
+        "status": "done",
+        "created_at": "2026-03-01T14:30:00.000",
+        "updated_at": "2026-03-02T08:00:00.000"
+      },
+      {
+        "id": 39,
+        "project_id": 7,
+        "title": "Decide OS upgrade path and backup strategy.",
+        "status": "done",
+        "created_at": "2026-03-02T08:30:00.000",
+        "updated_at": "2026-03-03T09:15:00.000"
+      },
+      {
+        "id": 40,
+        "project_id": 7,
+        "title": "Migrate media storage to new drive.",
+        "status": "active",
+        "created_at": "2026-03-03T10:00:00.000",
+        "updated_at": "2026-03-15T09:55:00.000"
+      },
+      {
+        "id": 41,
+        "project_id": 7,
+        "title": "Set up monitoring: alerts, dashboards, log retention.",
+        "status": "started",
+        "created_at": "2026-03-05T09:00:00.000",
+        "updated_at": "2026-03-06T17:00:00.000"
+      },
+      {
+        "id": 42,
+        "project_id": 7,
+        "title": "Harden: firewall rules, service accounts, secrets rotation.",
+        "status": "todo",
+        "created_at": "2026-03-08T12:00:00.000",
+        "updated_at": "2026-03-08T12:00:00.000"
+      },
+      {
+        "id": 43,
+        "project_id": 7,
+        "title": "Document recovery steps and restore drill.",
+        "status": "todo",
+        "created_at": "2026-03-10T15:00:00.000",
+        "updated_at": "2026-03-10T15:00:00.000"
+      },
+      {
+        "id": 44,
+        "project_id": 7,
+        "title": "Decommission old services no longer used.",
+        "status": "dropped",
+        "created_at": "2026-03-12T08:00:00.000",
+        "updated_at": "2026-03-12T08:00:00.000"
+      },
+
+      {
+        "id": 45,
+        "project_id": 11,
+        "title": "Measure yard sunlight and note shade patterns.",
+        "status": "done",
+        "created_at": "2026-01-28T13:20:00.000",
+        "updated_at": "2026-01-29T08:00:00.000"
+      },
+      {
+        "id": 46,
+        "project_id": 11,
+        "title": "Choose plants for the season and watering needs.",
+        "status": "todo",
+        "created_at": "2026-02-02T12:00:00.000",
+        "updated_at": "2026-02-02T12:00:00.000"
+      },
+      {
+        "id": 47,
+        "project_id": 11,
+        "title": "Plan irrigation: timers, drip lines, and zones.",
+        "status": "blocked",
+        "created_at": "2026-02-10T09:05:00.000",
+        "updated_at": "2026-02-20T09:05:00.000"
+      },
+      {
+        "id": 48,
+        "project_id": 11,
+        "title": "Order soil + compost delivery.",
+        "status": "todo",
+        "created_at": "2026-02-15T11:10:00.000",
+        "updated_at": "2026-02-15T11:10:00.000"
+      },
+
+      {
+        "id": 49,
+        "project_id": 12,
+        "title": "Identify source tables and target schema mapping.",
+        "status": "done",
+        "created_at": "2024-08-03T11:05:00.000",
+        "updated_at": "2024-08-05T14:00:00.000"
+      },
+      {
+        "id": 50,
+        "project_id": 12,
+        "title": "Build a dry-run importer with logging and rollback.",
+        "status": "done",
+        "created_at": "2024-08-10T10:00:00.000",
+        "updated_at": "2024-09-01T17:20:00.000"
+      },
+      {
+        "id": 51,
+        "project_id": 12,
+        "title": "Validate: counts, checksums, and spot-check records.",
+        "status": "done",
+        "created_at": "2024-09-10T09:30:00.000",
+        "updated_at": "2024-09-15T12:00:00.000"
+      },
+      {
+        "id": 52,
+        "project_id": 12,
+        "title": "Write a post-migration checklist and docs.",
+        "status": "done",
+        "created_at": "2024-10-10T15:00:00.000",
+        "updated_at": "2024-10-18T16:45:00.000"
+      }
+    ],
+    "project_notes": [
+      {
+        "id": 1,
+        "project_id": 1,
+        "body": "Keep the redesign incremental to avoid breaking navigation during peak traffic.",
+        "reference_url": null,
+        "created_at": "2024-11-12T09:25:00.000",
+        "updated_at": "2024-11-12T09:25:00.000"
+      },
+      {
+        "id": 2,
+        "project_id": 1,
+        "body": "Add a lightweight design token page for quick QA and regression checks.",
+        "reference_url": null,
+        "created_at": "2025-02-10T13:00:00.000",
+        "updated_at": "2025-02-10T13:00:00.000"
+      },
+      {
+        "id": 3,
+        "project_id": 2,
+        "body": "Confirm state filing requirements and any new forms for 2025.",
+        "reference_url": null,
+        "created_at": "2026-02-06T09:00:00.000",
+        "updated_at": "2026-02-06T09:00:00.000"
+      },
+      {
+        "id": 4,
+        "project_id": 3,
+        "body": "Blocker: waiting on lease draft before scheduling final movers.",
+        "reference_url": null,
+        "created_at": "2025-06-20T16:30:00.000",
+        "updated_at": "2025-06-20T16:30:00.000"
+      },
+      {
+        "id": 5,
+        "project_id": 4,
+        "body": "Focus on shipping small programs; save performance tuning for later.",
+        "reference_url": "https://doc.rust-lang.org/book/",
+        "created_at": "2024-04-05T08:10:00.000",
+        "updated_at": "2024-04-05T08:10:00.000"
+      },
+      {
+        "id": 6,
+        "project_id": 5,
+        "body": "Goal is a smaller, clearer backlog—less than 50 items by end of month.",
+        "reference_url": null,
+        "created_at": "2023-12-02T09:00:00.000",
+        "updated_at": "2023-12-02T09:00:00.000"
+      },
+      {
+        "id": 7,
+        "project_id": 6,
+        "body": "Prioritize booking flights first; hotels can be adjusted later.",
+        "reference_url": "https://www.ana.co.jp/en/us/",
+        "created_at": "2025-01-16T09:05:00.000",
+        "updated_at": "2025-01-16T09:05:00.000"
+      },
+      {
+        "id": 8,
+        "project_id": 6,
+        "body": "Keep one free day for rest and spontaneous exploration.",
+        "reference_url": null,
+        "created_at": "2026-03-02T10:00:00.000",
+        "updated_at": "2026-03-02T10:00:00.000"
+      },
+      {
+        "id": 9,
+        "project_id": 7,
+        "body": "Do a full backup and verify restore before migrating any disks.",
+        "reference_url": "https://www.postgresql.org/docs/current/backup.html",
+        "created_at": "2026-03-02T08:15:00.000",
+        "updated_at": "2026-03-02T08:15:00.000"
+      },
+      {
+        "id": 10,
+        "project_id": 8,
+        "body": "Keep the list short; add only books you're ready to start.",
+        "reference_url": null,
+        "created_at": "2024-01-02T09:00:00.000",
+        "updated_at": "2024-01-02T09:00:00.000"
+      },
+      {
+        "id": 11,
+        "project_id": 9,
+        "body": "Aim for consistency over intensity: minimum viable routine.",
+        "reference_url": "https://jamesclear.com/atomic-habits",
+        "created_at": "2023-05-10T07:00:00.000",
+        "updated_at": "2023-05-10T07:00:00.000"
+      },
+      {
+        "id": 12,
+        "project_id": 10,
+        "body": "Dropped: timing didn't work out this cycle—revisit next year.",
+        "reference_url": null,
+        "created_at": "2025-10-03T15:00:00.000",
+        "updated_at": "2025-10-03T15:00:00.000"
+      },
+      {
+        "id": 13,
+        "project_id": 11,
+        "body": "Blocker: irrigation parts currently out of stock locally.",
+        "reference_url": null,
+        "created_at": "2026-02-20T09:05:00.000",
+        "updated_at": "2026-02-20T09:05:00.000"
+      },
+      {
+        "id": 14,
+        "project_id": 12,
+        "body": "Docs: include rollback plan and owner for each migration step.",
+        "reference_url": null,
+        "created_at": "2024-10-18T16:45:00.000",
+        "updated_at": "2024-10-18T16:45:00.000"
+      }
+    ],
+    "task_notes": [
+      {
+        "id": 1,
+        "task_id": 3,
+        "body": "Keep header layout stable; only swap styling first, then behavior.",
+        "reference_url": null,
+        "created_at": "2025-01-06T10:00:00.000",
+        "updated_at": "2025-01-06T10:00:00.000"
+      },
+      {
+        "id": 2,
+        "task_id": 3,
+        "body": "Consider preferring CSS variables for theme tokens to reduce rerenders.",
+        "reference_url": "https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties",
+        "created_at": "2026-03-10T18:00:00.000",
+        "updated_at": "2026-03-10T18:00:00.000"
+      },
+      {
+        "id": 3,
+        "task_id": 5,
+        "body": "Add a keyboard-only walkthrough: tab order, skip links, and focus rings.",
+        "reference_url": null,
+        "created_at": "2025-02-21T09:00:00.000",
+        "updated_at": "2025-02-21T09:00:00.000"
+      },
+      {
+        "id": 4,
+        "task_id": 14,
+        "body": "Waiting on lease draft; ask for estimated delivery date in writing.",
+        "reference_url": null,
+        "created_at": "2025-06-20T16:30:00.000",
+        "updated_at": "2025-06-20T16:30:00.000"
+      },
+      {
+        "id": 5,
+        "task_id": 21,
+        "body": "Pick one CLI problem and finish it end-to-end: errors, logging, tests.",
+        "reference_url": "https://docs.rs/clap/latest/clap/",
+        "created_at": "2026-01-12T19:10:00.000",
+        "updated_at": "2026-01-12T19:10:00.000"
+      },
+      {
+        "id": 6,
+        "task_id": 27,
+        "body": "Blocked on deciding weekly cadence—try Friday afternoon first.",
+        "reference_url": null,
+        "created_at": "2024-01-05T08:05:00.000",
+        "updated_at": "2024-01-05T08:05:00.000"
+      },
+      {
+        "id": 7,
+        "task_id": 33,
+        "body": "Track price deltas for a week; book when it fits the plan, not the perfect deal.",
+        "reference_url": null,
+        "created_at": "2026-03-12T08:00:00.000",
+        "updated_at": "2026-03-12T08:00:00.000"
+      },
+      {
+        "id": 8,
+        "task_id": 40,
+        "body": "Do a checksum pass after copy; keep old drive mounted read-only until verified.",
+        "reference_url": null,
+        "created_at": "2026-03-04T11:00:00.000",
+        "updated_at": "2026-03-04T11:00:00.000"
+      },
+      {
+        "id": 9,
+        "task_id": 41,
+        "body": "Start with a single dashboard: CPU, memory, disk, and network saturation.",
+        "reference_url": null,
+        "created_at": "2026-03-06T17:00:00.000",
+        "updated_at": "2026-03-06T17:00:00.000"
+      },
+      {
+        "id": 10,
+        "task_id": 47,
+        "body": "If parts remain unavailable, redesign zones to use fewer SKUs.",
+        "reference_url": null,
+        "created_at": "2026-02-20T09:05:00.000",
+        "updated_at": "2026-02-20T09:05:00.000"
+      },
+      {
+        "id": 11,
+        "task_id": 50,
+        "body": "Log every transformed record ID for easy diffing and replays.",
+        "reference_url": null,
+        "created_at": "2024-08-12T12:00:00.000",
+        "updated_at": "2024-08-12T12:00:00.000"
+      }
+    ]
+  }
+}

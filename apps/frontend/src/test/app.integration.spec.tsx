@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { configureStore } from '@reduxjs/toolkit';
 import { Provider } from 'react-redux';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,6 +11,7 @@ type ProjectRow = {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 };
 
 type TaskRow = {
@@ -19,6 +20,7 @@ type TaskRow = {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   created_at: string;
+  updated_at: string;
 };
 
 function createTestStore() {
@@ -50,7 +52,8 @@ describe('App integration', () => {
         id: 1,
         name: 'Roadmap',
         status: 'todo',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }
     ];
     let nextProjectId = projects.length + 1;
@@ -64,7 +67,8 @@ describe('App integration', () => {
             project_id: 1,
             title: 'Ship v1',
             status: 'todo',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
         ]
       ]
@@ -98,7 +102,8 @@ describe('App integration', () => {
             id: nextProjectId++,
             name: body.name,
             status: 'todo',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           };
           projects.push(created);
           return jsonResponse([created], 201);
@@ -129,7 +134,12 @@ describe('App integration', () => {
 
     expect(await screen.findByText('Projects')).toBeInTheDocument();
     expect(await screen.findByTestId('project-name-1')).toBeInTheDocument();
+
+    fireEvent.click(await screen.findByTestId('project-row-1'));
+
     expect(await screen.findByTestId('project-detail-title')).toBeInTheDocument();
-    expect(await screen.findByTestId('task-title-1')).toBeInTheDocument();
+    expect(
+      await within(await screen.findByTestId('tasks-table')).findByTestId('task-title-1')
+    ).toBeInTheDocument();
   });
 });

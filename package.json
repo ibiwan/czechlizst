@@ -38,7 +38,8 @@
     "prisma:migrate:deploy": "npm run prisma:migrate:deploy -w @app/db",
     "mcp:start": "npm run start -w @app/mcp-server",
     "db:export:json": "node ./scripts/db-export-json.mjs",
-    "db:import:json": "node ./scripts/db-import-json.mjs"
+    "db:import:json": "node ./scripts/db-import-json.mjs",
+    "db:seed:demo": "npm run db:import:json -- data/snapshots/demo-wide.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

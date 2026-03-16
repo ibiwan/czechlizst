@@ -2,6 +2,31 @@
 
 Small, copy/pasteable helpers for experimenting locally.
 
+## Playground
+
+Interactive curve editor (rectangular + polar + plot):
+- `apps/frontend/devtools/bezier-playground.html`
+
+Notes:
+- Control points `P1` / `P2` are draggable on the canvas.
+- “Copy” works best when served from `http://localhost` (some browsers block clipboard on `file://`).
+
+## Polar model (our encoding)
+
+We encode a `cubic-bezier(x1, y1, x2, y2)` using “endpoint handles” described by:
+- `a1`, `a2` in `[0, 1]` → angles in `[0°, 90°]`
+- `r1`, `r2` in `[0, 1]` → normalized handle lengths (“effort”)
+
+The mapping is intentionally chosen so `a=0.5` means `45°` (“aim at the goal”), and the standard keyword easings map cleanly.
+
+Radius modes:
+- `angleScaled` (default): `r=1` means “max handle length that still fits in the unit square at this angle”.
+- `globalSqrt2`: `r=1` means “length √2”, then we fit into the square (optionally shrinking both ends proportionally).
+
+## Coverage / limitations
+
+Raw CSS `cubic-bezier()` allows `y1` and `y2` outside `[0, 1]` (overshoot / undershoot). Our current polar encoding “fits handles into the unit square”, so it does **not** cover those overshoot cases (by design).
+
 ## Tailwind easing helper
 
 `tailwind-easing.ts` exports a polar-parameter easing helper that compiles to a standard CSS `cubic-bezier(x1, y1, x2, y2)` string.
@@ -40,6 +65,9 @@ transition-timing-function: bezier-polar(0.5 0.6 0.5 0.6);
 Files:
 - `apps/frontend/devtools/artifacts/postcss-bezier-polar/index.cjs`
 - enabled in `apps/frontend/postcss.config.cjs`
+
+Signature:
+- `bezier-polar(a1 r1 a2 r2)` (spaces or commas; four numbers)
 
 ## Standard easings (polar form)
 

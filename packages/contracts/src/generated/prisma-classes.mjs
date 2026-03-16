@@ -7,6 +7,7 @@ export class ProjectRowModel {
     this.name = data.name;
     this.status = data.status;
     this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
   }
 }
 
@@ -16,6 +17,7 @@ export class ProjectPostgrestRow {
     this.name = data.name;
     this.status = data.status;
     this.created_at = data.created_at;
+    this.updated_at = data.updated_at;
   }
 }
 
@@ -26,6 +28,7 @@ export class TaskRowModel {
     this.title = data.title;
     this.status = data.status;
     this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
   }
 }
 
@@ -36,6 +39,7 @@ export class TaskPostgrestRow {
     this.title = data.title;
     this.status = data.status;
     this.created_at = data.created_at;
+    this.updated_at = data.updated_at;
   }
 }
 
@@ -46,6 +50,7 @@ export class ProjectNoteRowModel {
     this.body = data.body;
     this.referenceUrl = data.referenceUrl;
     this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
   }
 }
 
@@ -56,6 +61,7 @@ export class ProjectNotePostgrestRow {
     this.body = data.body;
     this.reference_url = data.reference_url;
     this.created_at = data.created_at;
+    this.updated_at = data.updated_at;
   }
 }
 
@@ -66,6 +72,7 @@ export class TaskNoteRowModel {
     this.body = data.body;
     this.referenceUrl = data.referenceUrl;
     this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
   }
 }
 
@@ -76,5 +83,6 @@ export class TaskNotePostgrestRow {
     this.body = data.body;
     this.reference_url = data.reference_url;
     this.created_at = data.created_at;
+    this.updated_at = data.updated_at;
   }
 }

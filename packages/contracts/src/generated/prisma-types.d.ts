@@ -6,6 +6,7 @@ export type ProjectRow = {
   name: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 };
 
 export type TaskRow = {
@@ -14,6 +15,7 @@ export type TaskRow = {
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
   createdAt: string;
+  updatedAt: string;
 };
 
 export type ProjectNoteRow = {
@@ -22,6 +24,7 @@ export type ProjectNoteRow = {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type TaskNoteRow = {
@@ -30,6 +33,7 @@ export type TaskNoteRow = {
   body: string;
   referenceUrl: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type PrismaRowModels = {

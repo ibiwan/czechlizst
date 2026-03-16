@@ -29,7 +29,8 @@ describe('store', () => {
           id: 1,
           name: 'Roadmap',
           status: 'todo',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         }
       ])
     );

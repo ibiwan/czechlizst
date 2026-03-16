@@ -24,6 +24,7 @@ model Project {
   name      String
   status    WorkStatus @default(todo)
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   tasks     Task[]
   notes     ProjectNote[]
 
@@ -37,6 +38,7 @@ model Task {
   title     String
   status    WorkStatus @default(todo)
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   notes     TaskNote[]
 
@@ -51,6 +53,7 @@ model ProjectNote {
   body      String
   referenceUrl String? @map("reference_url")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId, createdAt])
@@ -64,6 +67,7 @@ model TaskNote {
   body      String
   referenceUrl String? @map("reference_url")
   createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   @@index([taskId, createdAt])
