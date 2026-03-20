@@ -36,6 +36,9 @@ function MainPageContent({ tasksModel }: { tasksModel: ReturnType<typeof useTask
 
         if (!isTextField) {
           selectProject(null);
+          if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+          }
         }
       }
     };

@@ -24,6 +24,7 @@ import {
 type TaskTypes = {
   ListResult: ListTasksResponse;
   ListArg: number;
+  ListAllArg: void;
   CreateResult: CreateTaskResponse;
   CreateArg: { projectId: number } & CreateTaskBody;
   UpdateStatus: UpdateTaskBody['status'];
@@ -37,11 +38,17 @@ type TaskTypes = {
   UpdateStatusMutationArg: { taskId: number; projectId: number; status: TaskTypes['UpdateStatusArg'] };
   DemoteOutsideProjectArg: { projectId: number };
   DemoteExceptTaskArg: { taskId: number };
+  DemoteInProjectArg: { projectId: number };
   DeleteArg: { taskId: number; projectId: number };
 };
 
 export const tasksApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    listAllTasks: builder.query<TaskTypes['ListResult'], TaskTypes['ListAllArg']>({
+      query: () => `${routes.tasks}?select=*`,
+      transformResponse: (response) => parsePostgrestListTasksResponse(response),
+      providesTags: ['Tasks']
+    }),
     listTasks: builder.query<TaskTypes['ListResult'], TaskTypes['ListArg']>({
       query: (projectId) => routes.tasksByProject(projectId),
       transformResponse: (response) => parsePostgrestListTasksResponse(response),
@@ -54,7 +61,7 @@ export const tasksApi = api.injectEndpoints({
           ...createTaskBodySchema.parse({ title })
         }),
       transformResponse: (response) => parsePostgrestCreateTaskResponse(response),
-      invalidatesTags: (_result, _error, arg) => [{ type: 'Tasks', id: arg.projectId }]
+      invalidatesTags: (_result, _error, arg) => ['Tasks', { type: 'Tasks', id: arg.projectId }]
     }),
     updateTask: builder.mutation<TaskTypes['CreateResult'], TaskTypes['UpdateArg']>({
       query: ({ taskId, title, status }) =>
@@ -65,6 +72,7 @@ export const tasksApi = api.injectEndpoints({
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskResponse),
       transformErrorResponse: mapNotFound('Task not found'),
       invalidatesTags: (_result, _error, arg) => [
+        'Tasks',
         { type: 'Tasks', id: arg.projectId },
         'Projects'
       ]
@@ -81,6 +89,7 @@ export const tasksApi = api.injectEndpoints({
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskResponse),
       transformErrorResponse: mapNotFound('Task not found'),
       invalidatesTags: (_result, _error, arg) => [
+        'Tasks',
         { type: 'Tasks', id: arg.projectId },
         'Projects'
       ]
@@ -109,11 +118,24 @@ export const tasksApi = api.injectEndpoints({
       transformResponse: (response) => parsePostgrestListTasksResponse(response),
       invalidatesTags: ['Tasks', 'Projects']
     }),
+    demoteActiveTasksInProject: builder.mutation<
+      TaskTypes['ListResult'],
+      TaskTypes['DemoteInProjectArg']
+    >({
+      query: ({ projectId }) =>
+        buildPatchReturn(
+          `${routes.tasks}?status=eq.active&project_id=eq.${projectId}`,
+          updateTaskStatusBodySchema.parse({ status: 'started' })
+        ),
+      transformResponse: (response) => parsePostgrestListTasksResponse(response),
+      invalidatesTags: ['Tasks', 'Projects']
+    }),
     deleteTask: builder.mutation<TaskTypes['CreateResult'], TaskTypes['DeleteArg']>({
       query: ({ taskId }) => buildDeleteSingle(`${routes.tasks}?id=eq.${taskId}`),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskResponse),
       transformErrorResponse: mapNotFound('Task not found'),
       invalidatesTags: (_result, _error, arg) => [
+        'Tasks',
         { type: 'Tasks', id: arg.projectId },
         'Projects',
         { type: 'TaskNotes', id: arg.taskId }
@@ -128,7 +150,9 @@ export const {
   useCreateTaskMutation,
   useDeleteTaskMutation,
   useDemoteActiveTasksExceptTaskMutation,
+  useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
+  useListAllTasksQuery,
   useListTasksQuery,
   useUpdateTaskMutation,
   useUpdateTaskStatusMutation

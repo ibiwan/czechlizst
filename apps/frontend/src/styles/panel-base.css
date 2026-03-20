@@ -1,5 +1,5 @@
 .panel {
-  background: linear-gradient(160deg, var(--color-panel-grad-start), var(--color-bg-elev));
+  background: linear-gradient(160deg, var(--color-surface-panel-top), var(--color-surface-panel));
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-soft);

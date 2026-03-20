@@ -1,4 +1,5 @@
 import { IconButton, DeleteIcon, EditIcon } from '@utilities/IconButton';
+import { OverflowReveal } from '@utilities/OverflowReveal';
 import { type TaskView } from '@app-types/view';
 import { useTaskCardCallbacks } from './useTaskCardCallbacks';
 
@@ -13,9 +14,13 @@ export function TaskCardDefault({ isSelected, onStartEditing, task }: TaskCardDe
 
   return (
     <div className="task-card-title-row">
-      <span className="task-card-title" data-testid={`task-title-${task.id}`}>
+      <OverflowReveal
+        as="span"
+        className="task-card-title"
+        testId={`task-title-${task.id}`}
+      >
         {task.title}
-      </span>
+      </OverflowReveal>
       <div className="task-card-actions">
         {isSelected && (
           <IconButton aria-label={`Edit ${task.title}`} onClick={onStartEditing} testId={`task-edit-${task.id}`}>

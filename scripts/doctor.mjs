@@ -21,7 +21,7 @@ function run(cmd, args, label) {
 
 async function checkPostgrest() {
   const res = await fetch(`${baseUrl}/projects?select=id&limit=1`);
-  if (!res.ok) {
+  if (!res.ok && res.status !== 401) {
     throw new Error(`PostgREST health check failed with status ${res.status}`);
   }
   return 'PostgREST API reachable';

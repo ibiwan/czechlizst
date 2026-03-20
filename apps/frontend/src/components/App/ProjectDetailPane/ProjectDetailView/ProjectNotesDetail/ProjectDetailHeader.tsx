@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setProjectRenameOpen, setProjectRenameValue } from '@store/mainPageSlice';
 import { useProjectDelete } from '@state/projects/useProjectDelete';
+import { OverflowReveal } from '@utilities/OverflowReveal';
 
 export function ProjectDetailHeader() {
   const { activeProject } = useProjectsPanel();
@@ -31,12 +32,13 @@ export function ProjectDetailHeader() {
           <ProjectRenameRow />
         ) : (
           <div className="detail-title-row">
-            <h3
+            <OverflowReveal
+              as="h3"
               className="panel-title detail-title detail-title-text"
-              data-testid="project-detail-title"
+              testId="project-detail-title"
             >
               {activeProject.name}
-            </h3>
+            </OverflowReveal>
             <button
               className="icon-btn detail-rename"
               type="button"

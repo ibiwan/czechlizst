@@ -1,5 +1,6 @@
 import { Flipped } from 'react-flip-toolkit';
 import { formatProjectTimestamp } from '@lib/format';
+import { OverflowReveal } from '@utilities/OverflowReveal';
 
 import './ProjectRow.css';
 import { type ProjectView } from '@app-types/view';
@@ -35,9 +36,13 @@ export function ProjectRow({ project }: ProjectRowProps) {
         data-testid={`project-row-${project.id}`}
       >
         <div className="project-card">
-          <div className="project-card-title" data-testid={`project-name-${project.id}`}>
+          <OverflowReveal
+            as="div"
+            className="project-card-title"
+            testId={`project-name-${project.id}`}
+          >
             {project.name}
-          </div>
+          </OverflowReveal>
           <div className="project-card-meta">
             <span
               className={`status-pill status-${shownStatus}`}

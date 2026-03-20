@@ -42,8 +42,8 @@
 
 ## Frontend Organization and Aliases
 Component organization is intentionally hierarchical and colocated with the parent component:
-- Top-level entry: `apps/frontend/src/components/MainPage.tsx`
-- Pane components: `apps/frontend/src/components/main-page/*`
+- Top-level entry: `apps/frontend/src/components/App.tsx`
+- Pane components: `apps/frontend/src/components/App/*`
 - Child components live in a folder named after the parent component:
   - example: `ProjectDetailPane.tsx` and `ProjectDetailPane/ProjectNotesDetail.tsx`
 - Shared UI: `apps/frontend/src/components/utilities`

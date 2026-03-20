@@ -1,4 +1,5 @@
 import { IconButton, DeleteIcon } from '@utilities/IconButton';
+import { OverflowReveal } from '@utilities/OverflowReveal';
 import { type TaskView } from '@app-types/view';
 import { TaskTimestamp } from './TaskTimestamp';
 import { useTaskCardCallbacks } from './useTaskCardCallbacks';
@@ -19,9 +20,13 @@ export function TaskCardReadOnly({ task }: TaskCardReadOnlyProps) {
           </span>
         </span>
         <span className="task-card-gap" aria-hidden="true" />
-        <span className="task-card-title" data-testid={`task-title-${task.id}`}>
+        <OverflowReveal
+          as="span"
+          className="task-card-title"
+          testId={`task-title-${task.id}`}
+        >
           {task.title}
-        </span>
+        </OverflowReveal>
       </div>
       <div className="task-card-right">
         <TaskTimestamp taskId={task.id} timestamp={task.createdAt} />

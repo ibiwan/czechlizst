@@ -1,5 +1,6 @@
 import { type WorkStatus } from '@app/contracts';
 import {
+  useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
   useUpdateProjectStatusMutation
 } from '@api';
@@ -9,6 +10,7 @@ export function useProjectStatus(activeProjectId: number | null) {
   const { projects, projectsQuery } = useActiveProjectSelection();
   const [updateProjectStatus, updateProjectStatusState] = useUpdateProjectStatusMutation();
   const [demoteActiveTasksOutsideProject] = useDemoteActiveTasksOutsideProjectMutation();
+  const [demoteActiveTasksInProject] = useDemoteActiveTasksInProjectMutation();
 
   async function demoteOtherActiveProjects(nextActiveProjectId: number) {
     const activeProjects = projects.filter(
@@ -23,6 +25,8 @@ export function useProjectStatus(activeProjectId: number | null) {
     if (nextStatus === 'active') {
       await demoteOtherActiveProjects(projectId);
       await demoteActiveTasksOutsideProject({ projectId }).unwrap();
+    } else {
+      await demoteActiveTasksInProject({ projectId }).unwrap();
     }
     await updateProjectStatus({ projectId, status: nextStatus }).unwrap();
     projectsQuery.refetch();

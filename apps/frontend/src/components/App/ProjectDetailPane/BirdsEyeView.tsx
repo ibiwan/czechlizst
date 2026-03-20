@@ -1,58 +1,89 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useListAllTasksQuery } from '@api';
+import { formatProjectTimestamp } from '@lib/format';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
-import { TaskCardReadOnly } from './ProjectDetailView/TasksListCard/TaskCardReadOnly';
-import { type ProjectView, type TaskView } from '@app-types/view';
+import { OverflowReveal } from '@utilities/OverflowReveal';
+import {
+  buildBirdsEyeItems,
+  getItemRecency,
+  shuffleItems,
+  type BirdsEyeItem
+} from './birdsEyeItems';
 
-function ProjectCard({ project }: { project: ProjectView }) {
+function BirdsEyeTile({
+  item,
+  onSelect
+}: {
+  item: BirdsEyeItem;
+  onSelect: (item: BirdsEyeItem) => void;
+}) {
+  const title = item.type === 'task' ? item.data.title : item.data.name;
+  const timestamp = getItemRecency(item);
+
   return (
-    <div className="task-card task-card-readonly">
-      <div className="task-card-left">
-        <span className="task-card-status-slot">
-          <span className={`status-pill status-${project.status}`}>
-            {project.status}
-          </span>
+    <button
+      type="button"
+      className="project-card birds-eye-tile"
+      onClick={() => onSelect(item)}
+      data-testid={`birds-eye-tile-${item.type}-${item.data.id}`}
+    >
+      <OverflowReveal as="div" className="project-card-title">
+        {title}
+      </OverflowReveal>
+      <div className="project-card-meta">
+        <span className={`status-pill status-${item.data.status}`}>
+          {item.data.status}
         </span>
-        <span className="task-card-gap" aria-hidden="true" />
-        <span className="task-card-title">
-          {project.name}
+        <span className="project-created">
+          {formatProjectTimestamp(timestamp)}
         </span>
       </div>
-    </div>
+    </button>
   );
 }
 
 export function BirdsEyeView({ isDetailOpen, tasksModel }: { isDetailOpen: boolean; tasksModel: TasksPanelModel }) {
-  const { projects } = useProjectsPanel();
-  const { tasks } = tasksModel;
+  const { projects, selectProject } = useProjectsPanel();
+  const { selectTask, tasks: activeProjectTasks } = tasksModel;
+  const allTasksQuery = useListAllTasksQuery();
+  const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
+  const [pendingTaskSelection, setPendingTaskSelection] = useState<{
+    projectId: number;
+    taskId: number;
+  } | null>(null);
+  useEffect(() => {
+    if (!pendingTaskSelection) {
+      return;
+    }
 
-  // Row 1: Active/Started/Blocked work
-  const row1Tasks = tasks.filter((t) => ['active', 'started', 'blocked'].includes(t.status));
-  const row1Projects = projects.filter((p) => ['active', 'started'].includes(p.status));
+    const matchingTask = activeProjectTasks.find((task) => task.id === pendingTaskSelection.taskId);
+    if (!matchingTask || matchingTask.projectId !== pendingTaskSelection.projectId) {
+      return;
+    }
 
-  const row1Items = [
-    ...row1Tasks.map((t) => ({ type: 'task' as const, data: t })),
-    ...row1Projects.map((p) => ({ type: 'project' as const, data: p }))
-  ];
-  row1Items.sort((a, b) => {
-    const dateA = a.data.updatedAt;
-    const dateB = b.data.updatedAt;
-    return dateB.localeCompare(dateA);
-  });
+    selectTask(pendingTaskSelection.taskId);
+    setPendingTaskSelection(null);
+  }, [activeProjectTasks, pendingTaskSelection, selectTask]);
 
-  // Row 2: Remainder (Todo) randomized
-  // Note: Since Row 1 takes active/started/blocked, and Row 2 takes active/started/todo excluding Row 1,
-  // Row 2 essentially contains only 'todo' items.
-  const row1TaskIds = new Set(row1Tasks.map((t) => t.id));
-  const row1ProjectIds = new Set(row1Projects.map((p) => p.id));
+  function handleSelect(item: BirdsEyeItem) {
+    if (item.type === 'project') {
+      setPendingTaskSelection(null);
+      selectProject(item.data.id);
+      return;
+    }
 
-  const row2Tasks = tasks.filter((t) => ['active', 'started', 'todo'].includes(t.status) && !row1TaskIds.has(t.id));
-  const row2Projects = projects.filter((p) => ['active', 'started', 'todo'].includes(p.status) && !row1ProjectIds.has(p.id));
+    setPendingTaskSelection({ projectId: item.data.projectId, taskId: item.data.id });
+    selectProject(item.data.projectId);
+  }
 
-  const row2Items = [
-    ...row2Tasks.map((t) => ({ type: 'task' as const, data: t })),
-    ...row2Projects.map((p) => ({ type: 'project' as const, data: p }))
-  ];
-  row2Items.sort(() => Math.random() - 0.5);
+  const { row1Items, row2Items } = useMemo(
+    () => buildBirdsEyeItems(projects, allTasks),
+    [allTasks, projects]
+  );
+  const visibleRow1Items = row1Items.slice(0, 10);
+
+  const visibleRow2Items = useMemo(() => shuffleItems(row2Items).slice(0, 10), [row2Items]);
 
   return (
     <div
@@ -64,17 +95,30 @@ export function BirdsEyeView({ isDetailOpen, tasksModel }: { isDetailOpen: boole
       <div className="panel project-detail-surface">
         <div className="project-detail-scroll">
           <div className="birds-eye-content">
-            <h2 className="panel-title" style={{ padding: '1rem' }} data-testid="birds-eye-title">
-              Birds-Eye View
-            </h2>
-            <h3 className="panel-title" style={{ padding: '1rem' }}>In Progress</h3>
-            <div className="birds-eye-row">
-              {row1Items.map((item) => (item.type === 'task' ? <TaskCardReadOnly key={`task-${item.data.id}`} task={item.data} /> : <ProjectCard key={`proj-${item.data.id}`} project={item.data} />))}
+            <div className="birds-eye-section">
+              <h3 className="birds-eye-section-label">In Progress</h3>
+              <div className="birds-eye-row">
+                {visibleRow1Items.map((item) => (
+                  <BirdsEyeTile
+                    key={`${item.type}-${item.data.id}`}
+                    item={item}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </div>
             </div>
 
-            <h3 className="panel-title" style={{ padding: '1rem' }}>Up Next</h3>
-            <div className="birds-eye-row">
-              {row2Items.map((item) => (item.type === 'task' ? <TaskCardReadOnly key={`task-${item.data.id}`} task={item.data} /> : <ProjectCard key={`proj-${item.data.id}`} project={item.data} />))}
+            <div className="birds-eye-section">
+              <h3 className="birds-eye-section-label">Up Next</h3>
+              <div className="birds-eye-row">
+                {visibleRow2Items.map((item) => (
+                  <BirdsEyeTile
+                    key={`${item.type}-${item.data.id}`}
+                    item={item}
+                    onSelect={handleSelect}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

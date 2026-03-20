@@ -8,7 +8,7 @@ import { TaskCardReadOnly } from './TaskCardReadOnly';
 import { TaskCardEditing } from './TaskCardEditing';
 import { TaskCardDefault } from './TaskCardDefault';
 import { TaskTimestamp } from './TaskTimestamp';
-
+import { TaskStatusRow } from './TaskStatusRow';
 
 type TaskCardProps = {
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
@@ -80,14 +80,21 @@ export function TaskCard({
       {!readOnly && (
         <div className="task-card-meta">
           {isSelected ? (
-            <StatusOptionSelect
-              className={`status-select status-select-${task.status}`}
-              currentStatus={task.status}
-              disabled={updateTaskStatusLoading}
-              onClick={(event) => event.stopPropagation()}
-              onChange={(nextStatus) => onUpdateTaskStatus(task.id, task.status, nextStatus)}
-              testId={`task-status-select-${task.id}`}
-            />
+            <>
+              <TaskStatusRow
+                task={task}
+                onUpdateTaskStatus={onUpdateTaskStatus}
+                updateTaskStatusLoading={updateTaskStatusLoading}
+              />
+              <StatusOptionSelect
+                className={`status-select status-select-${task.status}`}
+                currentStatus={task.status}
+                disabled={updateTaskStatusLoading}
+                onClick={(event) => event.stopPropagation()}
+                onChange={(nextStatus) => onUpdateTaskStatus(task.id, task.status, nextStatus)}
+                testId={`task-status-select-${task.id}`}
+              />
+            </>
           ) : (
             <span className={`status-pill status-${task.status}`} data-testid={`task-status-pill-${task.id}`}>
               {task.status}

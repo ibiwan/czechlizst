@@ -19,7 +19,9 @@ export {
   useCreateTaskMutation,
   useDeleteTaskMutation,
   useDemoteActiveTasksExceptTaskMutation,
+  useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
+  useListAllTasksQuery,
   useListTasksQuery,
   useUpdateTaskMutation,
   useUpdateTaskStatusMutation

@@ -90,10 +90,10 @@ Rationale:
   - panel-specific model hooks (`useProjectsPanelModel`, `useTasksPanelModel`)
   - active project selection hook (`apps/frontend/src/store/useActiveProjectSelection.ts`)
 - Component organization:
-  - `apps/frontend/src/components/MainPage.tsx` is the top-level entry.
-  - `apps/frontend/src/components/main-page/*` contains pane components.
-  - Child components live in a folder named after the parent component:
-    - example: `ProjectDetailPane.tsx` + `ProjectDetailPane/ProjectNotesDetail.tsx`
+  - `apps/frontend/src/components/App.tsx` is the top-level entry. It manages the main page
+    layout and handles global event listeners (e.g., the Escape key).
+  - `apps/frontend/src/components/App/ProjectDetailPane` and child components handle major
+    view modes.
   - Shared UI pieces live in `apps/frontend/src/components/utilities`.
   - Shared state hooks live in `apps/frontend/src/components/state`.
 - Alias usage (frontend):

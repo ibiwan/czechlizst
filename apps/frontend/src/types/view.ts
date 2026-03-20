@@ -10,6 +10,7 @@ export type ProjectView = {
 
 export type TaskView = {
   id: number;
+  projectId: number;
   title: string;
   status: WorkStatus;
   createdAt: string;

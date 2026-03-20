@@ -12,7 +12,14 @@
   --radius-md: 0.8rem;
 
   --color-bg: #0d1117;
-  --color-bg-elev: #161b22;
+  /* Opaque surface ladder: each layer is a slightly lightened step from --color-bg
+     so nested surfaces read brighter than their parent without relying on translucency. */
+  --color-surface-panel-top: #141b24;
+  --color-surface-panel: #161b22;
+  --color-surface-card: #232930;
+  --color-surface-detail: #1a212b;
+  --color-surface-note: #171d26;
+  --color-bg-elev: var(--color-surface-panel);
   --color-bg-soft: #1f2937;
   --color-border: #2e3a48;
   --color-text: #e6edf3;
@@ -20,10 +27,10 @@
   --color-accent: #58a6ff;
   --color-accent-soft: #1f6feb33;
   --color-danger: #f85149;
-  --color-panel-grad-start: #141b24;
-  --color-detail-bg: #121922;
-  --color-note-bg: #0f141b;
-  --color-row-hover: #1d2632;
+  --color-panel-grad-start: var(--color-surface-panel-top);
+  --color-detail-bg: var(--color-surface-detail);
+  --color-note-bg: var(--color-surface-note);
+  --color-row-hover: #314154;
   --color-row-selected: #1b324d;
   --color-row-add-hover: #16202b;
   --color-row-add-edit: #141f2b;

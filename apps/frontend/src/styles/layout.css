@@ -111,11 +111,107 @@
   z-index: 1;
 }
 
+.birds-eye-view {
+  /* Smallest width that comfortably fits the current row-two worst case:
+     7-char status pill ("started"/"blocked"/"dropped") +
+     13-char date ("YYYY/MM HH:MM") in the existing meta typography. */
+  --birds-eye-tile-width: 11rem;
+  --birds-eye-row-gap: var(--space-4);
+  --birds-eye-row-bottom-padding: var(--space-5);
+}
+
+.birds-eye-view .project-detail-scroll {
+  overflow: hidden;
+}
+
+.birds-eye-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.birds-eye-section {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.birds-eye-section-label {
+  margin: 0;
+  padding: 0.75rem 1rem 0;
+  color: var(--color-text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
 .birds-eye-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: var(--space-4);
-  padding: 0 var(--space-4) var(--space-6) var(--space-4);
+  grid-auto-flow: column;
+  grid-auto-columns: var(--birds-eye-tile-width);
+  gap: var(--birds-eye-row-gap);
+  padding: 0 1rem var(--birds-eye-row-bottom-padding) 1rem;
+  justify-content: start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.birds-eye-row::-webkit-scrollbar {
+  display: none;
+}
+
+.birds-eye-tile {
+  width: var(--birds-eye-tile-width);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.birds-eye-tile:hover {
+  background: var(--color-row-hover);
+}
+
+.birds-eye-tile:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.birds-eye-tile .project-card-title {
+  display: -webkit-box;
+  overflow: hidden;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-height: 1.5;
+  margin-bottom: var(--space-2);
+}
+
+@media (height <=860px) {
+  .birds-eye-view {
+    --birds-eye-row-gap: var(--space-3);
+    --birds-eye-row-bottom-padding: var(--space-4);
+  }
+
+  .birds-eye-section-label {
+    padding-top: 0.6rem;
+  }
+}
+
+@media (height <=760px) {
+
+  /* On shorter monitors, preserve access to all content instead of clipping it. */
+  .birds-eye-view .project-detail-scroll {
+    overflow-y: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -45,5 +45,5 @@ Endpoints:
 - Data model and schema SoT: [README-DATA.md](README-DATA.md)
 - Testing strategy and coverage: [README-TESTING.md](README-TESTING.md)
 - Tooling and MCP integration: [README-TOOL.md](README-TOOL.md)
-- Architecture decisions and rationale: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
+- Architecture, component roles, and state patterns: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
 - PostgREST service details: [apps/backend/README.md](apps/backend/README.md)

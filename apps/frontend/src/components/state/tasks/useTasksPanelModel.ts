@@ -111,18 +111,35 @@ export function useTasksPanelModel() {
   }
 
   async function onUpdateTaskStatus(taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) {
-    if (nextStatus === currentStatus || activeProjectId === null) {
+    if (activeProjectId === null) {
+      return;
+    }
+    await updateTaskStatusForProject(taskId, activeProjectId, currentStatus, nextStatus);
+  }
+
+  async function updateTaskStatusForProject(
+    taskId: number,
+    projectId: number,
+    currentStatus: WorkStatus,
+    nextStatus: WorkStatus
+  ) {
+    if (nextStatus === currentStatus) {
       return;
     }
 
     if (nextStatus === 'active') {
-      await ensureProjectActive(activeProjectId);
+      await ensureProjectActive(projectId);
       await demoteActiveTasksExceptTask({ taskId }).unwrap();
+    } else {
+      const activeProject = projects.find((project) => project.id === projectId);
+      if (nextStatus === 'started' && activeProject?.status === 'active') {
+        await updateProjectStatus({ projectId, status: 'started' }).unwrap();
+      }
     }
 
     await updateTaskStatus({
       taskId,
-      projectId: activeProjectId,
+      projectId,
       status: nextStatus
     }).unwrap();
     tasksQuery.refetch();
@@ -192,6 +209,7 @@ export function useTasksPanelModel() {
     onUpdateTaskStatus,
     onUpdateTaskTitle,
     onUpdateTaskNote,
+    updateTaskStatusForProject,
     selectTask,
     selectedTaskId,
     setNewTaskNoteBody,
