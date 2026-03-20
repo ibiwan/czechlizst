@@ -31,20 +31,20 @@ function copyTypography(node: HTMLElement) {
   return {
     color: computed.color,
     fontFamily: computed.fontFamily,
-    fontFeatureSettings: computed.fontFeatureSettings,
-    fontKerning: computed.fontKerning,
-    fontOpticalSizing: computed.fontOpticalSizing,
+    fontFeatureSettings: computed.fontFeatureSettings as CSSProperties['fontFeatureSettings'],
+    fontKerning: computed.fontKerning as CSSProperties['fontKerning'],
+    fontOpticalSizing: computed.fontOpticalSizing as CSSProperties['fontOpticalSizing'],
     fontSize: computed.fontSize,
-    fontStretch: computed.fontStretch,
+    fontStretch: computed.fontStretch as CSSProperties['fontStretch'],
     fontStyle: computed.fontStyle,
-    fontVariant: computed.fontVariant,
-    fontVariationSettings: computed.fontVariationSettings,
+    fontVariant: computed.fontVariant as CSSProperties['fontVariant'],
+    fontVariationSettings: computed.fontVariationSettings as CSSProperties['fontVariationSettings'],
     fontWeight: computed.fontWeight,
     letterSpacing: computed.letterSpacing,
     lineHeight: computed.lineHeight,
     textAlign: computed.textAlign as CSSProperties['textAlign'],
     textTransform: computed.textTransform as CSSProperties['textTransform']
-  };
+  } satisfies CSSProperties;
 }
 
 function isPaintedBackground(color: string) {
@@ -85,7 +85,6 @@ export function OverflowReveal({
   className,
   testId
 }: OverflowRevealProps) {
-  const Component = as ?? 'span';
   const textRef = useRef<HTMLElement | null>(null);
   const delayRef = useRef<number | null>(null);
   const [overlay, setOverlay] = useState<OverlayState | null>(null);
@@ -153,25 +152,57 @@ export function OverflowReveal({
     };
   }, [overlay]);
 
-  const handleMouseEnter: MouseEventHandler<HTMLElement> = () => {
+  const handleMouseEnter: MouseEventHandler<
+    HTMLDivElement | HTMLHeadingElement | HTMLSpanElement
+  > = () => {
     scheduleReveal();
   };
 
-  const handleMouseLeave: MouseEventHandler<HTMLElement> = () => {
+  const handleMouseLeave: MouseEventHandler<
+    HTMLDivElement | HTMLHeadingElement | HTMLSpanElement
+  > = () => {
     hideReveal();
   };
 
   return (
     <>
-      <Component
-        ref={textRef}
-        className={className}
-        data-testid={testId}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {children}
-      </Component>
+      {as === 'div' ? (
+        <div
+          ref={(node) => {
+            textRef.current = node;
+          }}
+          className={className}
+          data-testid={testId}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {children}
+        </div>
+      ) : as === 'h3' ? (
+        <h3
+          ref={(node) => {
+            textRef.current = node;
+          }}
+          className={className}
+          data-testid={testId}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {children}
+        </h3>
+      ) : (
+        <span
+          ref={(node) => {
+            textRef.current = node;
+          }}
+          className={className}
+          data-testid={testId}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {children}
+        </span>
+      )}
       {overlay
         ? createPortal(
             <div aria-hidden="true" className="overflow-reveal-overlay" style={overlay.style}>

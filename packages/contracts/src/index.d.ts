@@ -1,4 +1,51 @@
 import { z } from 'zod';
+import { WorkStatusSchema } from './generated/prisma-zod';
+
+export {
+  createProjectNoteResponseSchema,
+  createProjectResponseSchema,
+  createTaskNoteResponseSchema,
+  createTaskResponseSchema,
+  listProjectNotesResponseSchema,
+  listProjectsResponseSchema,
+  listTaskNotesResponseSchema,
+  listTasksResponseSchema,
+  postgrestProjectNoteRowSchema,
+  postgrestProjectNoteRowsSchema,
+  postgrestProjectRowSchema,
+  postgrestProjectRowsSchema,
+  postgrestTaskNoteRowSchema,
+  postgrestTaskNoteRowsSchema,
+  postgrestTaskRowSchema,
+  postgrestTaskRowsSchema,
+  projectFromPostgrestRow,
+  projectNoteFromPostgrestRow,
+  projectNoteSchema,
+  projectSchema,
+  parsePostgrestCreateProjectNoteResponse,
+  parsePostgrestCreateProjectResponse,
+  parsePostgrestCreateTaskNoteResponse,
+  parsePostgrestCreateTaskResponse,
+  parsePostgrestListProjectNotesResponse,
+  parsePostgrestListProjectsResponse,
+  parsePostgrestListTaskNotesResponse,
+  parsePostgrestListTasksResponse,
+  taskFromPostgrestRow,
+  taskNoteFromPostgrestRow,
+  taskNoteSchema,
+  taskSchema
+} from './generated/public-contracts';
+
+export {
+  ProjectNotePostgrestRow,
+  ProjectNoteRowModel,
+  ProjectPostgrestRow,
+  ProjectRowModel,
+  TaskNotePostgrestRow,
+  TaskNoteRowModel,
+  TaskPostgrestRow,
+  TaskRowModel
+} from './generated/prisma-classes';
 
 export declare const routes: {
   readonly healthProbe: '/projects?select=*&limit=1';
@@ -12,223 +59,71 @@ export declare const routes: {
   readonly taskNotesByTask: (taskId: number | string) => string;
 };
 
-export declare const healthResponseSchema: z.ZodObject<{ ok: z.ZodBoolean }>;
-export declare const workStatusSchema: z.ZodEnum<
-  ['todo', 'started', 'active', 'blocked', 'done', 'dropped']
->;
-export declare const workStatuses: ReadonlyArray<z.infer<typeof workStatusSchema>>;
+export declare const healthResponseSchema: z.ZodType<{ ok: boolean }>;
+export declare const workStatusSchema: typeof WorkStatusSchema;
+export declare const workStatuses: ReadonlyArray<import('./generated/public-types').WorkStatus>;
 export declare const allowedWorkStatusTransitions: Record<
-  z.infer<typeof workStatusSchema>,
-  Array<z.infer<typeof workStatusSchema>>
+  import('./generated/public-types').WorkStatus,
+  Array<import('./generated/public-types').WorkStatus>
 >;
 export declare function canTransitionWorkStatus(
-  from: z.infer<typeof workStatusSchema>,
-  to: z.infer<typeof workStatusSchema>
+  from: import('./generated/public-types').WorkStatus,
+  to: import('./generated/public-types').WorkStatus
 ): boolean;
 export declare function getWorkStatusTransitionReason(
-  from: z.infer<typeof workStatusSchema>,
-  to: z.infer<typeof workStatusSchema>
+  from: import('./generated/public-types').WorkStatus,
+  to: import('./generated/public-types').WorkStatus
 ): string | null;
 export declare function computeProjectStatusFromTasks(
-  tasks: Array<{ status: z.infer<typeof workStatusSchema> }>
-): z.infer<typeof workStatusSchema> | null;
+  tasks: Array<{ status: import('./generated/public-types').WorkStatus }>
+): import('./generated/public-types').WorkStatus | null;
 
-export declare const projectSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  name: z.ZodString;
-  status: typeof workStatusSchema;
-  createdAt: z.ZodString;
-}>;
+export declare const createProjectBodySchema: z.ZodType<import('./generated/public-types').CreateProjectBody>;
+export declare const updateProjectBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectBody>;
+export declare const updateProjectStatusBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectStatusBody>;
+export declare const createTaskBodySchema: z.ZodType<import('./generated/public-types').CreateTaskBody>;
+export declare const updateTaskBodySchema: z.ZodType<import('./generated/public-types').UpdateTaskBody>;
+export declare const updateTaskStatusBodySchema: z.ZodType<import('./generated/public-types').UpdateTaskStatusBody>;
+export declare const createProjectNoteBodySchema: z.ZodType<import('./generated/public-types').CreateProjectNoteBody>;
+export declare const createTaskNoteBodySchema: z.ZodType<import('./generated/public-types').CreateTaskNoteBody>;
+export declare const updateProjectNoteBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectNoteBody>;
+export declare const updateTaskNoteBodySchema: z.ZodType<import('./generated/public-types').UpdateTaskNoteBody>;
 
-export declare const taskSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  projectId: z.ZodNumber;
-  title: z.ZodString;
-  status: typeof workStatusSchema;
-  createdAt: z.ZodString;
-}>;
+export type {
+  CreateProjectBody,
+  CreateProjectNoteBody,
+  CreateProjectNoteResponse,
+  CreateProjectResponse,
+  CreateTaskBody,
+  CreateTaskNoteBody,
+  CreateTaskNoteResponse,
+  CreateTaskResponse,
+  HealthResponse,
+  ListProjectNotesResponse,
+  ListProjectsResponse,
+  ListTaskNotesResponse,
+  ListTasksResponse,
+  PostgrestProjectNoteRow,
+  PostgrestProjectRow,
+  PostgrestTaskNoteRow,
+  PostgrestTaskRow,
+  Project,
+  ProjectNote,
+  Task,
+  TaskNote,
+  UpdateProjectBody,
+  UpdateProjectNoteBody,
+  UpdateProjectStatusBody,
+  UpdateTaskBody,
+  UpdateTaskNoteBody,
+  UpdateTaskStatusBody,
+  WorkStatus
+} from './generated/public-types';
 
-export declare const projectNoteSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  projectId: z.ZodNumber;
-  body: z.ZodString;
-  referenceUrl: z.ZodNullable<z.ZodString>;
-  createdAt: z.ZodString;
-}>;
-
-export declare const taskNoteSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  taskId: z.ZodNumber;
-  body: z.ZodString;
-  referenceUrl: z.ZodNullable<z.ZodString>;
-  createdAt: z.ZodString;
-}>;
-
-export {
-  ProjectRowModel,
-  TaskRowModel,
-  ProjectNoteRowModel,
-  TaskNoteRowModel,
-  ProjectPostgrestRow,
-  TaskPostgrestRow,
-  ProjectNotePostgrestRow,
-  TaskNotePostgrestRow
-} from './generated/prisma-classes';
-
-export declare const postgrestProjectRowSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  name: z.ZodString;
-  status: typeof workStatusSchema;
-  created_at: z.ZodString;
-  updated_at: z.ZodOptional<z.ZodString>;
-}>;
-
-export declare const postgrestTaskRowSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  project_id: z.ZodNumber;
-  title: z.ZodString;
-  status: typeof workStatusSchema;
-  created_at: z.ZodString;
-  updated_at: z.ZodOptional<z.ZodString>;
-}>;
-
-export declare const postgrestProjectNoteRowSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  project_id: z.ZodNumber;
-  body: z.ZodString;
-  reference_url: z.ZodNullable<z.ZodString>;
-  created_at: z.ZodString;
-  updated_at: z.ZodOptional<z.ZodString>;
-}>;
-
-export declare const postgrestTaskNoteRowSchema: z.ZodObject<{
-  id: z.ZodNumber;
-  task_id: z.ZodNumber;
-  body: z.ZodString;
-  reference_url: z.ZodNullable<z.ZodString>;
-  created_at: z.ZodString;
-  updated_at: z.ZodOptional<z.ZodString>;
-}>;
-
-export declare const postgrestProjectRowsSchema: z.ZodArray<typeof postgrestProjectRowSchema>;
-export declare const postgrestTaskRowsSchema: z.ZodArray<typeof postgrestTaskRowSchema>;
-export declare const postgrestProjectNoteRowsSchema: z.ZodArray<
-  typeof postgrestProjectNoteRowSchema
->;
-export declare const postgrestTaskNoteRowsSchema: z.ZodArray<typeof postgrestTaskNoteRowSchema>;
-
-export declare const listProjectsResponseSchema: z.ZodObject<{
-  projects: z.ZodArray<typeof projectSchema>;
-}>;
-export declare const listTasksResponseSchema: z.ZodObject<{
-  tasks: z.ZodArray<typeof taskSchema>;
-}>;
-export declare const listProjectNotesResponseSchema: z.ZodObject<{
-  notes: z.ZodArray<typeof projectNoteSchema>;
-}>;
-export declare const listTaskNotesResponseSchema: z.ZodObject<{
-  notes: z.ZodArray<typeof taskNoteSchema>;
-}>;
-
-export declare const createProjectBodySchema: z.ZodObject<{ name: z.ZodString }>;
-export declare const updateProjectBodySchema: z.ZodObject<{
-  name: z.ZodOptional<z.ZodString>;
-  status: z.ZodOptional<typeof workStatusSchema>;
-}>;
-export declare const updateProjectStatusBodySchema: z.ZodObject<{ status: typeof workStatusSchema }>;
-export declare const createTaskBodySchema: z.ZodObject<{ title: z.ZodString }>;
-export declare const updateTaskBodySchema: z.ZodObject<{
-  title: z.ZodOptional<z.ZodString>;
-  status: z.ZodOptional<typeof workStatusSchema>;
-}>;
-export declare const updateTaskStatusBodySchema: z.ZodObject<{ status: typeof workStatusSchema }>;
-export declare const createProjectNoteBodySchema: z.ZodObject<{
-  body: z.ZodString;
-  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}>;
-export declare const createTaskNoteBodySchema: z.ZodObject<{
-  body: z.ZodString;
-  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}>;
-export declare const updateProjectNoteBodySchema: z.ZodObject<{
-  body: z.ZodString;
-  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}>;
-export declare const updateTaskNoteBodySchema: z.ZodObject<{
-  body: z.ZodString;
-  reference_url: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-}>;
-
-export declare const createProjectResponseSchema: z.ZodObject<{ project: typeof projectSchema }>;
-export declare const createTaskResponseSchema: z.ZodObject<{ task: typeof taskSchema }>;
-export declare const createProjectNoteResponseSchema: z.ZodObject<{ note: typeof projectNoteSchema }>;
-export declare const createTaskNoteResponseSchema: z.ZodObject<{ note: typeof taskNoteSchema }>;
-
-export declare function projectFromPostgrestRow(
-  row: z.infer<typeof postgrestProjectRowSchema>
-): z.infer<typeof projectSchema>;
-export declare function taskFromPostgrestRow(
-  row: z.infer<typeof postgrestTaskRowSchema>
-): z.infer<typeof taskSchema>;
-export declare function projectNoteFromPostgrestRow(
-  row: z.infer<typeof postgrestProjectNoteRowSchema>
-): z.infer<typeof projectNoteSchema>;
-export declare function taskNoteFromPostgrestRow(
-  row: z.infer<typeof postgrestTaskNoteRowSchema>
-): z.infer<typeof taskNoteSchema>;
-
-export declare function parsePostgrestListProjectsResponse(
-  input: unknown
-): z.infer<typeof listProjectsResponseSchema>;
-export declare function parsePostgrestCreateProjectResponse(
-  input: unknown
-): z.infer<typeof createProjectResponseSchema>;
-export declare function parsePostgrestListTasksResponse(
-  input: unknown
-): z.infer<typeof listTasksResponseSchema>;
-export declare function parsePostgrestCreateTaskResponse(
-  input: unknown
-): z.infer<typeof createTaskResponseSchema>;
-export declare function parsePostgrestListProjectNotesResponse(
-  input: unknown
-): z.infer<typeof listProjectNotesResponseSchema>;
-export declare function parsePostgrestListTaskNotesResponse(
-  input: unknown
-): z.infer<typeof listTaskNotesResponseSchema>;
-export declare function parsePostgrestCreateProjectNoteResponse(
-  input: unknown
-): z.infer<typeof createProjectNoteResponseSchema>;
-export declare function parsePostgrestCreateTaskNoteResponse(
-  input: unknown
-): z.infer<typeof createTaskNoteResponseSchema>;
-
-export type HealthResponse = z.infer<typeof healthResponseSchema>;
-export type WorkStatus = z.infer<typeof workStatusSchema>;
-export type Project = z.infer<typeof projectSchema>;
-export type Task = z.infer<typeof taskSchema>;
-export type ProjectNote = z.infer<typeof projectNoteSchema>;
-export type TaskNote = z.infer<typeof taskNoteSchema>;
-export type PostgrestProjectRow = z.infer<typeof postgrestProjectRowSchema>;
-export type PostgrestTaskRow = z.infer<typeof postgrestTaskRowSchema>;
-export type PostgrestProjectNoteRow = z.infer<typeof postgrestProjectNoteRowSchema>;
-export type PostgrestTaskNoteRow = z.infer<typeof postgrestTaskNoteRowSchema>;
-export type ListProjectsResponse = z.infer<typeof listProjectsResponseSchema>;
-export type ListTasksResponse = z.infer<typeof listTasksResponseSchema>;
-export type ListProjectNotesResponse = z.infer<typeof listProjectNotesResponseSchema>;
-export type ListTaskNotesResponse = z.infer<typeof listTaskNotesResponseSchema>;
-export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;
-export type UpdateProjectBody = z.infer<typeof updateProjectBodySchema>;
-export type UpdateProjectStatusBody = z.infer<typeof updateProjectStatusBodySchema>;
-export type CreateTaskBody = z.infer<typeof createTaskBodySchema>;
-export type UpdateTaskBody = z.infer<typeof updateTaskBodySchema>;
-export type UpdateTaskStatusBody = z.infer<typeof updateTaskStatusBodySchema>;
-export type CreateProjectNoteBody = z.infer<typeof createProjectNoteBodySchema>;
-export type UpdateProjectNoteBody = z.infer<typeof updateProjectNoteBodySchema>;
-export type CreateTaskNoteBody = z.infer<typeof createTaskNoteBodySchema>;
-export type UpdateTaskNoteBody = z.infer<typeof updateTaskNoteBodySchema>;
-export type CreateProjectResponse = z.infer<typeof createProjectResponseSchema>;
-export type CreateTaskResponse = z.infer<typeof createTaskResponseSchema>;
-export type CreateProjectNoteResponse = z.infer<typeof createProjectNoteResponseSchema>;
-export type CreateTaskNoteResponse = z.infer<typeof createTaskNoteResponseSchema>;
-
-export type { PrismaRowModels, ProjectNoteRow, ProjectRow, TaskNoteRow, TaskRow } from './generated/prisma-types';
+export type {
+  PrismaRowModels,
+  ProjectNoteRow,
+  ProjectRow,
+  TaskNoteRow,
+  TaskRow
+} from './generated/prisma-types';

@@ -78,9 +78,11 @@ Add a new Prisma model and make it usable end-to-end in:
 4. Regenerate base contracts from Prisma with `npm run types:generate`:
    - generated TS row types: `packages/contracts/src/generated/prisma-types.ts`
    - generated Zod model/enum schemas: `packages/contracts/src/generated/prisma-zod.mjs`
-5. Update shared contract adapters in `packages/contracts/src/index.mjs` (manual wrapper layer):
+   - generated public wrapper/adapters: `packages/contracts/src/generated/public-contracts.mjs`
+   - generated named public types: `packages/contracts/src/generated/public-types.ts`
+5. Update manual shared contract policy in `packages/contracts/src/index.mjs` only if needed:
    - add route constants/helpers if needed
-   - add/adjust response parsing adapters if field mappings changed
+   - update business-policy helpers or payload validation rules
 6. Update frontend API layer in `apps/frontend/src/api/*`:
    - add list/create (and update/delete if needed) endpoints
    - ensure request/response typing uses contracts
@@ -108,9 +110,11 @@ Use this when adding or changing a field on an existing model (example: add `ref
 4. Regenerate base contracts from Prisma with `npm run types:generate`:
    - generated TS row types: `packages/contracts/src/generated/prisma-types.ts`
    - generated Zod model/enum schemas: `packages/contracts/src/generated/prisma-zod.mjs`
-5. Update shared contract adapters in `packages/contracts/src/index.mjs` (manual wrapper layer):
-   - update payload/response schemas
-   - map snake_case DB fields to camelCase view models
+   - generated public wrapper/adapters: `packages/contracts/src/generated/public-contracts.mjs`
+   - generated named public types: `packages/contracts/src/generated/public-types.ts`
+5. Update manual shared contract policy in `packages/contracts/src/index.mjs` only if needed:
+   - update payload validation rules that encode product decisions
+   - update routes or non-schema-derived helpers
 6. Update frontend API layer in `apps/frontend/src/api/*` to send/receive the new field.
 7. Update UI flows/components to surface and edit the field.
 8. Add/extend tests (backend E2E and/or frontend tests as appropriate).
@@ -156,7 +160,7 @@ Keep status semantics aligned across:
    - transition map (`allowedWorkStatusTransitions`)
    - transition helper(s)
    - project status aggregation helper
-2. Sync type exports in `packages/contracts/src/index.d.ts` and CommonJS entry (`index.cjs`).
+2. Sync manual policy/runtime entrypoints in `packages/contracts/src/index.mjs`, `packages/contracts/src/index.cjs`, and `packages/contracts/src/index.d.ts`.
 3. If backend integrity rules changed, add/modify Prisma SQL migration(s) for trigger/function enforcement.
 4. Apply migration and restart PostgREST:
    - `npm run prisma:migrate:deploy`

@@ -1,21 +1,7 @@
 const { z } = require('zod');
-const {
-  ProjectNoteRowSchema,
-  ProjectRowSchema,
-  TaskNoteRowSchema,
-  TaskRowSchema,
-  WorkStatusSchema
-} = require('./generated/prisma-zod.cjs');
-const {
-  ProjectNotePostgrestRow,
-  ProjectNoteRowModel,
-  ProjectPostgrestRow,
-  ProjectRowModel,
-  TaskNotePostgrestRow,
-  TaskNoteRowModel,
-  TaskPostgrestRow,
-  TaskRowModel
-} = require('./generated/prisma-classes.cjs');
+const { WorkStatusSchema } = require('./generated/prisma-zod.cjs');
+const publicContracts = require('./generated/public-contracts.cjs');
+const prismaClasses = require('./generated/prisma-classes.cjs');
 
 const routes = {
   healthProbe: '/projects?select=*&limit=1',
@@ -126,55 +112,6 @@ function computeProjectStatusFromTasks(tasks) {
   return null;
 }
 
-const projectSchema = ProjectRowSchema;
-const taskSchema = TaskRowSchema;
-const projectNoteSchema = ProjectNoteRowSchema;
-const taskNoteSchema = TaskNoteRowSchema;
-
-const postgrestProjectRowSchema = z.object({
-  id: z.number().int().positive(),
-  name: z.string().min(1),
-  status: workStatusSchema,
-  created_at: z.string().min(1),
-  updated_at: z.string().min(1).optional()
-});
-
-const postgrestTaskRowSchema = z.object({
-  id: z.number().int().positive(),
-  project_id: z.number().int().positive(),
-  title: z.string().min(1),
-  status: workStatusSchema,
-  created_at: z.string().min(1),
-  updated_at: z.string().min(1).optional()
-});
-
-const postgrestProjectNoteRowSchema = z.object({
-  id: z.number().int().positive(),
-  project_id: z.number().int().positive(),
-  body: z.string().min(1),
-  reference_url: z.string().min(1).nullable(),
-  created_at: z.string().min(1),
-  updated_at: z.string().min(1).optional()
-});
-
-const postgrestTaskNoteRowSchema = z.object({
-  id: z.number().int().positive(),
-  task_id: z.number().int().positive(),
-  body: z.string().min(1),
-  reference_url: z.string().min(1).nullable(),
-  created_at: z.string().min(1),
-  updated_at: z.string().min(1).optional()
-});
-
-const postgrestProjectRowsSchema = z.array(postgrestProjectRowSchema);
-const postgrestTaskRowsSchema = z.array(postgrestTaskRowSchema);
-const postgrestProjectNoteRowsSchema = z.array(postgrestProjectNoteRowSchema);
-const postgrestTaskNoteRowsSchema = z.array(postgrestTaskNoteRowSchema);
-
-const listProjectsResponseSchema = z.object({
-  projects: z.array(projectSchema)
-});
-
 const createProjectBodySchema = z.object({
   name: z.string().min(1).max(120)
 });
@@ -192,22 +129,6 @@ const updateProjectStatusBodySchema = z.object({
   status: workStatusSchema
 });
 
-const createProjectResponseSchema = z.object({
-  project: projectSchema
-});
-
-const listTasksResponseSchema = z.object({
-  tasks: z.array(taskSchema)
-});
-
-const listProjectNotesResponseSchema = z.object({
-  notes: z.array(projectNoteSchema)
-});
-
-const listTaskNotesResponseSchema = z.object({
-  notes: z.array(taskNoteSchema)
-});
-
 const createTaskBodySchema = z.object({
   title: z.string().min(1).max(240)
 });
@@ -223,10 +144,6 @@ const updateTaskBodySchema = z
 
 const updateTaskStatusBodySchema = z.object({
   status: workStatusSchema
-});
-
-const createTaskResponseSchema = z.object({
-  task: taskSchema
 });
 
 const createProjectNoteBodySchema = z.object({
@@ -249,200 +166,25 @@ const updateTaskNoteBodySchema = z.object({
   reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
-const createProjectNoteResponseSchema = z.object({
-  note: projectNoteSchema
-});
-
-const createTaskNoteResponseSchema = z.object({
-  note: taskNoteSchema
-});
-
-function normalizePostgrestTimestamp(value) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new Error(`Invalid PostgREST timestamp: ${value}`);
-  }
-
-  return date.toISOString();
-}
-
-function projectFromPostgrestRow(row) {
-  const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return projectSchema.parse({
-    id: row.id,
-    name: row.name,
-    status: row.status,
-    createdAt,
-    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
-  });
-}
-
-function taskFromPostgrestRow(row) {
-  const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return taskSchema.parse({
-    id: row.id,
-    projectId: row.project_id,
-    title: row.title,
-    status: row.status,
-    createdAt,
-    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
-  });
-}
-
-function projectNoteFromPostgrestRow(row) {
-  const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return projectNoteSchema.parse({
-    id: row.id,
-    projectId: row.project_id,
-    body: row.body,
-    referenceUrl: row.reference_url ?? null,
-    createdAt,
-    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
-  });
-}
-
-function taskNoteFromPostgrestRow(row) {
-  const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return taskNoteSchema.parse({
-    id: row.id,
-    taskId: row.task_id,
-    body: row.body,
-    referenceUrl: row.reference_url ?? null,
-    createdAt,
-    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt
-  });
-}
-
-function parsePostgrestListProjectsResponse(input) {
-  const rows = postgrestProjectRowsSchema.parse(input);
-  return listProjectsResponseSchema.parse({
-    projects: rows.map(projectFromPostgrestRow)
-  });
-}
-
-function parsePostgrestCreateProjectResponse(input) {
-  const rows = postgrestProjectRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create project response to include one row');
-  }
-  const project = rows[0];
-  return createProjectResponseSchema.parse({
-    project: projectFromPostgrestRow(project)
-  });
-}
-
-function parsePostgrestListTasksResponse(input) {
-  const rows = postgrestTaskRowsSchema.parse(input);
-  return listTasksResponseSchema.parse({
-    tasks: rows.map(taskFromPostgrestRow)
-  });
-}
-
-function parsePostgrestListProjectNotesResponse(input) {
-  const rows = postgrestProjectNoteRowsSchema.parse(input);
-  return listProjectNotesResponseSchema.parse({
-    notes: rows.map(projectNoteFromPostgrestRow)
-  });
-}
-
-function parsePostgrestListTaskNotesResponse(input) {
-  const rows = postgrestTaskNoteRowsSchema.parse(input);
-  return listTaskNotesResponseSchema.parse({
-    notes: rows.map(taskNoteFromPostgrestRow)
-  });
-}
-
-function parsePostgrestCreateTaskResponse(input) {
-  const rows = postgrestTaskRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create task response to include one row');
-  }
-  const task = rows[0];
-  return createTaskResponseSchema.parse({
-    task: taskFromPostgrestRow(task)
-  });
-}
-
-function parsePostgrestCreateProjectNoteResponse(input) {
-  const rows = postgrestProjectNoteRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create project note response to include one row');
-  }
-  const note = rows[0];
-  return createProjectNoteResponseSchema.parse({
-    note: projectNoteFromPostgrestRow(note)
-  });
-}
-
-function parsePostgrestCreateTaskNoteResponse(input) {
-  const rows = postgrestTaskNoteRowsSchema.parse(input);
-  if (rows.length === 0) {
-    throw new Error('Expected PostgREST create task note response to include one row');
-  }
-  const note = rows[0];
-  return createTaskNoteResponseSchema.parse({
-    note: taskNoteFromPostgrestRow(note)
-  });
-}
-
-
 module.exports = {
+  ...publicContracts,
+  ...prismaClasses,
   routes,
   healthResponseSchema,
   workStatusSchema,
   workStatuses,
   allowedWorkStatusTransitions,
-  projectSchema,
-  taskSchema,
-  projectNoteSchema,
-  taskNoteSchema,
-  postgrestProjectRowSchema,
-  postgrestTaskRowSchema,
-  postgrestProjectNoteRowSchema,
-  postgrestTaskNoteRowSchema,
-  postgrestProjectRowsSchema,
-  postgrestTaskRowsSchema,
-  postgrestProjectNoteRowsSchema,
-  postgrestTaskNoteRowsSchema,
-  ProjectRowModel,
-  TaskRowModel,
-  ProjectNoteRowModel,
-  TaskNoteRowModel,
-  ProjectPostgrestRow,
-  TaskPostgrestRow,
-  ProjectNotePostgrestRow,
-  TaskNotePostgrestRow,
-  listProjectsResponseSchema,
-  createProjectBodySchema,
-  updateProjectBodySchema,
-  updateProjectStatusBodySchema,
-  createProjectResponseSchema,
-  listTasksResponseSchema,
-  listProjectNotesResponseSchema,
-  listTaskNotesResponseSchema,
-  createTaskBodySchema,
-  updateTaskBodySchema,
-  updateTaskStatusBodySchema,
-  createTaskResponseSchema,
-  createProjectNoteBodySchema,
-  createTaskNoteBodySchema,
-  updateProjectNoteBodySchema,
-  updateTaskNoteBodySchema,
-  createProjectNoteResponseSchema,
-  createTaskNoteResponseSchema,
   canTransitionWorkStatus,
   getWorkStatusTransitionReason,
   computeProjectStatusFromTasks,
-  projectFromPostgrestRow,
-  taskFromPostgrestRow,
-  projectNoteFromPostgrestRow,
-  taskNoteFromPostgrestRow,
-  parsePostgrestListProjectsResponse,
-  parsePostgrestCreateProjectResponse,
-  parsePostgrestListTasksResponse,
-  parsePostgrestListProjectNotesResponse,
-  parsePostgrestListTaskNotesResponse,
-  parsePostgrestCreateTaskResponse,
-  parsePostgrestCreateProjectNoteResponse,
-  parsePostgrestCreateTaskNoteResponse
+  createProjectBodySchema,
+  updateProjectBodySchema,
+  updateProjectStatusBodySchema,
+  createTaskBodySchema,
+  updateTaskBodySchema,
+  updateTaskStatusBodySchema,
+  createProjectNoteBodySchema,
+  createTaskNoteBodySchema,
+  updateProjectNoteBodySchema,
+  updateTaskNoteBodySchema
 };

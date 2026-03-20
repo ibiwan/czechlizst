@@ -36,6 +36,26 @@ const outputClassesDtsPath = resolve(
   __dirname,
   '../../contracts/src/generated/prisma-classes.d.ts'
 );
+const outputPublicTypesTsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/public-types.ts'
+);
+const outputPublicTypesDtsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/public-types.d.ts'
+);
+const outputPublicContractsMjsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/public-contracts.mjs'
+);
+const outputPublicContractsCjsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/public-contracts.cjs'
+);
+const outputPublicContractsDtsPath = resolve(
+  __dirname,
+  '../../contracts/src/generated/public-contracts.d.ts'
+);
 
 const SCALAR_TYPE_MAP = {
   String: 'string',
@@ -253,6 +273,271 @@ function renderClassesDts(models) {
   return lines.join('\n');
 }
 
+function renderPublicTypes(models, enums) {
+  const workStatusEnum = enums.find((entry) => entry.name === 'WorkStatus');
+  const lines = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.',
+    '// Source: packages/db/prisma/schema.prisma',
+    '',
+    "import type {",
+    ...models.map((model) => `  ${pascalToRowType(model.name)},`),
+    "} from './prisma-types';",
+    '',
+    "import type {",
+    ...models.flatMap((model) => [
+      `  ${model.name}RowModelData,`,
+      `  ${model.name}PostgrestRowData,`
+    ]),
+    "} from './prisma-classes';",
+    ''
+  ];
+
+  if (workStatusEnum) {
+    const values = workStatusEnum.values.map((value) => `'${value}'`).join(' | ');
+    lines.push(`export type WorkStatus = ${values};`, '');
+  }
+
+  for (const model of models) {
+    lines.push(`export type ${model.name} = ${pascalToRowType(model.name)};`);
+  }
+
+  lines.push('');
+
+  for (const model of models) {
+    const requiredShape = model.fields
+      .map((field) => {
+        if (field.name === 'updatedAt' && field.dbName === 'updated_at') {
+          return `  updated_at?: ${field.tsType};`;
+        }
+        return `  ${field.dbName}: ${field.tsType};`;
+      })
+      .join('\n');
+    lines.push(
+      `export type Postgrest${model.name}Row = Omit<${model.name}PostgrestRowData, 'updated_at'> & {\n${requiredShape}\n};`
+    );
+  }
+
+  lines.push('');
+
+  for (const model of models) {
+    if (model.name.endsWith('Note')) {
+      lines.push(`export type Create${model.name}Response = { note: ${model.name} };`);
+      lines.push(`export type List${model.name}sResponse = { notes: ${model.name}[] };`);
+    } else {
+      lines.push(`export type Create${model.name}Response = { ${model.name.toLowerCase()}: ${model.name} };`);
+      lines.push(`export type List${model.name}sResponse = { ${model.name.toLowerCase()}s: ${model.name}[] };`);
+    }
+  }
+
+  lines.push('');
+  lines.push("export type CreateProjectBody = { name: string };");
+  lines.push("export type UpdateProjectBody = { name?: string; status?: WorkStatus };");
+  lines.push("export type UpdateProjectStatusBody = { status: WorkStatus };");
+  lines.push("export type CreateTaskBody = { title: string };");
+  lines.push("export type UpdateTaskBody = { title?: string; status?: WorkStatus };");
+  lines.push("export type UpdateTaskStatusBody = { status: WorkStatus };");
+  lines.push("export type CreateProjectNoteBody = { body: string; reference_url?: string | null };");
+  lines.push("export type UpdateProjectNoteBody = { body: string; reference_url?: string | null };");
+  lines.push("export type CreateTaskNoteBody = { body: string; reference_url?: string | null };");
+  lines.push("export type UpdateTaskNoteBody = { body: string; reference_url?: string | null };");
+  lines.push('');
+  lines.push('export type HealthResponse = { ok: boolean };', '');
+
+  return lines.join('\n');
+}
+
+function responseSingularKey(modelName) {
+  return modelName.endsWith('Note') ? 'note' : modelName.toLowerCase();
+}
+
+function responsePluralKey(modelName) {
+  return modelName.endsWith('Note') ? 'notes' : `${modelName.toLowerCase()}s`;
+}
+
+function renderPostgrestRowSchemaField(field, enumNames) {
+  if (field.fieldType === 'DateTime') {
+    if (field.dbName === 'updated_at') {
+      return 'z.string().min(1).optional()';
+    }
+    return 'z.string().min(1)';
+  }
+
+  let expr = scalarToZod(field.fieldType) ?? (enumNames.has(field.fieldType) ? `${field.fieldType}Schema` : 'z.unknown()');
+  if (field.fieldType === 'Int' && (field.dbName === 'id' || field.dbName.endsWith('_id'))) {
+    expr = 'z.number().int().positive()';
+  } else if (field.fieldType === 'Int') {
+    expr = 'z.number().int()';
+  } else if (field.fieldType === 'String') {
+    expr = 'z.string().min(1)';
+  }
+  if (field.isList) {
+    expr = `z.array(${expr})`;
+  }
+  if (field.isOptional) {
+    expr = `${expr}.optional()`;
+  }
+  return expr;
+}
+
+function renderNormalizedFieldValue(field) {
+  const source = `row.${field.dbName}`;
+  if (field.fieldType === 'DateTime') {
+    if (field.dbName === 'updated_at') {
+      return `${source} ? normalizePostgrestTimestamp(${source}) : createdAt`;
+    }
+    return `normalizePostgrestTimestamp(${source})`;
+  }
+
+  if (field.dbName === 'reference_url') {
+    return `${source} ?? null`;
+  }
+
+  return source;
+}
+
+function renderPublicContractsMjs(models, enums) {
+  const enumNames = new Set(enums.map((entry) => entry.name));
+  const lines = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.',
+    '// Source: packages/db/prisma/schema.prisma',
+    '',
+    "import { z } from 'zod';",
+    "import {",
+    ...enums.map((entry) => `  ${entry.name}Schema,`),
+    ...models.map((model) => `  ${pascalToRowSchema(model.name)},`),
+    "} from './prisma-zod.mjs';",
+    '',
+    ...models.map((model) => `export const ${model.name[0].toLowerCase()}${model.name.slice(1)}Schema = ${pascalToRowSchema(model.name)};`),
+    ''
+  ];
+
+  lines.push('function normalizePostgrestTimestamp(value) {');
+  lines.push('  const date = new Date(value);');
+  lines.push('  if (Number.isNaN(date.getTime())) {');
+  lines.push("    throw new Error(`Invalid PostgREST timestamp: ${value}`);");
+  lines.push('  }');
+  lines.push('');
+  lines.push('  return date.toISOString();');
+  lines.push('}', '');
+
+  for (const model of models) {
+    const camel = `${model.name[0].toLowerCase()}${model.name.slice(1)}`;
+    const singularKey = responseSingularKey(model.name);
+    const pluralKey = responsePluralKey(model.name);
+
+    lines.push(`export const postgrest${model.name}RowSchema = z.object({`);
+    for (const field of model.fields) {
+      lines.push(`  ${field.dbName}: ${renderPostgrestRowSchemaField(field, enumNames)},`);
+    }
+    lines.push('});', '');
+
+    lines.push(`export const postgrest${model.name}RowsSchema = z.array(postgrest${model.name}RowSchema);`, '');
+    lines.push(`export const list${model.name}sResponseSchema = z.object({`);
+    lines.push(`  ${pluralKey}: z.array(${camel}Schema)`);
+    lines.push('});', '');
+    lines.push(`export const create${model.name}ResponseSchema = z.object({`);
+    lines.push(`  ${singularKey}: ${camel}Schema`);
+    lines.push('});', '');
+
+    lines.push(`export function ${camel}FromPostgrestRow(row) {`);
+    const createdAtField = model.fields.find((field) => field.dbName === 'created_at');
+    if (createdAtField) {
+      lines.push('  const createdAt = normalizePostgrestTimestamp(row.created_at);');
+    }
+    lines.push(`  return ${camel}Schema.parse({`);
+    for (const field of model.fields) {
+      lines.push(`    ${field.name}: ${renderNormalizedFieldValue(field)},`);
+    }
+    lines.push('  });');
+    lines.push('}', '');
+
+    lines.push(`export function parsePostgrestList${model.name}sResponse(input) {`);
+    lines.push(`  const rows = postgrest${model.name}RowsSchema.parse(input);`);
+    lines.push(`  return list${model.name}sResponseSchema.parse({`);
+    lines.push(`    ${pluralKey}: rows.map(${camel}FromPostgrestRow)`);
+    lines.push('  });');
+    lines.push('}', '');
+
+    lines.push(`export function parsePostgrestCreate${model.name}Response(input) {`);
+    lines.push(`  const rows = postgrest${model.name}RowsSchema.parse(input);`);
+    lines.push('  if (rows.length === 0) {');
+    lines.push(`    throw new Error('Expected PostgREST create ${model.name.toLowerCase().replace(/note$/, ' note')} response to include one row');`);
+    lines.push('  }');
+    lines.push(`  return create${model.name}ResponseSchema.parse({`);
+    lines.push(`    ${singularKey}: ${camel}FromPostgrestRow(rows[0])`);
+    lines.push('  });');
+    lines.push('}', '');
+  }
+
+  return lines.join('\n');
+}
+
+function renderPublicContractsCjs(models, enums) {
+  const mjs = renderPublicContractsMjs(models, enums);
+  const exportNames = models.flatMap((model) => {
+    const camel = `${model.name[0].toLowerCase()}${model.name.slice(1)}`;
+    return [
+      `${camel}Schema`,
+      `postgrest${model.name}RowSchema`,
+      `postgrest${model.name}RowsSchema`,
+      `list${model.name}sResponseSchema`,
+      `create${model.name}ResponseSchema`,
+      `${camel}FromPostgrestRow`,
+      `parsePostgrestList${model.name}sResponse`,
+      `parsePostgrestCreate${model.name}Response`
+    ];
+  });
+
+  return (
+    mjs
+      .replace("import { z } from 'zod';", "const { z } = require('zod');")
+      .replace(/} from '\.\/prisma-zod\.mjs';/, "} = require('./prisma-zod.cjs');")
+      .replace(/export const /g, 'const ')
+      .replace(/export function /g, 'function ') +
+    `\nmodule.exports = {\n${exportNames.map((name) => `  ${name}`).join(',\n')}\n};\n`
+  );
+}
+
+function renderPublicContractsDts(models) {
+  const lines = [
+    '// AUTO-GENERATED FILE. DO NOT EDIT MANUALLY.',
+    '// Source: packages/db/prisma/schema.prisma',
+    '',
+    "import { z } from 'zod';",
+    "import {",
+    ...models.map((model) => `  ${pascalToRowSchema(model.name)},`),
+    "} from './prisma-zod';",
+    "import type {",
+    ...models.flatMap((model) => [
+      `  ${model.name},`,
+      `  Postgrest${model.name}Row,`,
+      `  List${model.name}sResponse,`,
+      `  Create${model.name}Response,`
+    ]),
+    "} from './public-types';",
+    ''
+  ];
+
+  for (const model of models) {
+    const camel = `${model.name[0].toLowerCase()}${model.name.slice(1)}`;
+    lines.push(`export declare const ${camel}Schema: typeof ${pascalToRowSchema(model.name)};`);
+  }
+  lines.push('');
+
+  for (const model of models) {
+    const camel = `${model.name[0].toLowerCase()}${model.name.slice(1)}`;
+    lines.push(`export declare const postgrest${model.name}RowSchema: z.ZodType<Postgrest${model.name}Row>;`);
+    lines.push(`export declare const postgrest${model.name}RowsSchema: z.ZodArray<typeof postgrest${model.name}RowSchema>;`);
+    lines.push(`export declare const list${model.name}sResponseSchema: z.ZodType<List${model.name}sResponse>;`);
+    lines.push(`export declare const create${model.name}ResponseSchema: z.ZodType<Create${model.name}Response>;`);
+    lines.push(`export declare function ${camel}FromPostgrestRow(row: Postgrest${model.name}Row): ${model.name};`);
+    lines.push(`export declare function parsePostgrestList${model.name}sResponse(input: unknown): List${model.name}sResponse;`);
+    lines.push(`export declare function parsePostgrestCreate${model.name}Response(input: unknown): Create${model.name}Response;`, '');
+  }
+
+  return lines.join('\n');
+}
+
 function scalarToZod(prismaType) {
   switch (prismaType) {
     case 'String':
@@ -380,6 +665,10 @@ const zodOutputDts = renderZodDts(models, enums);
 const classesOutputMjs = renderClassesMjs(models);
 const classesOutputCjs = renderClassesCjs(models);
 const classesOutputDts = renderClassesDts(models);
+const publicTypesOutput = renderPublicTypes(models, enums);
+const publicContractsOutputMjs = renderPublicContractsMjs(models, enums);
+const publicContractsOutputCjs = renderPublicContractsCjs(models, enums);
+const publicContractsOutputDts = renderPublicContractsDts(models);
 
 mkdirSync(dirname(outputTsPath), { recursive: true });
 writeFileSync(outputTsPath, output, 'utf8');
@@ -390,6 +679,11 @@ writeFileSync(outputZodDtsPath, zodOutputDts, 'utf8');
 writeFileSync(outputClassesMjsPath, classesOutputMjs, 'utf8');
 writeFileSync(outputClassesCjsPath, classesOutputCjs, 'utf8');
 writeFileSync(outputClassesDtsPath, classesOutputDts, 'utf8');
+writeFileSync(outputPublicTypesTsPath, publicTypesOutput, 'utf8');
+writeFileSync(outputPublicTypesDtsPath, publicTypesOutput, 'utf8');
+writeFileSync(outputPublicContractsMjsPath, publicContractsOutputMjs, 'utf8');
+writeFileSync(outputPublicContractsCjsPath, publicContractsOutputCjs, 'utf8');
+writeFileSync(outputPublicContractsDtsPath, publicContractsOutputDts, 'utf8');
 
 console.log(`Generated ${outputTsPath}`);
 console.log(`Generated ${outputDtsPath}`);
@@ -399,3 +693,8 @@ console.log(`Generated ${outputZodDtsPath}`);
 console.log(`Generated ${outputClassesMjsPath}`);
 console.log(`Generated ${outputClassesCjsPath}`);
 console.log(`Generated ${outputClassesDtsPath}`);
+console.log(`Generated ${outputPublicTypesTsPath}`);
+console.log(`Generated ${outputPublicTypesDtsPath}`);
+console.log(`Generated ${outputPublicContractsMjsPath}`);
+console.log(`Generated ${outputPublicContractsCjsPath}`);
+console.log(`Generated ${outputPublicContractsDtsPath}`);

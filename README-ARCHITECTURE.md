@@ -18,9 +18,12 @@ This document records architecture-level decisions for the current local-first p
   - Zod schemas: `packages/contracts/src/generated/prisma-zod.mjs`
   - Generated classes (domain + PostgREST shapes):
     - `packages/contracts/src/generated/prisma-classes.mjs`
+  - Generated public wrappers/adapters:
+    - `packages/contracts/src/generated/public-contracts.mjs`
+  - Generated named public contract types:
+    - `packages/contracts/src/generated/public-types.ts`
 - Manual wrapper layer (intentional):
   - route constants
-  - PostgREST response adapters
   - operation-specific payload schemas and business rules
   - file: `packages/contracts/src/index.mjs`
 

@@ -52,6 +52,10 @@ Notable migration enforcing status rules:
   `packages/contracts/src/generated/prisma-types.ts`
 - Generated Zod model and enum schemas:
   `packages/contracts/src/generated/prisma-zod.mjs`
+- Generated public wrappers/adapters:
+  `packages/contracts/src/generated/public-contracts.mjs`
+- Generated named public contract types:
+  `packages/contracts/src/generated/public-types.ts`
 - Shared contracts and Zod schemas:
   `packages/contracts/src/index.mjs`
 

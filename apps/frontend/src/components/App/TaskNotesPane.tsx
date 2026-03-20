@@ -81,9 +81,6 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
         >
           PICK A RANDOM TASK
         </button>
-        <p className="state-copy" data-testid="task-notes-empty-project">
-          {selectableItems.length === 0 ? 'No birds-eye items available.' : 'No project selected.'}
-        </p>
       </div>
     );
   }
