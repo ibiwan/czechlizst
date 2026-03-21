@@ -1,3 +1,5 @@
+import { handleEscapeCancel } from './handleEscapeCancel';
+
 type AddEntityCardProps = {
   addLabel: string;
   inputPlaceholder: string;
@@ -32,9 +34,19 @@ export function AddEntityCard({
   const cancelTestId = testIdPrefix ? `${testIdPrefix}-cancel` : undefined;
 
   if (open) {
+    const cancelEdit = () => {
+      onToggleOpen(false);
+      resetValue();
+    };
+
     return (
       <div className="add-card-edit" data-testid={rowTestId}>
-        <form onSubmit={onSubmit} className="inline-form in-row" data-testid={formTestId}>
+        <form
+          onSubmit={onSubmit}
+          onKeyDown={(event) => handleEscapeCancel(event, cancelEdit)}
+          className="inline-form in-row"
+          data-testid={formTestId}
+        >
           <input
             className="text-input"
             value={value}
@@ -58,10 +70,7 @@ export function AddEntityCard({
             className="icon-btn detail-rename-action"
             type="button"
             aria-label={`Cancel ${addLabel.replace('+ ', '')}`}
-            onClick={() => {
-              onToggleOpen(false);
-              resetValue();
-            }}
+            onClick={cancelEdit}
             data-testid={cancelTestId}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">

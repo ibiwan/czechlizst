@@ -4,7 +4,7 @@
 export type ProjectRowModelData = {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 };
@@ -13,7 +13,7 @@ export declare class ProjectRowModel {
   constructor(data: ProjectRowModelData);
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 }
@@ -21,7 +21,7 @@ export declare class ProjectRowModel {
 export type ProjectPostgrestRowData = {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 };
@@ -30,7 +30,7 @@ export declare class ProjectPostgrestRow {
   constructor(data: ProjectPostgrestRowData);
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 }
@@ -39,7 +39,7 @@ export type TaskRowModelData = {
   id: number;
   projectId: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 };
@@ -49,7 +49,7 @@ export declare class TaskRowModel {
   id: number;
   projectId: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 }
@@ -58,7 +58,7 @@ export type TaskPostgrestRowData = {
   id: number;
   project_id: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 };
@@ -68,7 +68,7 @@ export declare class TaskPostgrestRow {
   id: number;
   project_id: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 }

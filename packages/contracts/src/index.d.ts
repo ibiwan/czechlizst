@@ -69,38 +69,42 @@ export declare const routes: {
   readonly taskNotesByTask: (taskId: number | string) => string;
 };
 
+export type StoredWorkStatus = import('./generated/public-types').WorkStatus;
+export type WorkStatus = StoredWorkStatus | 'blocked';
+
 export declare const healthResponseSchema: z.ZodType<{ ok: boolean }>;
-export declare const workStatusSchema: typeof WorkStatusSchema;
-export declare const workStatuses: ReadonlyArray<import('./generated/public-types').WorkStatus>;
+export declare const storedWorkStatusSchema: typeof WorkStatusSchema;
+export declare const storedWorkStatuses: ReadonlyArray<StoredWorkStatus>;
+export declare const workStatusSchema: z.ZodType<WorkStatus>;
+export declare const workStatuses: ReadonlyArray<WorkStatus>;
+export declare const taskEditableWorkStatuses: ReadonlyArray<StoredWorkStatus>;
 export declare const resolvedBlockingStatuses: ReadonlyArray<'done' | 'dropped'>;
-export declare const allowedWorkStatusTransitions: Record<
-  import('./generated/public-types').WorkStatus,
-  Array<import('./generated/public-types').WorkStatus>
->;
+export declare const allowedWorkStatusTransitions: Record<StoredWorkStatus, Array<StoredWorkStatus>>;
 export declare function canTransitionWorkStatus(
-  from: import('./generated/public-types').WorkStatus,
-  to: import('./generated/public-types').WorkStatus
+  from: StoredWorkStatus,
+  to: StoredWorkStatus
 ): boolean;
 export declare function getWorkStatusTransitionReason(
-  from: import('./generated/public-types').WorkStatus,
-  to: import('./generated/public-types').WorkStatus
+  from: StoredWorkStatus,
+  to: StoredWorkStatus
 ): string | null;
+export declare function isStoredWorkStatus(status: unknown): status is StoredWorkStatus;
 export declare function isResolvedBlockingStatus(
-  status: import('./generated/public-types').WorkStatus
+  status: WorkStatus
 ): boolean;
 export declare function hasUnresolvedTaskBlockers(
   taskId: number,
   blockers: Array<import('./generated/public-types').TaskBlocker>,
-  tasks: Array<{ id: number; status: import('./generated/public-types').WorkStatus }>
+  tasks: Array<{ id: number; status: WorkStatus }>
 ): boolean;
 export declare function computeEffectiveTaskStatus(
-  task: { id: number; status: import('./generated/public-types').WorkStatus },
+  task: { id: number; status: StoredWorkStatus },
   blockers: Array<import('./generated/public-types').TaskBlocker>,
-  tasks: Array<{ id: number; status: import('./generated/public-types').WorkStatus }>
-): import('./generated/public-types').WorkStatus;
+  tasks: Array<{ id: number; status: WorkStatus }>
+): WorkStatus;
 export declare function computeProjectStatusFromTasks(
-  tasks: Array<{ status: import('./generated/public-types').WorkStatus }>
-): import('./generated/public-types').WorkStatus | null;
+  tasks: Array<{ status: WorkStatus }>
+): WorkStatus | null;
 
 export declare const createProjectBodySchema: z.ZodType<import('./generated/public-types').CreateProjectBody>;
 export declare const updateProjectBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectBody>;
@@ -148,8 +152,7 @@ export type {
   UpdateProjectStatusBody,
   UpdateTaskBody,
   UpdateTaskNoteBody,
-  UpdateTaskStatusBody,
-  WorkStatus
+  UpdateTaskStatusBody
 } from './generated/public-types';
 
 export type {

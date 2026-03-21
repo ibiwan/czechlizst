@@ -170,7 +170,7 @@ export const postgrestProjectNoteRowSchema = z.object({
   id: z.number().int().positive(),
   project_id: z.number().int().positive(),
   body: z.string().min(1),
-  reference_url: z.string().min(1).optional(),
+  reference_url: z.string().min(1).nullable().optional(),
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
 });
@@ -218,7 +218,7 @@ export const postgrestTaskNoteRowSchema = z.object({
   id: z.number().int().positive(),
   task_id: z.number().int().positive(),
   body: z.string().min(1),
-  reference_url: z.string().min(1).optional(),
+  reference_url: z.string().min(1).nullable().optional(),
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
 });

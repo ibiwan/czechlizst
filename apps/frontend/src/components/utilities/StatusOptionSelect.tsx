@@ -1,16 +1,19 @@
 import {
   canTransitionWorkStatus,
   getWorkStatusTransitionReason,
-  type WorkStatus,
-  workStatuses
+  storedWorkStatuses,
+  type StoredWorkStatus
 } from '@app/contracts';
 
 type StatusOptionSelectProps = {
   className: string;
-  currentStatus: WorkStatus;
+  currentStatus: StoredWorkStatus;
   disabled: boolean;
-  onChange: (status: WorkStatus) => void;
+  getOptionReason?: (status: StoredWorkStatus) => string | null;
+  isOptionAllowed?: (status: StoredWorkStatus) => boolean;
+  onChange: (status: StoredWorkStatus) => void;
   onClick?: (event: React.MouseEvent<HTMLSelectElement>) => void;
+  options?: readonly StoredWorkStatus[];
   testId?: string;
 };
 
@@ -18,23 +21,31 @@ export function StatusOptionSelect({
   className,
   currentStatus,
   disabled,
+  getOptionReason,
+  isOptionAllowed,
   onChange,
   onClick,
+  options = storedWorkStatuses,
   testId
 }: StatusOptionSelectProps) {
+  const visibleOptions = options.includes(currentStatus) ? options : [currentStatus, ...options];
+
   return (
     <select
       className={className}
       value={currentStatus}
       disabled={disabled}
       onClick={onClick}
-      onChange={(event) => onChange(event.target.value as WorkStatus)}
+      onChange={(event) => onChange(event.target.value as StoredWorkStatus)}
       data-testid={testId}
     >
-      {workStatuses.map((candidate) => {
-        const allowed =
-          candidate === currentStatus || canTransitionWorkStatus(currentStatus, candidate);
-        const reason = getWorkStatusTransitionReason(currentStatus, candidate);
+      {visibleOptions.map((candidate) => {
+        const allowed = isOptionAllowed
+          ? isOptionAllowed(candidate)
+          : candidate === currentStatus || canTransitionWorkStatus(currentStatus, candidate);
+        const reason = getOptionReason
+          ? getOptionReason(candidate)
+          : getWorkStatusTransitionReason(currentStatus, candidate);
         return (
           <option
             key={candidate}

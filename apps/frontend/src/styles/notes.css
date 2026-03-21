@@ -40,9 +40,36 @@
   gap: var(--space-2);
 }
 
+.note-main {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+}
+
 .note-item-content {
   display: grid;
   gap: var(--space-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.note-body-row {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-1);
+  max-width: 100%;
+}
+
+.note-body-row p {
+  min-width: 0;
+}
+
+.note-inline-actions {
+  display: flex;
+  align-items: flex-start;
+  flex-shrink: 0;
 }
 
 .note-actions {

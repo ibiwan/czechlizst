@@ -22,7 +22,7 @@ import type {
   TaskNotePostgrestRowData,
 } from './prisma-classes';
 
-export type WorkStatus = 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+export type WorkStatus = 'todo' | 'started' | 'active' | 'done' | 'dropped';
 
 export type Project = ProjectRow;
 export type Task = TaskRow;
@@ -33,7 +33,7 @@ export type TaskNote = TaskNoteRow;
 export type PostgrestProjectRow = Omit<ProjectPostgrestRowData, 'updated_at'> & {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at?: string;
 };
@@ -41,7 +41,7 @@ export type PostgrestTaskRow = Omit<TaskPostgrestRowData, 'updated_at'> & {
   id: number;
   project_id: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at?: string;
 };

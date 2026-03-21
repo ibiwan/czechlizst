@@ -1,4 +1,5 @@
 import { type FormEvent } from 'react';
+import { handleEscapeCancel } from '../handleEscapeCancel';
 
 type NotesDetailSectionAddFormProps = {
   createNoteLoading?: boolean;
@@ -28,10 +29,19 @@ export function NotesDetailSectionAddForm({
   testIdPrefix
 }: NotesDetailSectionAddFormProps) {
   const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
+  const cancelAdd = () => {
+    onToggleOpen(false);
+    resetNoteBody();
+    resetNoteReferenceUrl();
+  };
 
   return (
     <li className="note-item" data-testid={testId('add')}>
-      <form className="note-edit-form" onSubmit={onCreateNote}>
+      <form
+        className="note-edit-form"
+        onSubmit={onCreateNote}
+        onKeyDown={(event) => handleEscapeCancel(event, cancelAdd)}
+      >
         <div className="note-edit-fields">
           <input
             className="text-input"
@@ -65,11 +75,7 @@ export function NotesDetailSectionAddForm({
             className="icon-btn"
             type="button"
             aria-label="Cancel note"
-            onClick={() => {
-              onToggleOpen(false);
-              resetNoteBody();
-              resetNoteReferenceUrl();
-            }}
+            onClick={cancelAdd}
             data-testid={testId('add-cancel')}
           >
             <svg viewBox="0 0 24 24" aria-hidden="true">

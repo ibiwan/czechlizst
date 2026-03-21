@@ -4,7 +4,7 @@
 export type ProjectRow = {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 };
@@ -13,7 +13,7 @@ export type TaskRow = {
   id: number;
   projectId: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   createdAt: string;
   updatedAt: string;
 };

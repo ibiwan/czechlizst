@@ -1,5 +1,12 @@
 import { type FormEvent, useEffect, useState } from 'react';
-import { type WorkStatus } from '@app/contracts';
+import {
+  canTransitionWorkStatus,
+  getWorkStatusTransitionReason,
+  isStoredWorkStatus,
+  taskEditableWorkStatuses,
+  type StoredWorkStatus,
+  type WorkStatus
+} from '@app/contracts';
 import { StatusOptionSelect } from '@utilities/StatusOptionSelect';
 import { type TaskView } from '@app-types/view';
 
@@ -12,7 +19,7 @@ import { TaskStatusRow } from './TaskStatusRow';
 
 type TaskCardProps = {
   effectiveStatus?: WorkStatus;
-  onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
+  onUpdateTaskStatus: (taskId: number, currentStatus: StoredWorkStatus, nextStatus: StoredWorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
   isSelected: boolean;
   readOnly?: boolean;
@@ -36,6 +43,8 @@ export function TaskCard({
   onInnerClick
 }: TaskCardProps) {
   const shownStatus = effectiveStatus ?? task.status;
+  const isEffectivelyBlockedByLinks = shownStatus === 'blocked' && task.status !== 'blocked';
+  const currentStoredStatus = isStoredWorkStatus(task.status) ? task.status : null;
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title);
 
@@ -85,19 +94,43 @@ export function TaskCard({
           {isSelected ? (
             <>
               <TaskStatusRow
+                currentStatus={currentStoredStatus}
                 effectiveStatus={shownStatus}
                 task={task}
                 onUpdateTaskStatus={onUpdateTaskStatus}
                 updateTaskStatusLoading={updateTaskStatusLoading}
               />
-              <StatusOptionSelect
-                className={`status-select status-select-${task.status}`}
-                currentStatus={task.status}
-                disabled={updateTaskStatusLoading}
-                onClick={(event) => event.stopPropagation()}
-                onChange={(nextStatus) => onUpdateTaskStatus(task.id, task.status, nextStatus)}
-                testId={`task-status-select-${task.id}`}
-              />
+              {currentStoredStatus && (
+                <StatusOptionSelect
+                  className={`status-select status-select-${task.status}`}
+                  currentStatus={currentStoredStatus}
+                  disabled={updateTaskStatusLoading}
+                  getOptionReason={(candidate) => {
+                    if (candidate === currentStoredStatus) {
+                      return null;
+                    }
+                    if (isEffectivelyBlockedByLinks && candidate === 'active') {
+                      return 'Resolve blockers before activating this task.';
+                    }
+                    return getWorkStatusTransitionReason(currentStoredStatus, candidate);
+                  }}
+                  isOptionAllowed={(candidate) => {
+                    if (candidate === currentStoredStatus) {
+                      return true;
+                    }
+                    if (isEffectivelyBlockedByLinks && candidate === 'active') {
+                      return false;
+                    }
+                    return canTransitionWorkStatus(currentStoredStatus, candidate);
+                  }}
+                  onClick={(event) => event.stopPropagation()}
+                  onChange={(nextStatus) =>
+                    onUpdateTaskStatus(task.id, currentStoredStatus, nextStatus)
+                  }
+                  options={taskEditableWorkStatuses}
+                  testId={`task-status-select-${task.id}`}
+                />
+              )}
             </>
           ) : (
             <span className={`status-pill status-${shownStatus}`} data-testid={`task-status-pill-${task.id}`}>

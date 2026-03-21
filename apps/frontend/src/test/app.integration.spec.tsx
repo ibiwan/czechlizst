@@ -9,7 +9,7 @@ import { mainPageReducer } from '../store/mainPageSlice';
 type ProjectRow = {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 };
@@ -18,7 +18,7 @@ type TaskRow = {
   id: number;
   project_id: number;
   title: string;
-  status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at: string;
 };

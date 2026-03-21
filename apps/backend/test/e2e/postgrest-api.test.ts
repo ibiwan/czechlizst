@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
   canTransitionWorkStatus,
-  workStatuses
+  storedWorkStatuses
 } from '@app/contracts';
 
 const BASE_URL = process.env.POSTGREST_BASE_URL ?? 'http://localhost:3002';
@@ -216,7 +216,7 @@ describe('PostgREST API E2E', () => {
     }
   });
 
-  it('rejects invalid status transitions while allowing manual project status updates', async () => {
+  it('allows free task status transitions while still rejecting manual project status updates when tasks exist', async () => {
     const projectName = uniqueName('transition-project');
     const taskTitle = uniqueName('transition-task');
     let projectId: number | null = null;
@@ -247,7 +247,7 @@ describe('PostgREST API E2E', () => {
       const taskPayload = (await taskCreate.json()) as Array<{ id: number }>;
       taskId = taskPayload[0].id;
 
-      const invalidTaskTransition = await request(`/tasks?id=eq.${taskId}`, {
+      const freeTaskTransition = await request(`/tasks?id=eq.${taskId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -255,17 +255,17 @@ describe('PostgREST API E2E', () => {
         },
         body: JSON.stringify({ status: 'done' })
       });
-      expect(invalidTaskTransition.status).toBe(400);
+      expect(freeTaskTransition.status).toBe(200);
 
-      const validTaskTransition = await request(`/tasks?id=eq.${taskId}`, {
+      const secondTaskTransition = await request(`/tasks?id=eq.${taskId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ status: 'active' })
+        body: JSON.stringify({ status: 'todo' })
       });
-      expect(validTaskTransition.status).toBe(200);
+      expect(secondTaskTransition.status).toBe(200);
 
       const invalidProjectTransition = await request(`/projects?id=eq.${projectId}`, {
         method: 'PATCH',
@@ -276,6 +276,9 @@ describe('PostgREST API E2E', () => {
         body: JSON.stringify({ status: 'done' })
       });
       expect(invalidProjectTransition.status).toBe(400);
+
+      await request(`/tasks?id=eq.${taskId}`, { method: 'DELETE' });
+      taskId = null;
 
       const allowedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
         method: 'PATCH',
@@ -311,8 +314,8 @@ describe('PostgREST API E2E', () => {
       const projectPayload = (await projectCreate.json()) as Array<{ id: number }>;
       projectId = projectPayload[0].id;
 
-      for (const from of workStatuses) {
-        for (const to of workStatuses) {
+      for (const from of storedWorkStatuses) {
+        for (const to of storedWorkStatuses) {
           const seedTask = await request('/tasks', {
             method: 'POST',
             headers: {

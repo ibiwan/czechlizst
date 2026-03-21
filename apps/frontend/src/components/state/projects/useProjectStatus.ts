@@ -1,4 +1,4 @@
-import { type WorkStatus } from '@app/contracts';
+import { type StoredWorkStatus } from '@app/contracts';
 import {
   useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
@@ -21,7 +21,7 @@ export function useProjectStatus(activeProjectId: number | null) {
     }
   }
 
-  async function setProjectStatus(projectId: number, nextStatus: WorkStatus) {
+  async function setProjectStatus(projectId: number, nextStatus: StoredWorkStatus) {
     if (nextStatus === 'active') {
       await demoteOtherActiveProjects(projectId);
       await demoteActiveTasksOutsideProject({ projectId }).unwrap();
@@ -32,7 +32,7 @@ export function useProjectStatus(activeProjectId: number | null) {
     projectsQuery.refetch();
   }
 
-  async function onUpdateProjectStatus(currentStatus: WorkStatus, nextStatus: WorkStatus) {
+  async function onUpdateProjectStatus(currentStatus: StoredWorkStatus, nextStatus: StoredWorkStatus) {
     if (activeProjectId === null || nextStatus === currentStatus) {
       return;
     }

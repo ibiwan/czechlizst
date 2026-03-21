@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type FormEvent, type ReactNode } from 'react';
 import { type NoteView } from '@app-types/view';
 import { NotesDetailSectionEmpty } from './NotesDetailSection/NotesDetailSectionEmpty';
 import { NotesDetailSectionHeader } from './NotesDetailSection/NotesDetailSectionHeader';
@@ -64,7 +64,8 @@ export function NotesDetailSection({
 
   const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-${suffix}` : undefined;
 
-  const wrappedOnSubmitEdit = (note: NoteView) => onSubmitEdit(note, onUpdateNote ?? (() => { }));
+  const wrappedOnSubmitEdit = (note: NoteView, event: FormEvent<HTMLFormElement>) =>
+    onSubmitEdit(note, onUpdateNote ?? (() => { }))(event);
 
   return (
     <section className="detail-block" data-testid={testIdPrefix}>

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { WorkStatusSchema } from './generated/prisma-zod.mjs';
+import { WorkStatusSchema as StoredWorkStatusSchema } from './generated/prisma-zod.mjs';
 
 export {
   createProjectNoteResponseSchema,
@@ -74,18 +74,18 @@ export const healthResponseSchema = z.object({
   ok: z.boolean()
 });
 
-export const workStatusSchema = WorkStatusSchema;
+export const storedWorkStatusSchema = StoredWorkStatusSchema;
+export const storedWorkStatuses = storedWorkStatusSchema.options;
+export const workStatusSchema = z.enum([...storedWorkStatuses, 'blocked']);
 export const workStatuses = workStatusSchema.options;
+export const taskEditableWorkStatuses = storedWorkStatuses;
 export const resolvedBlockingStatuses = ['done', 'dropped'];
-
-export const allowedWorkStatusTransitions = {
-  todo: ['started', 'active', 'blocked', 'dropped'],
-  started: ['active', 'blocked', 'done', 'dropped', 'todo'],
-  active: ['started', 'blocked', 'done', 'dropped', 'todo'],
-  blocked: ['started', 'active', 'dropped', 'todo'],
-  done: ['todo', 'started', 'active', 'dropped'],
-  dropped: ['todo', 'started', 'active']
-};
+export const allowedWorkStatusTransitions = Object.fromEntries(
+  storedWorkStatuses.map((status) => [
+    status,
+    storedWorkStatuses.filter((candidate) => candidate !== status)
+  ])
+);
 
 export function canTransitionWorkStatus(from, to) {
   if (from === to) {
@@ -102,6 +102,10 @@ export function getWorkStatusTransitionReason(from, to) {
   }
 
   return `Cannot move from ${from} to ${to}.`;
+}
+
+export function isStoredWorkStatus(status) {
+  return storedWorkStatusSchema.safeParse(status).success;
 }
 
 export function isResolvedBlockingStatus(status) {
@@ -125,10 +129,6 @@ export function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
 }
 
 export function computeEffectiveTaskStatus(task, blockers, tasks) {
-  if (task.status === 'blocked') {
-    return 'blocked';
-  }
-
   return hasUnresolvedTaskBlockers(task.id, blockers, tasks) ? 'blocked' : task.status;
 }
 
@@ -202,14 +202,14 @@ export const createProjectBodySchema = z.object({
 export const updateProjectBodySchema = z
   .object({
     name: z.string().min(1).max(120).optional(),
-    status: workStatusSchema.optional()
+    status: storedWorkStatusSchema.optional()
   })
   .refine((value) => value.name !== undefined || value.status !== undefined, {
     message: 'Provide at least one project field to update.'
   });
 
 export const updateProjectStatusBodySchema = z.object({
-  status: workStatusSchema
+  status: storedWorkStatusSchema
 });
 
 export const createTaskBodySchema = z.object({
@@ -219,14 +219,14 @@ export const createTaskBodySchema = z.object({
 export const updateTaskBodySchema = z
   .object({
     title: z.string().min(1).max(240).optional(),
-    status: workStatusSchema.optional()
+    status: storedWorkStatusSchema.optional()
   })
   .refine((value) => value.title !== undefined || value.status !== undefined, {
     message: 'Provide at least one task field to update.'
   });
 
 export const updateTaskStatusBodySchema = z.object({
-  status: workStatusSchema
+  status: storedWorkStatusSchema
 });
 
 export const createProjectNoteBodySchema = z.object({

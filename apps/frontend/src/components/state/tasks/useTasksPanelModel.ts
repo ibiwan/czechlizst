@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   computeEffectiveTaskStatus,
-  type TaskBlocker,
-  type WorkStatus
+  isStoredWorkStatus,
+  type StoredWorkStatus,
+  type TaskBlocker
 } from '@app/contracts';
 import {
   useCreateTaskBlockerMutation,
   useCreateTaskMutation,
   useCreateTaskNoteMutation,
   useDeleteTaskBlockerMutation,
+  useDeleteTaskNoteMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksOutsideProjectMutation,
   useDeleteTaskMutation,
@@ -19,8 +21,7 @@ import {
   useListTasksQuery,
   useUpdateTaskMutation,
   useUpdateTaskNoteMutation,
-  useUpdateTaskStatusMutation,
-  useUpdateProjectStatusMutation
+  useUpdateTaskStatusMutation
 } from '@api';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setSelectedTaskId } from '@store/mainPageSlice';
@@ -30,7 +31,7 @@ export function useTasksPanelModel() {
   const dispatch = useAppDispatch();
   const selectedTaskId = useAppSelector((state) => state.mainPage.selectedTaskId);
 
-  const { activeProjectId, projects, projectsQuery } = useActiveProjectSelection();
+  const { activeProjectId, projectsQuery } = useActiveProjectSelection();
 
   const [taskInputOpen, setTaskInputOpen] = useState(false);
   const [taskNoteInputOpen, setTaskNoteInputOpen] = useState(false);
@@ -75,9 +76,9 @@ export function useTasksPanelModel() {
   const [createTask, createTaskState] = useCreateTaskMutation();
   const [createTaskNote, createTaskNoteState] = useCreateTaskNoteMutation();
   const [deleteTaskBlocker, deleteTaskBlockerState] = useDeleteTaskBlockerMutation();
+  const [deleteTaskNote, deleteTaskNoteState] = useDeleteTaskNoteMutation();
   const [updateTask, updateTaskState] = useUpdateTaskMutation();
   const [updateTaskStatus, updateTaskStatusState] = useUpdateTaskStatusMutation();
-  const [updateProjectStatus] = useUpdateProjectStatusMutation();
   const [demoteActiveTasksOutsideProject] = useDemoteActiveTasksOutsideProjectMutation();
   const [demoteActiveTasksExceptTask] = useDemoteActiveTasksExceptTaskMutation();
   const [deleteTask] = useDeleteTaskMutation();
@@ -158,23 +159,16 @@ export function useTasksPanelModel() {
     setTaskNoteInputOpen(false);
   }
 
-  async function demoteOtherActiveProjects(nextActiveProjectId: number) {
-    const activeProjects = projects.filter(
-      (project) => project.status === 'active' && project.id !== nextActiveProjectId
-    );
-    for (const project of activeProjects) {
-      await updateProjectStatus({ projectId: project.id, status: 'started' }).unwrap();
-    }
-  }
-
   async function ensureProjectActive(projectId: number) {
-    await demoteOtherActiveProjects(projectId);
     await demoteActiveTasksOutsideProject({ projectId }).unwrap();
-    await updateProjectStatus({ projectId, status: 'active' }).unwrap();
     projectsQuery.refetch();
   }
 
-  async function onUpdateTaskStatus(taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) {
+  async function onUpdateTaskStatus(
+    taskId: number,
+    currentStatus: StoredWorkStatus,
+    nextStatus: StoredWorkStatus
+  ) {
     if (activeProjectId === null) {
       return;
     }
@@ -184,21 +178,20 @@ export function useTasksPanelModel() {
   async function updateTaskStatusForProject(
     taskId: number,
     projectId: number,
-    currentStatus: WorkStatus,
-    nextStatus: WorkStatus
+    currentStatus: StoredWorkStatus,
+    nextStatus: StoredWorkStatus
   ) {
     if (nextStatus === currentStatus) {
+      return;
+    }
+
+    if (!isStoredWorkStatus(currentStatus) || !isStoredWorkStatus(nextStatus)) {
       return;
     }
 
     if (nextStatus === 'active') {
       await ensureProjectActive(projectId);
       await demoteActiveTasksExceptTask({ taskId }).unwrap();
-    } else {
-      const activeProject = projects.find((project) => project.id === projectId);
-      if (nextStatus === 'started' && activeProject?.status === 'active') {
-        await updateProjectStatus({ projectId, status: 'started' }).unwrap();
-      }
     }
 
     await updateTaskStatus({
@@ -235,6 +228,22 @@ export function useTasksPanelModel() {
       body: trimmed,
       referenceUrl
     }).unwrap();
+  }
+
+  async function onDeleteTaskNote(noteId: number) {
+    if (selectedTaskId === null) {
+      return;
+    }
+    const note = taskNotes.find((entry) => entry.id === noteId) ?? null;
+    if (!note) {
+      return;
+    }
+    const preview = note.body.length > 80 ? `${note.body.slice(0, 77)}...` : note.body;
+    const confirmed = window.confirm(`Delete note "${preview}"?`);
+    if (!confirmed) {
+      return;
+    }
+    await deleteTaskNote({ noteId, taskId: selectedTaskId }).unwrap();
   }
 
   async function onDeleteTask(taskId: number) {
@@ -291,6 +300,7 @@ export function useTasksPanelModel() {
     createTaskNoteState,
     createTaskState,
     deleteTaskBlockerState,
+    deleteTaskNoteState,
     effectiveAllTasks,
     effectiveTasks,
     effectiveTaskStatusById,
@@ -301,6 +311,7 @@ export function useTasksPanelModel() {
     onCreateTask,
     onCreateTaskNote,
     onDeleteTaskBlocker,
+    onDeleteTaskNote,
     onDeleteTask,
     onUpdateTaskStatus,
     onUpdateTaskTitle,

@@ -23,8 +23,10 @@ export function ProjectListPane() {
   };
 
   const sortedProjects = [...model.projects].sort((left, right) => {
-    const leftPriority = statusPriority[left.status] ?? 99;
-    const rightPriority = statusPriority[right.status] ?? 99;
+    const leftStatus = model.effectiveProjectStatusById.get(left.id) ?? left.status;
+    const rightStatus = model.effectiveProjectStatusById.get(right.id) ?? right.status;
+    const leftPriority = statusPriority[leftStatus] ?? 99;
+    const rightPriority = statusPriority[rightStatus] ?? 99;
     if (leftPriority !== rightPriority) {
       return leftPriority - rightPriority;
     }
@@ -32,7 +34,7 @@ export function ProjectListPane() {
   });
 
   const projectFlipKey = sortedProjects
-    .map((project) => `${project.id}-${project.status}`)
+    .map((project) => `${project.id}-${model.effectiveProjectStatusById.get(project.id) ?? project.status}`)
     .join('|');
 
   return (

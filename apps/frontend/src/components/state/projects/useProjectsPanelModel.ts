@@ -4,8 +4,13 @@ import {
   useListProjectNotesQuery,
   useListTasksQuery
 } from '@api';
-import { computeEffectiveTaskStatus, computeProjectStatusFromTasks } from '@app/contracts';
+import {
+  computeEffectiveTaskStatus,
+  computeProjectStatusFromTasks,
+  type WorkStatus
+} from '@app/contracts';
 import { useActiveProjectSelection } from '@store/useActiveProjectSelection';
+import { useMemo } from 'react';
 
 export function useProjectsPanelModel() {
   const { activeProjectId, projects, projectsQuery, selectProject } = useActiveProjectSelection();
@@ -17,30 +22,55 @@ export function useProjectsPanelModel() {
   });
   const tasks = tasksQuery.data?.tasks ?? [];
   const allTasksQuery = useListAllTasksQuery();
-  const allTasks = allTasksQuery.data?.tasks ?? [];
+  const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
   const allTaskBlockersQuery = useListAllTaskBlockersQuery();
-  const allTaskBlockers = allTaskBlockersQuery.data?.taskBlockers ?? [];
+  const allTaskBlockers = useMemo(
+    () => allTaskBlockersQuery.data?.taskBlockers ?? [],
+    [allTaskBlockersQuery.data?.taskBlockers]
+  );
 
   const projectNotesQuery = useListProjectNotesQuery(activeProjectId ?? 0, {
     skip: activeProjectId === null
   });
   const projectNotes = projectNotesQuery.data?.notes ?? [];
 
+  const effectiveProjectStatusById = useMemo(() => {
+    const effectiveTasksByProjectId = new Map<number, Array<{ status: WorkStatus }>>();
+
+    for (const task of allTasks) {
+      const effectiveStatus = computeEffectiveTaskStatus(task, allTaskBlockers, allTasks);
+      const existing = effectiveTasksByProjectId.get(task.projectId);
+      if (existing) {
+        existing.push({ status: effectiveStatus });
+      } else {
+        effectiveTasksByProjectId.set(task.projectId, [{ status: effectiveStatus }]);
+      }
+    }
+
+    return new Map(
+      projects.map((project) => {
+        const derivedStatus =
+          computeProjectStatusFromTasks(effectiveTasksByProjectId.get(project.id) ?? []) ??
+          project.status;
+
+        return [
+          project.id,
+          project.status === 'active' ? 'active' : derivedStatus
+        ];
+      })
+    );
+  }, [allTaskBlockers, allTasks, projects]);
+
   const effectiveProjectStatus =
     activeProject === null
       ? 'todo'
-      : tasks.length === 0
-        ? activeProject.status
-        : computeProjectStatusFromTasks(
-            tasks.map((task) => ({
-              status: computeEffectiveTaskStatus(task, allTaskBlockers, allTasks)
-            }))
-          ) ?? activeProject.status;
+      : effectiveProjectStatusById.get(activeProject.id) ?? activeProject.status;
 
   return {
     activeProject,
     activeProjectId,
     allTasks,
+    effectiveProjectStatusById,
     effectiveProjectStatus,
     projectNotes,
     projectNotesQuery,

@@ -4,7 +4,7 @@
 
 @layer components {
   .tw-add-spinner {
-    @apply inline-flex items-center h-[3cap] min-w-[3cap] max-w-[3cap] hover:max-w-fit p-0 overflow-hidden whitespace-nowrap border border-[var(--status-todo)] rounded-full text-white uppercase text-xs transition-all duration-500 ease-in-out cursor-pointer;
+    @apply inline-flex items-center h-[3cap] min-w-[3cap] max-w-[3cap] hover:max-w-[calc(3cap+var(--tw-add-spinner-max-ch)+1.5ch)] p-0 overflow-hidden whitespace-nowrap border border-[var(--status-todo)] rounded-full text-white uppercase text-xs transition-all duration-500 ease-in-out cursor-pointer;
     background: color-mix(in srgb, var(--status-todo) 18%, transparent);
   }
 

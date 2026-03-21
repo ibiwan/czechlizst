@@ -1,11 +1,11 @@
-import { type WorkStatus } from '@app/contracts';
+import { type StoredWorkStatus, type WorkStatus } from '@app/contracts';
 import { Flipped } from 'react-flip-toolkit';
 import { TaskCard } from './TaskCard';
 import { type TaskView } from '@app-types/view';
 
 type TaskListItemProps = {
   effectiveStatus: WorkStatus;
-  onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
+  onUpdateTaskStatus: (taskId: number, currentStatus: StoredWorkStatus, nextStatus: StoredWorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
   selectedTaskId: number | null;
   setSelectedTaskIdForRow: (taskId: number) => void;

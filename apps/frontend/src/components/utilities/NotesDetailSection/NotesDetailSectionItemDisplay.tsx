@@ -1,3 +1,4 @@
+import { DeleteIcon, EditIcon, IconButton } from '@utilities/IconButton';
 import { formatTimestamp } from '@lib/format';
 import { type NoteView } from '@app-types/view';
 
@@ -23,41 +24,40 @@ export function NotesDetailSectionItemDisplay({
   return (
     <>
       <div className="note-item-header">
-        <div className="note-item-content">
-          <p>{note.body}</p>
-          {note.referenceUrl && (
-            <p className="note-reference" data-testid={testId('reference')}>
-              {note.referenceUrl}
-            </p>
-          )}
+        <div className="note-main">
+          <div className="note-item-content">
+            <div className="note-body-row">
+              <p>{note.body}</p>
+              {onStartEdit && (
+                <div className="note-inline-actions">
+                  <IconButton
+                    aria-label="Edit note"
+                    onClick={() => onStartEdit()}
+                    disabled={updateNoteLoading}
+                    testId={testId('edit-button')}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </div>
+              )}
+            </div>
+            {note.referenceUrl && (
+              <p className="note-reference" data-testid={testId('reference')}>
+                {note.referenceUrl}
+              </p>
+            )}
+          </div>
         </div>
-        {(onStartEdit || onDeleteNote) && (
+        {onDeleteNote && (
           <div className="note-actions">
-            {onStartEdit && (
-              <button
-                className="icon-btn"
-                type="button"
-                aria-label="Edit note"
-                onClick={onStartEdit}
-                disabled={updateNoteLoading}
-                data-testid={testId('edit-button')}
-              >
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M4 17.25V20h2.75l8.1-8.1-2.75-2.75L4 17.25zm15.71-9.04c.39-.39.39-1.02 0-1.41l-1.5-1.5a1 1 0 0 0-1.41 0l-1.13 1.13 2.75 2.75 1.29-1.29z" />
-                </svg>
-              </button>
-            )}
-            {onDeleteNote && (
-              <button
-                className="link-danger"
-                type="button"
-                onClick={() => onDeleteNote(note.id)}
-                disabled={deleteNoteLoading}
-                data-testid={testId('delete-button')}
-              >
-                Delete
-              </button>
-            )}
+            <IconButton
+              aria-label="Delete note"
+              onClick={() => onDeleteNote(note.id)}
+              disabled={deleteNoteLoading}
+              testId={testId('delete-button')}
+            >
+              <DeleteIcon />
+            </IconButton>
           </div>
         )}
       </div>

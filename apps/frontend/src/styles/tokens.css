@@ -24,6 +24,7 @@
   --color-border: #2e3a48;
   --color-text: #e6edf3;
   --color-text-dim: #9db0c4;
+  --color-text-bright: #ffffff;
   --color-accent: #58a6ff;
   --color-accent-soft: #1f6feb33;
   --color-danger: #f85149;
@@ -36,31 +37,31 @@
   --color-row-add-edit: #141f2b;
 
   --status-todo: #3b82f6;
-  --status-started: #6DBA94;
+  --status-started: #5da784;
   --status-active: #f2952f;
   --status-blocked: #e23b3b;
-  --status-done: #10b981;
+  --status-done: #7c5a86;
   --status-dropped: #94a3b8;
 
   --status-todo-border-soft: #3b82f655;
-  --status-started-border-soft: #6DBA9455;
+  --status-started-border-soft: #5da78455;
   --status-active-border-soft: #f2952f55;
   --status-blocked-border-soft: #e23b3b55;
-  --status-done-border-soft: #10b98155;
+  --status-done-border-soft: #7c5a8655;
   --status-dropped-border-soft: #94a3b855;
 
   --status-todo-border-strong: #3b82f699;
-  --status-started-border-strong: #6DBA9499;
+  --status-started-border-strong: #5da78499;
   --status-active-border-strong: #f2952f99;
   --status-blocked-border-strong: #e23b3b99;
-  --status-done-border-strong: #10b98199;
+  --status-done-border-strong: #7c5a8699;
   --status-dropped-border-strong: #94a3b899;
 
   --status-todo-shadow: #3b82f622;
-  --status-started-shadow: #6DBA9422;
+  --status-started-shadow: #5da78422;
   --status-active-shadow: #f2952f22;
   --status-blocked-shadow: #e23b3b22;
-  --status-done-shadow: #10b98122;
+  --status-done-shadow: #7c5a8622;
   --status-dropped-shadow: #94a3b822;
 
   --shadow-soft: 0 10px 30px rgb(0 0 0 / 0.3);

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-type MainPageState = {
+export type MainPageState = {
   selectedProjectId: number | null;
   selectedTaskId: number | null;
   projectInputOpen: boolean;
@@ -12,7 +12,7 @@ type MainPageState = {
   newProjectNoteReferenceUrl: string;
 };
 
-const initialState: MainPageState = {
+const baseInitialState: MainPageState = {
   selectedProjectId: null,
   selectedTaskId: null,
   projectInputOpen: false,
@@ -23,6 +23,7 @@ const initialState: MainPageState = {
   newProjectNoteBody: '',
   newProjectNoteReferenceUrl: ''
 };
+const initialState: MainPageState = baseInitialState;
 
 const mainPageSlice = createSlice({
   name: 'mainPage',

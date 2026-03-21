@@ -2,12 +2,14 @@ import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import { setProjectRenameOpen, setProjectRenameValue } from '@store/mainPageSlice';
 import { useProjectRename } from '@state/projects/useProjectRename';
+import { handleEscapeCancel } from '@utilities/handleEscapeCancel';
 
 export function ProjectRenameRow() {
   const { activeProject } = useProjectsPanel();
   const { onUpdateProjectName, updateProjectState } = useProjectRename(activeProject?.id ?? null);
   const dispatch = useAppDispatch();
   const projectRenameValue = useAppSelector((state) => state.mainPage.projectRenameValue);
+  const cancelRename = () => dispatch(setProjectRenameOpen(false));
 
   if (!activeProject) {
     return null;
@@ -21,6 +23,7 @@ export function ProjectRenameRow() {
         await onUpdateProjectName(projectRenameValue);
         dispatch(setProjectRenameOpen(false));
       }}
+      onKeyDown={(event) => handleEscapeCancel(event, cancelRename)}
       data-testid="project-rename-form"
     >
       <input
@@ -46,7 +49,7 @@ export function ProjectRenameRow() {
         className="icon-btn detail-rename-action"
         type="button"
         aria-label="Cancel rename"
-        onClick={() => dispatch(setProjectRenameOpen(false))}
+        onClick={cancelRename}
         data-testid="project-rename-cancel"
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">

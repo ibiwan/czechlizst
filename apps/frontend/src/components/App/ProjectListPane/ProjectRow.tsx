@@ -11,8 +11,8 @@ type ProjectRowProps = {
 };
 
 export function ProjectRow({ project }: ProjectRowProps) {
-  const { activeProjectId, effectiveProjectStatus, selectProject } = useProjectsPanel();
-  const shownStatus = project.id === activeProjectId ? effectiveProjectStatus : project.status;
+  const { activeProjectId, effectiveProjectStatusById, selectProject } = useProjectsPanel();
+  const shownStatus = effectiveProjectStatusById.get(project.id) ?? project.status;
 
   const handleClick = (event: React.MouseEvent) => {
     event.stopPropagation();

@@ -17,7 +17,7 @@ function BirdsEyeTile({
   item: BirdsEyeItem;
   onSelect: (item: BirdsEyeItem) => void;
 }) {
-  const title = item.type === 'task' ? item.data.title : item.data.name;
+  const title = item.data.title;
   const timestamp = getItemRecency(item);
 
   return (
@@ -43,7 +43,7 @@ function BirdsEyeTile({
 }
 
 export function BirdsEyeView({ isDetailOpen, tasksModel }: { isDetailOpen: boolean; tasksModel: TasksPanelModel }) {
-  const { projects, selectProject } = useProjectsPanel();
+  const { selectProject } = useProjectsPanel();
   const { selectTask, tasks: activeProjectTasks } = tasksModel;
   const allTasks = tasksModel.effectiveAllTasks;
   const [pendingTaskSelection, setPendingTaskSelection] = useState<{
@@ -65,20 +65,11 @@ export function BirdsEyeView({ isDetailOpen, tasksModel }: { isDetailOpen: boole
   }, [activeProjectTasks, pendingTaskSelection, selectTask]);
 
   function handleSelect(item: BirdsEyeItem) {
-    if (item.type === 'project') {
-      setPendingTaskSelection(null);
-      selectProject(item.data.id);
-      return;
-    }
-
     setPendingTaskSelection({ projectId: item.data.projectId, taskId: item.data.id });
     selectProject(item.data.projectId);
   }
 
-  const { row1Items, row2Items } = useMemo(
-    () => buildBirdsEyeItems(projects, allTasks),
-    [allTasks, projects]
-  );
+  const { row1Items, row2Items } = useMemo(() => buildBirdsEyeItems(allTasks), [allTasks]);
   const visibleRow1Items = row1Items.slice(0, 10);
 
   const visibleRow2Items = useMemo(() => shuffleItems(row2Items).slice(0, 10), [row2Items]);

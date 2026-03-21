@@ -379,7 +379,7 @@ function renderPostgrestRowSchemaField(field, enumNames) {
     expr = `z.array(${expr})`;
   }
   if (field.isOptional) {
-    expr = `${expr}.optional()`;
+    expr = `${expr}.nullable().optional()`;
   }
   return expr;
 }

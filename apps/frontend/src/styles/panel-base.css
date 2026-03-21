@@ -62,6 +62,38 @@
   color: var(--color-text);
 }
 
+.task-blocker-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.task-blocker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.task-blocker-row:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.task-blocker-copy {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.task-blocker-title {
+  color: var(--color-text);
+}
+
 @media (width <=720px) {
   .panel {
     padding: var(--space-3);

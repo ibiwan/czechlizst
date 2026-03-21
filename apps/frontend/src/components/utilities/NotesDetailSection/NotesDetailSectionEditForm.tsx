@@ -1,4 +1,5 @@
 import { type FormEvent } from 'react';
+import { handleEscapeCancel } from '../handleEscapeCancel';
 
 type NotesDetailSectionEditFormProps = {
   editingBody: string;
@@ -24,7 +25,12 @@ export function NotesDetailSectionEditForm({
   const testId = (suffix: string) => testIdPrefix ? `${testIdPrefix}-edit-${suffix}` : undefined;
 
   return (
-    <form className="note-edit-form" onSubmit={onSubmitEdit} data-testid={testId('form')}>
+    <form
+      className="note-edit-form"
+      onSubmit={onSubmitEdit}
+      onKeyDown={(event) => handleEscapeCancel(event, onCancelEdit)}
+      data-testid={testId('form')}
+    >
       <div className="note-edit-fields">
         <input
           className="text-input"

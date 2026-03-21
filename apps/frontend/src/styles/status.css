@@ -29,7 +29,8 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  color: var(--status-pill-text, #fff);
+  color: var(--status-pill-text, var(--color-text-bright));
+  font-weight: 500;
 }
 
 .status-select-pill::after {
@@ -83,9 +84,10 @@
   border: 1px solid var(--status-pill-border, transparent);
   border-radius: 999px;
   background: var(--status-color, var(--color-text));
-  color: var(--status-pill-text, #fff);
+  color: var(--status-pill-text, var(--color-text-bright));
   padding: 0.15rem 1.15rem 0.15rem 0.45rem;
   font-size: 0.78rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   line-height: 1.2;
@@ -102,12 +104,13 @@
 
 .status-pill {
   font-size: 0.78rem;
+  font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border: 1px solid transparent;
   border-radius: 999px;
   padding: 0.15rem 0.45rem;
-  color: var(--status-pill-text, #fff);
+  color: var(--status-pill-text, var(--color-text-bright));
   background: var(--status-color, var(--color-text));
   border-color: var(--status-pill-border, transparent);
 }
@@ -164,7 +167,7 @@
 .status-dropped,
 .status-select-dropped {
   --status-color: #2b2b2b;
-  --status-pill-text: #fff;
+  --status-pill-text: var(--color-text-bright);
   --status-pill-border: #444;
   --status-border-soft: var(--status-dropped-border-soft);
   --status-border-strong: var(--status-dropped-border-strong);

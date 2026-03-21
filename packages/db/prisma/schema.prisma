@@ -12,7 +12,6 @@ enum WorkStatus {
   todo
   started
   active
-  blocked
   done
   dropped
 

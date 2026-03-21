@@ -47,7 +47,7 @@ const server = new McpServer({
   version: '0.1.0'
 });
 
-const workStatusSchema = z.enum(['todo', 'started', 'active', 'blocked', 'done', 'dropped']);
+const workStatusSchema = z.enum(['todo', 'started', 'active', 'done', 'dropped']);
 
 function ensureNonEmptyUpdate(value, ctx) {
   if (!value || Object.keys(value).length === 0) {

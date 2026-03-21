@@ -1,5 +1,6 @@
 import { type FormEvent } from 'react';
 import { IconButton, SaveIcon, CancelIcon } from '@utilities/IconButton';
+import { handleEscapeCancel } from '@utilities/handleEscapeCancel';
 import { type TaskView } from '@app-types/view';
 
 type TaskCardEditingProps = {
@@ -25,6 +26,7 @@ export function TaskCardEditing({
     <form
       className="inline-form in-row"
       onSubmit={onSubmit}
+      onKeyDown={(event) => handleEscapeCancel(event, onCancel)}
       onClick={(event) => event.stopPropagation()}
       data-testid={`task-edit-form-${task.id}`}
     >

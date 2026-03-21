@@ -24,6 +24,7 @@ export function AddSpinnerButton({
       className="tw-add-spinner group"
       onClick={onClick}
       aria-label={labelText}
+      style={{ '--tw-add-spinner-max-ch': `${labelMaxCh}ch` } as React.CSSProperties}
       data-testid={testId}
     >
       <span className="tw-add-spinner-lozenge">
@@ -36,10 +37,7 @@ export function AddSpinnerButton({
         </span>
       </span>
 
-      <span
-        className="tw-add-spinner-label-wrap"
-        style={{ '--tw-add-spinner-max-ch': `${labelMaxCh}ch` } as React.CSSProperties}
-      >
+      <span className="tw-add-spinner-label-wrap">
         <span className="tw-add-spinner-label">{labelText}</span>
       </span>
     </button>
