@@ -9,6 +9,8 @@ const routes = {
   projectsSelect: '/projects?select=*',
   tasks: '/tasks',
   tasksByProject: (projectId) => `/tasks?project_id=eq.${projectId}&select=*`,
+  taskBlockers: '/task_blockers',
+  taskBlockersByTask: (taskId) => `/task_blockers?task_id=eq.${taskId}&select=*`,
   projectNotes: '/project_notes',
   taskNotes: '/task_notes',
   projectNotesByProject: (projectId) =>
@@ -22,6 +24,7 @@ const healthResponseSchema = z.object({
 
 const workStatusSchema = WorkStatusSchema;
 const workStatuses = workStatusSchema.options;
+const resolvedBlockingStatuses = ['done', 'dropped'];
 
 const allowedWorkStatusTransitions = {
   todo: ['started', 'active', 'blocked', 'dropped'],
@@ -47,6 +50,34 @@ function getWorkStatusTransitionReason(from, to) {
   }
 
   return `Cannot move from ${from} to ${to}.`;
+}
+
+function isResolvedBlockingStatus(status) {
+  return resolvedBlockingStatuses.includes(status);
+}
+
+function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
+  const blockingTaskIds = blockers
+    .filter((blocker) => blocker.taskId === taskId)
+    .map((blocker) => blocker.blockingTaskId);
+
+  if (blockingTaskIds.length === 0) {
+    return false;
+  }
+
+  const taskStatusById = new Map(tasks.map((task) => [task.id, task.status]));
+  return blockingTaskIds.some((blockingTaskId) => {
+    const status = taskStatusById.get(blockingTaskId);
+    return status === undefined || !isResolvedBlockingStatus(status);
+  });
+}
+
+function computeEffectiveTaskStatus(task, blockers, tasks) {
+  if (task.status === 'blocked') {
+    return 'blocked';
+  }
+
+  return hasUnresolvedTaskBlockers(task.id, blockers, tasks) ? 'blocked' : task.status;
 }
 
 function computeProjectStatusFromTasks(tasks) {
@@ -156,6 +187,13 @@ const createTaskNoteBodySchema = z.object({
   reference_url: z.string().min(1).max(5000).optional().nullable()
 });
 
+const createTaskBlockerBodySchema = z.object({
+  task_id: z.number().int().positive(),
+  blocking_task_id: z.number().int().positive()
+}).refine((value) => value.task_id !== value.blocking_task_id, {
+  message: 'A task cannot be blocked by itself.'
+});
+
 const updateProjectNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
   reference_url: z.string().min(1).max(5000).optional().nullable()
@@ -173,9 +211,13 @@ module.exports = {
   healthResponseSchema,
   workStatusSchema,
   workStatuses,
+  resolvedBlockingStatuses,
   allowedWorkStatusTransitions,
   canTransitionWorkStatus,
   getWorkStatusTransitionReason,
+  isResolvedBlockingStatus,
+  hasUnresolvedTaskBlockers,
+  computeEffectiveTaskStatus,
   computeProjectStatusFromTasks,
   createProjectBodySchema,
   updateProjectBodySchema,
@@ -185,6 +227,7 @@ module.exports = {
   updateTaskStatusBodySchema,
   createProjectNoteBodySchema,
   createTaskNoteBodySchema,
+  createTaskBlockerBodySchema,
   updateProjectNoteBodySchema,
   updateTaskNoteBodySchema
 };

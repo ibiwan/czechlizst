@@ -19,6 +19,7 @@ Primary use case: conversational backlog management for board, card, and video g
    - tests and coverage: [README-TESTING.md](README-TESTING.md)
    - MCP/tool usage: [README-TOOL.md](README-TOOL.md)
    - architecture rationale: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
+   - blocking/dependency redesign plan: [README-BLOCKING.md](README-BLOCKING.md)
    - debt and priorities: [README-TECHDEBT.md](README-TECHDEBT.md)
 
 ## Quick Start
@@ -46,4 +47,5 @@ Endpoints:
 - Testing strategy and coverage: [README-TESTING.md](README-TESTING.md)
 - Tooling and MCP integration: [README-TOOL.md](README-TOOL.md)
 - Architecture, component roles, and state patterns: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
+- Blocking/dependency redesign plan: [README-BLOCKING.md](README-BLOCKING.md)
 - PostgREST service details: [apps/backend/README.md](apps/backend/README.md)

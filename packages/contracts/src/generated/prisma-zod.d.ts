@@ -7,12 +7,14 @@ export declare const WorkStatusSchema: z.ZodEnum<['todo', 'started', 'active', '
 
 export declare const ProjectRowSchema: z.ZodType<ProjectRow>;
 export declare const TaskRowSchema: z.ZodType<TaskRow>;
+export declare const TaskBlockerRowSchema: z.ZodType<TaskBlockerRow>;
 export declare const ProjectNoteRowSchema: z.ZodType<ProjectNoteRow>;
 export declare const TaskNoteRowSchema: z.ZodType<TaskNoteRow>;
 
 export declare const PrismaRowSchemas: {
   Project: typeof ProjectRowSchema;
   Task: typeof TaskRowSchema;
+  TaskBlocker: typeof TaskBlockerRowSchema;
   ProjectNote: typeof ProjectNoteRowSchema;
   TaskNote: typeof TaskNoteRowSchema;
 };
@@ -20,6 +22,7 @@ export declare const PrismaRowSchemas: {
 export type {
   ProjectRow,
   TaskRow,
+  TaskBlockerRow,
   ProjectNoteRow,
   TaskNoteRow,
 } from './prisma-types';

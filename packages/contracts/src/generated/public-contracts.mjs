@@ -6,12 +6,14 @@ import {
   WorkStatusSchema,
   ProjectRowSchema,
   TaskRowSchema,
+  TaskBlockerRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } from './prisma-zod.mjs';
 
 export const projectSchema = ProjectRowSchema;
 export const taskSchema = TaskRowSchema;
+export const taskBlockerSchema = TaskBlockerRowSchema;
 export const projectNoteSchema = ProjectNoteRowSchema;
 export const taskNoteSchema = TaskNoteRowSchema;
 
@@ -115,6 +117,52 @@ export function parsePostgrestCreateTaskResponse(input) {
   }
   return createTaskResponseSchema.parse({
     task: taskFromPostgrestRow(rows[0])
+  });
+}
+
+export const postgrestTaskBlockerRowSchema = z.object({
+  id: z.number().int().positive(),
+  task_id: z.number().int().positive(),
+  blocking_task_id: z.number().int().positive(),
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional(),
+});
+
+export const postgrestTaskBlockerRowsSchema = z.array(postgrestTaskBlockerRowSchema);
+
+export const listTaskBlockersResponseSchema = z.object({
+  taskBlockers: z.array(taskBlockerSchema)
+});
+
+export const createTaskBlockerResponseSchema = z.object({
+  taskBlocker: taskBlockerSchema
+});
+
+export function taskBlockerFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
+  return taskBlockerSchema.parse({
+    id: row.id,
+    taskId: row.task_id,
+    blockingTaskId: row.blocking_task_id,
+    createdAt: normalizePostgrestTimestamp(row.created_at),
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
+  });
+}
+
+export function parsePostgrestListTaskBlockersResponse(input) {
+  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+  return listTaskBlockersResponseSchema.parse({
+    taskBlockers: rows.map(taskBlockerFromPostgrestRow)
+  });
+}
+
+export function parsePostgrestCreateTaskBlockerResponse(input) {
+  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+  if (rows.length === 0) {
+    throw new Error('Expected PostgREST create taskblocker response to include one row');
+  }
+  return createTaskBlockerResponseSchema.parse({
+    taskBlocker: taskBlockerFromPostgrestRow(rows[0])
   });
 }
 

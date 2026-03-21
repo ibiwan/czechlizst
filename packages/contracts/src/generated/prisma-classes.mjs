@@ -43,6 +43,26 @@ export class TaskPostgrestRow {
   }
 }
 
+export class TaskBlockerRowModel {
+  constructor(data) {
+    this.id = data.id;
+    this.taskId = data.taskId;
+    this.blockingTaskId = data.blockingTaskId;
+    this.createdAt = data.createdAt;
+    this.updatedAt = data.updatedAt;
+  }
+}
+
+export class TaskBlockerPostgrestRow {
+  constructor(data) {
+    this.id = data.id;
+    this.task_id = data.task_id;
+    this.blocking_task_id = data.blocking_task_id;
+    this.created_at = data.created_at;
+    this.updated_at = data.updated_at;
+  }
+}
+
 export class ProjectNoteRowModel {
   constructor(data) {
     this.id = data.id;

@@ -320,13 +320,12 @@ function renderPublicTypes(models, enums) {
   lines.push('');
 
   for (const model of models) {
-    if (model.name.endsWith('Note')) {
-      lines.push(`export type Create${model.name}Response = { note: ${model.name} };`);
-      lines.push(`export type List${model.name}sResponse = { notes: ${model.name}[] };`);
-    } else {
-      lines.push(`export type Create${model.name}Response = { ${model.name.toLowerCase()}: ${model.name} };`);
-      lines.push(`export type List${model.name}sResponse = { ${model.name.toLowerCase()}s: ${model.name}[] };`);
-    }
+    lines.push(
+      `export type Create${model.name}Response = { ${responseSingularKey(model.name)}: ${model.name} };`
+    );
+    lines.push(
+      `export type List${model.name}sResponse = { ${responsePluralKey(model.name)}: ${model.name}[] };`
+    );
   }
 
   lines.push('');
@@ -347,11 +346,17 @@ function renderPublicTypes(models, enums) {
 }
 
 function responseSingularKey(modelName) {
-  return modelName.endsWith('Note') ? 'note' : modelName.toLowerCase();
+  if (modelName.endsWith('Note')) {
+    return 'note';
+  }
+  return `${modelName[0].toLowerCase()}${modelName.slice(1)}`;
 }
 
 function responsePluralKey(modelName) {
-  return modelName.endsWith('Note') ? 'notes' : `${modelName.toLowerCase()}s`;
+  if (modelName.endsWith('Note')) {
+    return 'notes';
+  }
+  return `${responseSingularKey(modelName)}s`;
 }
 
 function renderPostgrestRowSchemaField(field, enumNames) {

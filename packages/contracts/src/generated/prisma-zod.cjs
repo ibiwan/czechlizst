@@ -22,6 +22,14 @@ const TaskRowSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
+const TaskBlockerRowSchema = z.object({
+  id: z.number().int(),
+  taskId: z.number().int(),
+  blockingTaskId: z.number().int(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
 const ProjectNoteRowSchema = z.object({
   id: z.number().int(),
   projectId: z.number().int(),
@@ -43,6 +51,7 @@ const TaskNoteRowSchema = z.object({
 const PrismaRowSchemas = {
   Project: ProjectRowSchema,
   Task: TaskRowSchema,
+  TaskBlocker: TaskBlockerRowSchema,
   ProjectNote: ProjectNoteRowSchema,
   TaskNote: TaskNoteRowSchema,
 };
@@ -51,6 +60,7 @@ module.exports = {
   WorkStatusSchema,
   ProjectRowSchema,
   TaskRowSchema,
+  TaskBlockerRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
   PrismaRowSchemas

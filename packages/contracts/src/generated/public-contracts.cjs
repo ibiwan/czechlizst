@@ -6,12 +6,14 @@ import {
   WorkStatusSchema,
   ProjectRowSchema,
   TaskRowSchema,
+  TaskBlockerRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } = require('./prisma-zod.cjs');
 
 const projectSchema = ProjectRowSchema;
 const taskSchema = TaskRowSchema;
+const taskBlockerSchema = TaskBlockerRowSchema;
 const projectNoteSchema = ProjectNoteRowSchema;
 const taskNoteSchema = TaskNoteRowSchema;
 
@@ -115,6 +117,52 @@ function parsePostgrestCreateTaskResponse(input) {
   }
   return createTaskResponseSchema.parse({
     task: taskFromPostgrestRow(rows[0])
+  });
+}
+
+const postgrestTaskBlockerRowSchema = z.object({
+  id: z.number().int().positive(),
+  task_id: z.number().int().positive(),
+  blocking_task_id: z.number().int().positive(),
+  created_at: z.string().min(1),
+  updated_at: z.string().min(1).optional(),
+});
+
+const postgrestTaskBlockerRowsSchema = z.array(postgrestTaskBlockerRowSchema);
+
+const listTaskBlockersResponseSchema = z.object({
+  taskBlockers: z.array(taskBlockerSchema)
+});
+
+const createTaskBlockerResponseSchema = z.object({
+  taskBlocker: taskBlockerSchema
+});
+
+function taskBlockerFromPostgrestRow(row) {
+  const createdAt = normalizePostgrestTimestamp(row.created_at);
+  return taskBlockerSchema.parse({
+    id: row.id,
+    taskId: row.task_id,
+    blockingTaskId: row.blocking_task_id,
+    createdAt: normalizePostgrestTimestamp(row.created_at),
+    updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
+  });
+}
+
+function parsePostgrestListTaskBlockersResponse(input) {
+  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+  return listTaskBlockersResponseSchema.parse({
+    taskBlockers: rows.map(taskBlockerFromPostgrestRow)
+  });
+}
+
+function parsePostgrestCreateTaskBlockerResponse(input) {
+  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+  if (rows.length === 0) {
+    throw new Error('Expected PostgREST create taskblocker response to include one row');
+  }
+  return createTaskBlockerResponseSchema.parse({
+    taskBlocker: taskBlockerFromPostgrestRow(rows[0])
   });
 }
 
@@ -231,6 +279,14 @@ module.exports = {
   taskFromPostgrestRow,
   parsePostgrestListTasksResponse,
   parsePostgrestCreateTaskResponse,
+  taskBlockerSchema,
+  postgrestTaskBlockerRowSchema,
+  postgrestTaskBlockerRowsSchema,
+  listTaskBlockersResponseSchema,
+  createTaskBlockerResponseSchema,
+  taskBlockerFromPostgrestRow,
+  parsePostgrestListTaskBlockersResponse,
+  parsePostgrestCreateTaskBlockerResponse,
   projectNoteSchema,
   postgrestProjectNoteRowSchema,
   postgrestProjectNoteRowsSchema,

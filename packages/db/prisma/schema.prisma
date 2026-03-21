@@ -33,17 +33,35 @@ model Project {
 }
 
 model Task {
-  id        Int      @id @default(autoincrement())
-  projectId Int      @map("project_id")
-  title     String
-  status    WorkStatus @default(todo)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  notes     TaskNote[]
+  id          Int           @id @default(autoincrement())
+  projectId   Int           @map("project_id")
+  title       String
+  status      WorkStatus    @default(todo)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  notes       TaskNote[]
+  blockers    TaskBlocker[] @relation("TaskBlockers_Task")
+  blockingFor TaskBlocker[] @relation("TaskBlockers_BlockingTask")
 
   @@index([projectId])
   @@map("tasks")
+  @@schema("api")
+}
+
+model TaskBlocker {
+  id             Int      @id @default(autoincrement())
+  taskId         Int      @map("task_id")
+  blockingTaskId Int      @map("blocking_task_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+  task           Task     @relation("TaskBlockers_Task", fields: [taskId], references: [id], onDelete: Cascade)
+  blockingTask   Task     @relation("TaskBlockers_BlockingTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, blockingTaskId])
+  @@index([taskId])
+  @@index([blockingTaskId])
+  @@map("task_blockers")
   @@schema("api")
 }
 

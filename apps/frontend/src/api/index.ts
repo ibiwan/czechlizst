@@ -16,12 +16,16 @@ export {
   useUpdateProjectStatusMutation
 } from './projects';
 export {
+  useCreateTaskBlockerMutation,
   useCreateTaskMutation,
+  useDeleteTaskBlockerMutation,
   useDeleteTaskMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
+  useListAllTaskBlockersQuery,
   useListAllTasksQuery,
+  useListTaskBlockersQuery,
   useListTasksQuery,
   useUpdateTaskMutation,
   useUpdateTaskStatusMutation

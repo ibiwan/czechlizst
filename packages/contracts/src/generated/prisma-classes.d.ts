@@ -73,6 +73,40 @@ export declare class TaskPostgrestRow {
   updated_at: string;
 }
 
+export type TaskBlockerRowModelData = {
+  id: number;
+  taskId: number;
+  blockingTaskId: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export declare class TaskBlockerRowModel {
+  constructor(data: TaskBlockerRowModelData);
+  id: number;
+  taskId: number;
+  blockingTaskId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type TaskBlockerPostgrestRowData = {
+  id: number;
+  task_id: number;
+  blocking_task_id: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export declare class TaskBlockerPostgrestRow {
+  constructor(data: TaskBlockerPostgrestRowData);
+  id: number;
+  task_id: number;
+  blocking_task_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export type ProjectNoteRowModelData = {
   id: number;
   projectId: number;

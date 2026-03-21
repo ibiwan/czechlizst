@@ -28,6 +28,7 @@ Single source of truth is Prisma:
 Tables:
 - `api.projects`
 - `api.tasks` (FK to `api.projects`)
+- `api.task_blockers` (task-to-task dependency links)
 - `api.project_notes` (FK to `api.projects`)
 - `api.task_notes` (FK to `api.tasks`)
 

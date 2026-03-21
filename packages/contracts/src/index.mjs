@@ -4,16 +4,20 @@ import { WorkStatusSchema } from './generated/prisma-zod.mjs';
 export {
   createProjectNoteResponseSchema,
   createProjectResponseSchema,
+  createTaskBlockerResponseSchema,
   createTaskNoteResponseSchema,
   createTaskResponseSchema,
   listProjectNotesResponseSchema,
   listProjectsResponseSchema,
+  listTaskBlockersResponseSchema,
   listTaskNotesResponseSchema,
   listTasksResponseSchema,
   postgrestProjectNoteRowSchema,
   postgrestProjectNoteRowsSchema,
   postgrestProjectRowSchema,
   postgrestProjectRowsSchema,
+  postgrestTaskBlockerRowSchema,
+  postgrestTaskBlockerRowsSchema,
   postgrestTaskNoteRowSchema,
   postgrestTaskNoteRowsSchema,
   postgrestTaskRowSchema,
@@ -24,12 +28,16 @@ export {
   projectSchema,
   parsePostgrestCreateProjectNoteResponse,
   parsePostgrestCreateProjectResponse,
+  parsePostgrestCreateTaskBlockerResponse,
   parsePostgrestCreateTaskNoteResponse,
   parsePostgrestCreateTaskResponse,
   parsePostgrestListProjectNotesResponse,
   parsePostgrestListProjectsResponse,
+  parsePostgrestListTaskBlockersResponse,
   parsePostgrestListTaskNotesResponse,
   parsePostgrestListTasksResponse,
+  taskBlockerFromPostgrestRow,
+  taskBlockerSchema,
   taskFromPostgrestRow,
   taskNoteFromPostgrestRow,
   taskNoteSchema,
@@ -53,6 +61,8 @@ export const routes = {
   projectsSelect: '/projects?select=*',
   tasks: '/tasks',
   tasksByProject: (projectId) => `/tasks?project_id=eq.${projectId}&select=*`,
+  taskBlockers: '/task_blockers',
+  taskBlockersByTask: (taskId) => `/task_blockers?task_id=eq.${taskId}&select=*`,
   projectNotes: '/project_notes',
   taskNotes: '/task_notes',
   projectNotesByProject: (projectId) =>
@@ -66,6 +76,7 @@ export const healthResponseSchema = z.object({
 
 export const workStatusSchema = WorkStatusSchema;
 export const workStatuses = workStatusSchema.options;
+export const resolvedBlockingStatuses = ['done', 'dropped'];
 
 export const allowedWorkStatusTransitions = {
   todo: ['started', 'active', 'blocked', 'dropped'],
@@ -91,6 +102,34 @@ export function getWorkStatusTransitionReason(from, to) {
   }
 
   return `Cannot move from ${from} to ${to}.`;
+}
+
+export function isResolvedBlockingStatus(status) {
+  return resolvedBlockingStatuses.includes(status);
+}
+
+export function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
+  const blockingTaskIds = blockers
+    .filter((blocker) => blocker.taskId === taskId)
+    .map((blocker) => blocker.blockingTaskId);
+
+  if (blockingTaskIds.length === 0) {
+    return false;
+  }
+
+  const taskStatusById = new Map(tasks.map((task) => [task.id, task.status]));
+  return blockingTaskIds.some((blockingTaskId) => {
+    const status = taskStatusById.get(blockingTaskId);
+    return status === undefined || !isResolvedBlockingStatus(status);
+  });
+}
+
+export function computeEffectiveTaskStatus(task, blockers, tasks) {
+  if (task.status === 'blocked') {
+    return 'blocked';
+  }
+
+  return hasUnresolvedTaskBlockers(task.id, blockers, tasks) ? 'blocked' : task.status;
 }
 
 export function computeProjectStatusFromTasks(tasks) {
@@ -198,6 +237,13 @@ export const createProjectNoteBodySchema = z.object({
 export const createTaskNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
   reference_url: z.string().min(1).max(5000).optional().nullable()
+});
+
+export const createTaskBlockerBodySchema = z.object({
+  task_id: z.number().int().positive(),
+  blocking_task_id: z.number().int().positive()
+}).refine((value) => value.task_id !== value.blocking_task_id, {
+  message: 'A task cannot be blocked by itself.'
 });
 
 export const updateProjectNoteBodySchema = z.object({

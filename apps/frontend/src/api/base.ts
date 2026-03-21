@@ -59,7 +59,7 @@ export const parseSingleObjectResponse =
 
 export const api = createApi({
   reducerPath: 'api',
-  tagTypes: ['Projects', 'Tasks', 'ProjectNotes', 'TaskNotes'],
+  tagTypes: ['Projects', 'Tasks', 'TaskBlockers', 'ProjectNotes', 'TaskNotes'],
   baseQuery: fetchBaseQuery({
     baseUrl: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3002'
   }),

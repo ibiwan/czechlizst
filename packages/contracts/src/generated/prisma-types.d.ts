@@ -18,6 +18,14 @@ export type TaskRow = {
   updatedAt: string;
 };
 
+export type TaskBlockerRow = {
+  id: number;
+  taskId: number;
+  blockingTaskId: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type ProjectNoteRow = {
   id: number;
   projectId: number;
@@ -39,6 +47,7 @@ export type TaskNoteRow = {
 export type PrismaRowModels = {
   Project: ProjectRow;
   Task: TaskRow;
+  TaskBlocker: TaskBlockerRow;
   ProjectNote: ProjectNoteRow;
   TaskNote: TaskNoteRow;
 };

@@ -1,11 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import { type WorkStatus } from '@app/contracts';
 import {
+  computeEffectiveTaskStatus,
+  type TaskBlocker,
+  type WorkStatus
+} from '@app/contracts';
+import {
+  useCreateTaskBlockerMutation,
   useCreateTaskMutation,
   useCreateTaskNoteMutation,
+  useDeleteTaskBlockerMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksOutsideProjectMutation,
   useDeleteTaskMutation,
+  useListAllTaskBlockersQuery,
+  useListAllTasksQuery,
+  useListTaskBlockersQuery,
   useListTaskNotesQuery,
   useListTasksQuery,
   useUpdateTaskMutation,
@@ -33,6 +42,13 @@ export function useTasksPanelModel() {
     skip: activeProjectId === null
   });
   const tasks = useMemo(() => tasksQuery.data?.tasks ?? [], [tasksQuery.data?.tasks]);
+  const allTasksQuery = useListAllTasksQuery();
+  const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
+  const allTaskBlockersQuery = useListAllTaskBlockersQuery();
+  const allTaskBlockers = useMemo(
+    () => allTaskBlockersQuery.data?.taskBlockers ?? [],
+    [allTaskBlockersQuery.data?.taskBlockers]
+  );
 
   useEffect(() => {
     if (selectedTaskId === null) {
@@ -50,9 +66,15 @@ export function useTasksPanelModel() {
     skip: selectedTaskId === null
   });
   const taskNotes = taskNotesQuery.data?.notes ?? [];
+  const taskBlockersQuery = useListTaskBlockersQuery(selectedTaskId ?? 0, {
+    skip: selectedTaskId === null
+  });
+  const taskBlockers = taskBlockersQuery.data?.taskBlockers ?? [];
 
+  const [createTaskBlocker, createTaskBlockerState] = useCreateTaskBlockerMutation();
   const [createTask, createTaskState] = useCreateTaskMutation();
   const [createTaskNote, createTaskNoteState] = useCreateTaskNoteMutation();
+  const [deleteTaskBlocker, deleteTaskBlockerState] = useDeleteTaskBlockerMutation();
   const [updateTask, updateTaskState] = useUpdateTaskMutation();
   const [updateTaskStatus, updateTaskStatusState] = useUpdateTaskStatusMutation();
   const [updateProjectStatus] = useUpdateProjectStatusMutation();
@@ -65,6 +87,32 @@ export function useTasksPanelModel() {
     () => tasks.find((task) => task.id === selectedTaskId) ?? null,
     [selectedTaskId, tasks]
   );
+  const effectiveTaskStatusById = useMemo(
+    () =>
+      new Map(
+        tasks.map((task) => [
+          task.id,
+          computeEffectiveTaskStatus(task, allTaskBlockers, allTasks)
+        ])
+      ),
+    [allTaskBlockers, allTasks, tasks]
+  );
+  const activeTaskEffectiveStatus =
+    activeTask === null
+      ? null
+      : effectiveTaskStatusById.get(activeTask.id) ?? activeTask.status;
+  const blockersByTaskId = useMemo(() => {
+    const grouped = new Map<number, TaskBlocker[]>();
+    for (const blocker of allTaskBlockers) {
+      const existing = grouped.get(blocker.taskId);
+      if (existing) {
+        existing.push(blocker);
+      } else {
+        grouped.set(blocker.taskId, [blocker]);
+      }
+    }
+    return grouped;
+  }, [allTaskBlockers]);
 
   async function onCreateTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -191,6 +239,26 @@ export function useTasksPanelModel() {
     }
   }
 
+  async function onCreateTaskBlocker(blockingTaskId: number) {
+    if (selectedTaskId === null) {
+      return;
+    }
+    await createTaskBlocker({
+      taskId: selectedTaskId,
+      blockingTaskId
+    }).unwrap();
+  }
+
+  async function onDeleteTaskBlocker(taskBlockerId: number) {
+    if (selectedTaskId === null) {
+      return;
+    }
+    await deleteTaskBlocker({
+      taskBlockerId,
+      taskId: selectedTaskId
+    }).unwrap();
+  }
+
   function selectTask(taskId: number | null) {
     dispatch(setSelectedTaskId(taskId));
   }
@@ -198,13 +266,23 @@ export function useTasksPanelModel() {
   return {
     activeProjectId,
     activeTask,
+    activeTaskEffectiveStatus,
+    allTasks,
+    allTaskBlockers,
+    allTaskBlockersQuery,
+    blockersByTaskId,
+    createTaskBlockerState,
     createTaskNoteState,
     createTaskState,
+    deleteTaskBlockerState,
+    effectiveTaskStatusById,
     newTaskNoteBody,
     newTaskNoteReferenceUrl,
     newTaskTitle,
+    onCreateTaskBlocker,
     onCreateTask,
     onCreateTaskNote,
+    onDeleteTaskBlocker,
     onDeleteTask,
     onUpdateTaskStatus,
     onUpdateTaskTitle,
@@ -218,6 +296,8 @@ export function useTasksPanelModel() {
     setTaskInputOpen,
     setTaskNoteInputOpen,
     taskInputOpen,
+    taskBlockers,
+    taskBlockersQuery,
     taskNoteInputOpen,
     taskNotes,
     taskNotesQuery,

@@ -4,6 +4,7 @@
 import type {
   ProjectRow,
   TaskRow,
+  TaskBlockerRow,
   ProjectNoteRow,
   TaskNoteRow,
 } from './prisma-types';
@@ -13,6 +14,8 @@ import type {
   ProjectPostgrestRowData,
   TaskRowModelData,
   TaskPostgrestRowData,
+  TaskBlockerRowModelData,
+  TaskBlockerPostgrestRowData,
   ProjectNoteRowModelData,
   ProjectNotePostgrestRowData,
   TaskNoteRowModelData,
@@ -23,6 +26,7 @@ export type WorkStatus = 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'd
 
 export type Project = ProjectRow;
 export type Task = TaskRow;
+export type TaskBlocker = TaskBlockerRow;
 export type ProjectNote = ProjectNoteRow;
 export type TaskNote = TaskNoteRow;
 
@@ -38,6 +42,13 @@ export type PostgrestTaskRow = Omit<TaskPostgrestRowData, 'updated_at'> & {
   project_id: number;
   title: string;
   status: 'todo' | 'started' | 'active' | 'blocked' | 'done' | 'dropped';
+  created_at: string;
+  updated_at?: string;
+};
+export type PostgrestTaskBlockerRow = Omit<TaskBlockerPostgrestRowData, 'updated_at'> & {
+  id: number;
+  task_id: number;
+  blocking_task_id: number;
   created_at: string;
   updated_at?: string;
 };
@@ -62,6 +73,8 @@ export type CreateProjectResponse = { project: Project };
 export type ListProjectsResponse = { projects: Project[] };
 export type CreateTaskResponse = { task: Task };
 export type ListTasksResponse = { tasks: Task[] };
+export type CreateTaskBlockerResponse = { taskBlocker: TaskBlocker };
+export type ListTaskBlockersResponse = { taskBlockers: TaskBlocker[] };
 export type CreateProjectNoteResponse = { note: ProjectNote };
 export type ListProjectNotesResponse = { notes: ProjectNote[] };
 export type CreateTaskNoteResponse = { note: TaskNote };

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   ProjectRowSchema,
   TaskRowSchema,
+  TaskBlockerRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } from './prisma-zod';
@@ -17,6 +18,10 @@ import type {
   PostgrestTaskRow,
   ListTasksResponse,
   CreateTaskResponse,
+  TaskBlocker,
+  PostgrestTaskBlockerRow,
+  ListTaskBlockersResponse,
+  CreateTaskBlockerResponse,
   ProjectNote,
   PostgrestProjectNoteRow,
   ListProjectNotesResponse,
@@ -29,6 +34,7 @@ import type {
 
 export declare const projectSchema: typeof ProjectRowSchema;
 export declare const taskSchema: typeof TaskRowSchema;
+export declare const taskBlockerSchema: typeof TaskBlockerRowSchema;
 export declare const projectNoteSchema: typeof ProjectNoteRowSchema;
 export declare const taskNoteSchema: typeof TaskNoteRowSchema;
 
@@ -47,6 +53,14 @@ export declare const createTaskResponseSchema: z.ZodType<CreateTaskResponse>;
 export declare function taskFromPostgrestRow(row: PostgrestTaskRow): Task;
 export declare function parsePostgrestListTasksResponse(input: unknown): ListTasksResponse;
 export declare function parsePostgrestCreateTaskResponse(input: unknown): CreateTaskResponse;
+
+export declare const postgrestTaskBlockerRowSchema: z.ZodType<PostgrestTaskBlockerRow>;
+export declare const postgrestTaskBlockerRowsSchema: z.ZodArray<typeof postgrestTaskBlockerRowSchema>;
+export declare const listTaskBlockersResponseSchema: z.ZodType<ListTaskBlockersResponse>;
+export declare const createTaskBlockerResponseSchema: z.ZodType<CreateTaskBlockerResponse>;
+export declare function taskBlockerFromPostgrestRow(row: PostgrestTaskBlockerRow): TaskBlocker;
+export declare function parsePostgrestListTaskBlockersResponse(input: unknown): ListTaskBlockersResponse;
+export declare function parsePostgrestCreateTaskBlockerResponse(input: unknown): CreateTaskBlockerResponse;
 
 export declare const postgrestProjectNoteRowSchema: z.ZodType<PostgrestProjectNoteRow>;
 export declare const postgrestProjectNoteRowsSchema: z.ZodArray<typeof postgrestProjectNoteRowSchema>;
