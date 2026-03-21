@@ -28,6 +28,7 @@ const workStatusSchema = z.enum([...storedWorkStatuses, 'blocked']);
 const workStatuses = workStatusSchema.options;
 const taskEditableWorkStatuses = storedWorkStatuses;
 const resolvedBlockingStatuses = ['done', 'dropped'];
+const placeholderTaskTitle = '•';
 const allowedWorkStatusTransitions = Object.fromEntries(
   storedWorkStatuses.map((status) => [
     status,
@@ -149,32 +150,34 @@ const createProjectBodySchema = z.object({
 
 const updateProjectBodySchema = z
   .object({
-    name: z.string().min(1).max(120).optional(),
-    status: storedWorkStatusSchema.optional()
+    name: z.string().min(1).max(120).optional()
   })
-  .refine((value) => value.name !== undefined || value.status !== undefined, {
+  .refine((value) => value.name !== undefined, {
     message: 'Provide at least one project field to update.'
   });
 
-const updateProjectStatusBodySchema = z.object({
-  status: storedWorkStatusSchema
-});
-
 const createTaskBodySchema = z.object({
-  title: z.string().min(1).max(240)
+  title: z.string().min(1).max(240),
+  is_placeholder: z.boolean().optional()
 });
 
 const updateTaskBodySchema = z
   .object({
     title: z.string().min(1).max(240).optional(),
-    status: storedWorkStatusSchema.optional()
+    status: storedWorkStatusSchema.optional(),
+    is_placeholder: z.boolean().optional()
   })
-  .refine((value) => value.title !== undefined || value.status !== undefined, {
-    message: 'Provide at least one task field to update.'
-  });
+  .refine(
+    (value) =>
+      value.title !== undefined || value.status !== undefined || value.is_placeholder !== undefined,
+    {
+      message: 'Provide at least one task field to update.'
+    }
+  );
 
 const updateTaskStatusBodySchema = z.object({
-  status: storedWorkStatusSchema
+  status: storedWorkStatusSchema,
+  is_placeholder: z.boolean().optional()
 });
 
 const createProjectNoteBodySchema = z.object({
@@ -215,6 +218,7 @@ module.exports = {
   workStatuses,
   taskEditableWorkStatuses,
   resolvedBlockingStatuses,
+  placeholderTaskTitle,
   allowedWorkStatusTransitions,
   canTransitionWorkStatus,
   getWorkStatusTransitionReason,
@@ -225,7 +229,6 @@ module.exports = {
   computeProjectStatusFromTasks,
   createProjectBodySchema,
   updateProjectBodySchema,
-  updateProjectStatusBodySchema,
   createTaskBodySchema,
   updateTaskBodySchema,
   updateTaskStatusBodySchema,

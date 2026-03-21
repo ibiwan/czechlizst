@@ -21,7 +21,6 @@ enum WorkStatus {
 model Project {
   id        Int      @id @default(autoincrement())
   name      String
-  status    WorkStatus @default(todo)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
   tasks     Task[]
@@ -35,6 +34,7 @@ model Task {
   id          Int           @id @default(autoincrement())
   projectId   Int           @map("project_id")
   title       String
+  isPlaceholder Boolean     @default(false) @map("is_placeholder")
   status      WorkStatus    @default(todo)
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @default(now()) @updatedAt @map("updated_at")

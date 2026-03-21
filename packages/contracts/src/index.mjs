@@ -80,6 +80,7 @@ export const workStatusSchema = z.enum([...storedWorkStatuses, 'blocked']);
 export const workStatuses = workStatusSchema.options;
 export const taskEditableWorkStatuses = storedWorkStatuses;
 export const resolvedBlockingStatuses = ['done', 'dropped'];
+export const placeholderTaskTitle = '•';
 export const allowedWorkStatusTransitions = Object.fromEntries(
   storedWorkStatuses.map((status) => [
     status,
@@ -201,32 +202,34 @@ export const createProjectBodySchema = z.object({
 
 export const updateProjectBodySchema = z
   .object({
-    name: z.string().min(1).max(120).optional(),
-    status: storedWorkStatusSchema.optional()
+    name: z.string().min(1).max(120).optional()
   })
-  .refine((value) => value.name !== undefined || value.status !== undefined, {
+  .refine((value) => value.name !== undefined, {
     message: 'Provide at least one project field to update.'
   });
 
-export const updateProjectStatusBodySchema = z.object({
-  status: storedWorkStatusSchema
-});
-
 export const createTaskBodySchema = z.object({
-  title: z.string().min(1).max(240)
+  title: z.string().min(1).max(240),
+  is_placeholder: z.boolean().optional()
 });
 
 export const updateTaskBodySchema = z
   .object({
     title: z.string().min(1).max(240).optional(),
-    status: storedWorkStatusSchema.optional()
+    status: storedWorkStatusSchema.optional(),
+    is_placeholder: z.boolean().optional()
   })
-  .refine((value) => value.title !== undefined || value.status !== undefined, {
+  .refine(
+    (value) =>
+      value.title !== undefined || value.status !== undefined || value.is_placeholder !== undefined,
+    {
     message: 'Provide at least one task field to update.'
-  });
+    }
+  );
 
 export const updateTaskStatusBodySchema = z.object({
-  status: storedWorkStatusSchema
+  status: storedWorkStatusSchema,
+  is_placeholder: z.boolean().optional()
 });
 
 export const createProjectNoteBodySchema = z.object({

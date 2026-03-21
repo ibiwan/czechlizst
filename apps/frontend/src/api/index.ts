@@ -12,8 +12,7 @@ export {
   useCreateProjectMutation,
   useDeleteProjectMutation,
   useListProjectsQuery,
-  useUpdateProjectMutation,
-  useUpdateProjectStatusMutation
+  useUpdateProjectMutation
 } from './projects';
 export {
   useCreateTaskBlockerMutation,

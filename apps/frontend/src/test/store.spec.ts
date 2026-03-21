@@ -28,7 +28,6 @@ describe('store', () => {
         {
           id: 1,
           name: 'Roadmap',
-          status: 'todo',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
@@ -41,34 +40,6 @@ describe('store', () => {
     expect('data' in result).toBe(true);
     if ('data' in result && result.data) {
       expect(result.data.projects[0].name).toBe('Roadmap');
-    }
-  });
-
-  it('maps PostgREST not-found object errors to 404 for project status updates', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      jsonResponse(
-        {
-          code: 'PGRST116',
-          details: 'The result contains 0 rows',
-          message: 'Cannot coerce the result to a single JSON object'
-        },
-        406
-      )
-    );
-
-    const result = await store.dispatch(
-      api.endpoints.updateProjectStatus.initiate({
-        projectId: 999_999,
-        status: 'active'
-      })
-    );
-
-    expect('error' in result).toBe(true);
-    if ('error' in result) {
-      expect(result.error).toMatchObject({
-        status: 404,
-        message: 'Project not found'
-      });
     }
   });
 

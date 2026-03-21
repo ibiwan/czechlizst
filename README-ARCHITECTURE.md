@@ -30,46 +30,51 @@ This document records architecture-level decisions for the current local-first p
 Rationale:
 - Keep schema authored once in Prisma.
 - Keep app/API semantics and adapters centralized in shared contracts.
-- Keep concrete, named contract types in `packages/contracts/src/index.d.ts` so consumers
-  don’t re-derive `ReturnType<typeof ...>` or `z.infer` locally.
+- Keep concrete, named public contract types generated from Prisma so consumers don’t
+  re-derive `ReturnType<typeof ...>` or `z.infer` locally.
 
 ## Data Model Decisions
-- `projects` and `tasks` use shared enum `WorkStatus`:
-  `todo`, `started`, `active`, `blocked`, `done`, `dropped`
+- `tasks` use stored enum `WorkStatus`:
+  `todo`, `started`, `active`, `done`, `dropped`
+- `blocked` is derived from unresolved task blockers, not stored in Prisma
+- `projects` are container records with derived effective status, not stored workflow status
+- Projects are never empty:
+  - new projects get a placeholder task
+  - deleting the last task recreates a placeholder task
 - Many notes per entity are modeled explicitly:
   - `project_notes`
   - `task_notes`
+- Task dependencies are modeled explicitly:
+  - `task_blockers`
 
 Rationale:
 - Multiple notes need first-class rows (timestamps, clean UI editing).
-- Enum gives constrained workflow states without lookup-table complexity.
+- Tasks are the single actionable work item; projects remain containers/context.
 
 ## Status Workflow Decisions
 ### Transition policy
-Allowed transitions (same-state no-op allowed):
-- `todo -> started | active | blocked | dropped`
-- `started -> active | blocked | done | dropped | todo`
-- `active -> started | blocked | done | dropped | todo`
-- `blocked -> started | active | dropped | todo`
-- `done -> todo | started | active | dropped`
-- `dropped -> todo | started | active`
+Task transitions are intentionally permissive:
+- any stored task status can move to any other stored task status
+- same-state transitions are treated as no-op
+- `blocked` is never manually selected because it is derived
 
 ### Enforcement points
 - Shared rules in `@app/contracts` for frontend/tooling consistency.
 - Database triggers/functions enforce integrity regardless of client.
-- Migration:
-  `packages/db/prisma/migrations/20260309033000_enforce_status_transitions/migration.sql`
+- Canonical current-state SQL lives in:
+  - `packages/db/prisma/sql/status.sql`
+  - `packages/db/prisma/sql/timestamps.sql`
+  - `packages/db/prisma/sql/placeholders.sql`
 
 ### Project status behavior
-- If project has zero tasks: manual project status is editable and displayed.
-- If project has tasks:
-  - manual status updates are blocked (DB + UI)
-  - display status is computed from task statuses
-  - manual status is shown only when different (for context)
+- Projects do not have a stored workflow status.
+- Displayed project status is derived from effective task statuses.
+- Active-task semantics drive active-project display.
+- The frontend no longer exposes project status mutation controls.
 
 Rationale:
-- Prevent contradictory manual status while child task reality exists.
-- Keep empty projects flexible for top-level planning.
+- Prevent contradictory project/task status drift.
+- Keep one workflow surface: tasks.
 
 ## Frontend Interaction Decisions
 - Dark theme with tokenized, modular styles:
@@ -112,7 +117,13 @@ Rationale:
   - subtle note adder links
 - Status interaction:
   - unselected task row: colored lozenge
-  - selected task row: editable dropdown (invalid transitions shown disabled)
+  - selected task row: editable dropdown over stored task statuses
+  - selected task row also exposes activate/suspend actions
+  - effectively blocked tasks are not activatable
+- Pane model:
+  - left: project list
+  - top-right: birds-eye view when no project is selected, or project detail when selected
+  - bottom-right: task detail for the selected task, including blocker and note surfaces
 - Diagnostics are moved off main flow to hash route `#/meta`.
 
 Rationale:
@@ -158,6 +169,8 @@ Rationale:
 - Manual adapter layer remains in contracts (not 100% generated).
 - Native `<select>` used for status editing for accessibility and lower complexity.
 - Transition reasons in option labels are simple text; no custom ARIA menu complexity yet.
+- Placeholder-task replacement on real task creation is still primarily app-flow behavior,
+  while placeholder creation/recreation is DB-backed.
 
 ## Revisit Triggers
 Re-evaluate architecture when any of these occur:

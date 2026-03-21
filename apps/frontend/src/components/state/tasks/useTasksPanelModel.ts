@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   computeEffectiveTaskStatus,
   isStoredWorkStatus,
+  placeholderTaskTitle,
   type StoredWorkStatus,
   type TaskBlocker
 } from '@app/contracts';
@@ -131,13 +132,31 @@ export function useTasksPanelModel() {
     return grouped;
   }, [allTaskBlockers]);
 
+  function findUntouchedPlaceholderTask(projectId: number, excludeTaskId?: number) {
+    return (
+      tasks.find(
+        (task) =>
+          task.projectId === projectId &&
+          task.isPlaceholder &&
+          task.title === placeholderTaskTitle &&
+          task.status === 'todo' &&
+          task.id !== excludeTaskId &&
+          (blockersByTaskId.get(task.id)?.length ?? 0) === 0
+      ) ?? null
+    );
+  }
+
   async function onCreateTask(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const title = newTaskTitle.trim();
     if (!title || activeProjectId === null) {
       return;
     }
-    await createTask({ projectId: activeProjectId, title }).unwrap();
+    const createdTask = await createTask({ projectId: activeProjectId, title }).unwrap();
+    const untouchedPlaceholder = findUntouchedPlaceholderTask(activeProjectId, createdTask.task.id);
+    if (untouchedPlaceholder) {
+      await deleteTask({ taskId: untouchedPlaceholder.id, projectId: activeProjectId }).unwrap();
+    }
     setNewTaskTitle('');
     setTaskInputOpen(false);
   }
@@ -149,6 +168,13 @@ export function useTasksPanelModel() {
       return;
     }
     const referenceUrl = newTaskNoteReferenceUrl.trim();
+    if (activeTask?.isPlaceholder) {
+      await updateTask({
+        taskId: activeTask.id,
+        projectId: activeTask.projectId,
+        isPlaceholder: false
+      }).unwrap();
+    }
     await createTaskNote({
       taskId: selectedTaskId,
       body,
@@ -189,6 +215,8 @@ export function useTasksPanelModel() {
       return;
     }
 
+    const task = allTasks.find((entry) => entry.id === taskId) ?? null;
+
     if (nextStatus === 'active') {
       await ensureProjectActive(projectId);
       await demoteActiveTasksExceptTask({ taskId }).unwrap();
@@ -197,7 +225,8 @@ export function useTasksPanelModel() {
     await updateTaskStatus({
       taskId,
       projectId,
-      status: nextStatus
+      status: nextStatus,
+      isPlaceholder: task?.isPlaceholder && nextStatus !== currentStatus ? false : undefined
     }).unwrap();
     tasksQuery.refetch();
     projectsQuery.refetch();
@@ -211,7 +240,13 @@ export function useTasksPanelModel() {
     if (!trimmed) {
       return;
     }
-    await updateTask({ taskId, projectId: activeProjectId, title: trimmed }).unwrap();
+    const task = tasks.find((entry) => entry.id === taskId) ?? null;
+    await updateTask({
+      taskId,
+      projectId: activeProjectId,
+      title: trimmed,
+      isPlaceholder: task?.isPlaceholder && trimmed !== task.title ? false : undefined
+    }).unwrap();
   }
 
   async function onUpdateTaskNote(noteId: number, body: string, referenceUrl: string | null) {
@@ -221,6 +256,13 @@ export function useTasksPanelModel() {
     const trimmed = body.trim();
     if (!trimmed) {
       return;
+    }
+    if (activeTask?.isPlaceholder) {
+      await updateTask({
+        taskId: activeTask.id,
+        projectId: activeTask.projectId,
+        isPlaceholder: false
+      }).unwrap();
     }
     await updateTaskNote({
       noteId,
@@ -265,8 +307,15 @@ export function useTasksPanelModel() {
   }
 
   async function onCreateTaskBlocker(blockingTaskId: number) {
-    if (selectedTaskId === null) {
+    if (selectedTaskId === null || activeTask === null) {
       return;
+    }
+    if (activeTask.isPlaceholder) {
+      await updateTask({
+        taskId: activeTask.id,
+        projectId: activeTask.projectId,
+        isPlaceholder: false
+      }).unwrap();
     }
     await createTaskBlocker({
       taskId: selectedTaskId,

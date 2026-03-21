@@ -8,7 +8,6 @@ export const WorkStatusSchema = z.enum(['todo', 'started', 'active', 'done', 'dr
 export const ProjectRowSchema = z.object({
   id: z.number().int(),
   name: z.string(),
-  status: WorkStatusSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -17,6 +16,7 @@ export const TaskRowSchema = z.object({
   id: z.number().int(),
   projectId: z.number().int(),
   title: z.string(),
+  isPlaceholder: z.boolean(),
   status: WorkStatusSchema,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),

@@ -33,7 +33,6 @@ export type TaskNote = TaskNoteRow;
 export type PostgrestProjectRow = Omit<ProjectPostgrestRowData, 'updated_at'> & {
   id: number;
   name: string;
-  status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at?: string;
 };
@@ -41,6 +40,7 @@ export type PostgrestTaskRow = Omit<TaskPostgrestRowData, 'updated_at'> & {
   id: number;
   project_id: number;
   title: string;
+  is_placeholder: boolean;
   status: 'todo' | 'started' | 'active' | 'done' | 'dropped';
   created_at: string;
   updated_at?: string;
@@ -81,11 +81,10 @@ export type CreateTaskNoteResponse = { note: TaskNote };
 export type ListTaskNotesResponse = { notes: TaskNote[] };
 
 export type CreateProjectBody = { name: string };
-export type UpdateProjectBody = { name?: string; status?: WorkStatus };
-export type UpdateProjectStatusBody = { status: WorkStatus };
-export type CreateTaskBody = { title: string };
-export type UpdateTaskBody = { title?: string; status?: WorkStatus };
-export type UpdateTaskStatusBody = { status: WorkStatus };
+export type UpdateProjectBody = { name?: string };
+export type CreateTaskBody = { title: string; is_placeholder?: boolean };
+export type UpdateTaskBody = { title?: string; status?: WorkStatus; is_placeholder?: boolean };
+export type UpdateTaskStatusBody = { status: WorkStatus; is_placeholder?: boolean };
 export type CreateProjectNoteBody = { body: string; reference_url?: string | null };
 export type UpdateProjectNoteBody = { body: string; reference_url?: string | null };
 export type CreateTaskNoteBody = { body: string; reference_url?: string | null };

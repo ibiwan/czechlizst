@@ -50,13 +50,9 @@ export function useProjectsPanelModel() {
     return new Map(
       projects.map((project) => {
         const derivedStatus =
-          computeProjectStatusFromTasks(effectiveTasksByProjectId.get(project.id) ?? []) ??
-          project.status;
+          computeProjectStatusFromTasks(effectiveTasksByProjectId.get(project.id) ?? []) ?? 'todo';
 
-        return [
-          project.id,
-          project.status === 'active' ? 'active' : derivedStatus
-        ];
+        return [project.id, derivedStatus];
       })
     );
   }, [allTaskBlockers, allTasks, projects]);
@@ -64,7 +60,7 @@ export function useProjectsPanelModel() {
   const effectiveProjectStatus =
     activeProject === null
       ? 'todo'
-      : effectiveProjectStatusById.get(activeProject.id) ?? activeProject.status;
+      : effectiveProjectStatusById.get(activeProject.id) ?? 'todo';
 
   return {
     activeProject,

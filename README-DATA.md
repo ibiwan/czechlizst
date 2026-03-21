@@ -5,21 +5,31 @@ Prisma is the canonical schema definition.
 
 - Prisma schema: `packages/db/prisma/schema.prisma`
 - Prisma migrations: `packages/db/prisma/migrations/*`
+- Canonical current-state DB behavior SQL:
+  - `packages/db/prisma/sql/status.sql`
+  - `packages/db/prisma/sql/timestamps.sql`
+  - `packages/db/prisma/sql/placeholders.sql`
 
 `apps/backend/sql/init.sql` is bootstrap-only (roles, schema, grants), not table SoT.
 
+Important distinction:
+- migrations are the deployment history and rollout mechanism
+- the `packages/db/prisma/sql/*.sql` files are the human-readable current-state source for DB functions/triggers Prisma cannot express
+
+When DB functions or triggers change:
+1. update the canonical SQL file near `schema.prisma`
+2. add a forward migration that brings the deployed database into alignment
+
 ## Current Domain Model
-- `api.projects` (`status`: `todo|started|active|blocked|done|dropped`)
-- `api.tasks` (`status`: `todo|started|active|blocked|done|dropped`) with foreign key to `api.projects`
+- `api.projects` (container records with `created_at` / `updated_at`)
+- `api.tasks` (`status`: `todo|started|active|done|dropped`) with foreign key to `api.projects`
 - `api.project_notes` (many notes per project)
 - `api.task_notes` (many notes per task)
 
 ## Status Semantics
 - Shared status vocabulary is defined in Prisma enum `api."WorkStatus"`.
-- Status transition policy is defined in shared contracts and enforced in the database.
-- Project display status can be computed from task statuses in the frontend:
-  - empty project: manual project status
-  - otherwise: computed aggregate from tasks (manual shown only when different)
+- Status transition policy now applies to tasks.
+- Project display status is derived from effective task statuses, not stored on the project row.
 
 ## Schema Change Workflow
 1. Edit `packages/db/prisma/schema.prisma`.
@@ -41,10 +51,13 @@ Use forward-only migrations:
 
 This can be partially enforced with automation (for example, in CI with git history checks), but policy discipline is still required.
 
-Notable migration enforcing status rules:
-- `packages/db/prisma/migrations/20260309033000_enforce_status_transitions/migration.sql`
-  - validates task/project status transitions
-  - blocks manual project status changes while tasks exist
+Current canonical DB behavior files:
+- `packages/db/prisma/sql/status.sql`
+  - current status transition function definitions
+- `packages/db/prisma/sql/timestamps.sql`
+  - current `updated_at` touch and cascade function/trigger definitions
+- `packages/db/prisma/sql/placeholders.sql`
+  - current project bootstrap / never-empty placeholder-task trigger definitions
 
 ## Generated Artifacts
 - Prisma client: generated from schema via `prisma generate`

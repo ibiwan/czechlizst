@@ -14,8 +14,9 @@ The PostgREST tests are integration tests (automated HTTP checks against a real 
 Current E2E assertions include:
 - project/task CRUD basics
 - project/task note CRUD basics
-- valid and invalid status transitions
-- rejection of manual project status updates while tasks exist
+- task transition parity with shared contract rules
+- placeholder-task bootstrap and never-empty-project behavior
+- derived project status from task state
 
 ## Commands
 - `npm run test`: workspace tests (`--if-present`)

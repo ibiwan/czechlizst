@@ -23,8 +23,8 @@ export function ProjectListPane() {
   };
 
   const sortedProjects = [...model.projects].sort((left, right) => {
-    const leftStatus = model.effectiveProjectStatusById.get(left.id) ?? left.status;
-    const rightStatus = model.effectiveProjectStatusById.get(right.id) ?? right.status;
+    const leftStatus = model.effectiveProjectStatusById.get(left.id) ?? 'todo';
+    const rightStatus = model.effectiveProjectStatusById.get(right.id) ?? 'todo';
     const leftPriority = statusPriority[leftStatus] ?? 99;
     const rightPriority = statusPriority[rightStatus] ?? 99;
     if (leftPriority !== rightPriority) {
@@ -34,7 +34,7 @@ export function ProjectListPane() {
   });
 
   const projectFlipKey = sortedProjects
-    .map((project) => `${project.id}-${model.effectiveProjectStatusById.get(project.id) ?? project.status}`)
+    .map((project) => `${project.id}-${model.effectiveProjectStatusById.get(project.id) ?? 'todo'}`)
     .join('|');
 
   return (

@@ -122,13 +122,6 @@ Use this when adding or changing a field on an existing model (example: add `ref
 
 ### Done Criteria
 - Migration exists and applies cleanly.
-- Contracts expose generated Zod + TS typing for the updated model.
-- Frontend can read/write the field.
-- Tests pass and cover new behavior.
-- `npm run check:all` passes after the change.
-
-### Done Criteria
-- Migration exists and applies cleanly.
 - PostgREST has been restarted after migration (`npm run postgrest:start`), and the new entity is reachable.
 - Contracts expose generated Zod + TS typing for new entity.
 - Frontend can read/write the new entity.
@@ -157,8 +150,9 @@ Keep status semantics aligned across:
 
 ### Execution Checklist
 1. Update shared status rules in `packages/contracts/src/index.mjs`:
-   - transition map (`allowedWorkStatusTransitions`)
+   - stored status list / editable status list if needed
    - transition helper(s)
+   - effective task status helper
    - project status aggregation helper
 2. Sync manual policy/runtime entrypoints in `packages/contracts/src/index.mjs`, `packages/contracts/src/index.cjs`, and `packages/contracts/src/index.d.ts`.
 3. If backend integrity rules changed, add/modify Prisma SQL migration(s) for trigger/function enforcement.
@@ -166,25 +160,23 @@ Keep status semantics aligned across:
    - `npm run prisma:migrate:deploy`
    - `npm run postgrest:start`
 5. Update frontend status UX in frontend components/hooks and styles:
-   - selected-row editing rules in:
-     - `apps/frontend/src/components/tasks/TaskRow.tsx`
-     - `apps/frontend/src/components/projects/ProjectRow.tsx`
    - panel orchestration/model hooks:
-     - `apps/frontend/src/components/tasks/useTasksPanelModel.ts`
-     - `apps/frontend/src/components/projects/useProjectsPanelModel.ts`
-     - `apps/frontend/src/useActiveProjectSelection.ts`
+     - `apps/frontend/src/components/state/tasks/useTasksPanelModel.ts`
+     - `apps/frontend/src/components/state/projects/useProjectsPanelModel.ts`
+     - `apps/frontend/src/store/useActiveProjectSelection.ts`
    - disabled transition visibility and reason text in:
-     - `apps/frontend/src/components/StatusOptionSelect.tsx`
-   - computed vs manual status display and projection in:
-     - `apps/frontend/src/lib/format.ts`
-     - `apps/frontend/src/activeProject.ts`
+     - `apps/frontend/src/components/utilities/StatusOptionSelect.tsx`
+   - task/project display surfaces in:
+     - `apps/frontend/src/components/App/ProjectListPane.tsx`
+     - `apps/frontend/src/components/App/ProjectDetailPane/**/*`
+     - `apps/frontend/src/components/App/TaskNotesPane.tsx`
    - styles in `apps/frontend/src/styles/*.css`
-6. Update API mutations in `apps/frontend/src/api.ts` if status update shape/behavior changed.
-7. Extend E2E tests in `apps/backend/test/e2e/postgrest-api.test.ts` for valid/invalid transitions.
+6. Update API mutations in `apps/frontend/src/api/tasks.ts` if status update shape/behavior changed.
+7. Extend E2E tests in `apps/backend/test/e2e/postgrest-api.test.ts` for task transition parity and any DB-level guards.
 8. Run `npm run check:all`.
 
 ### Done Criteria
 - Contract helpers and frontend behavior produce the same transition validity.
-- DB rejects invalid transitions and guarded project updates.
-- E2E tests cover at least one rejected and one accepted transition.
+- DB behavior matches the shared contract helpers.
+- E2E tests cover the changed behavior.
 - `npm run check:all` passes.

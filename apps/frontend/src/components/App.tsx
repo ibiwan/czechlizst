@@ -21,7 +21,6 @@ function App() {
 function MainPageContent({ tasksModel }: { tasksModel: ReturnType<typeof useTasksPanelModel> }) {
   const projectsModel = useProjectsPanel();
   const { selectProject } = projectsModel;
-  const isProjectSelected = projectsModel.activeProjectId !== null;
 
   // Handle escape key to deselect project
   useEffect(() => {

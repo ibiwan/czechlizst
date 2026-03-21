@@ -45,8 +45,14 @@ type TaskTypes = {
     projectId: number;
     title?: string;
     status?: TaskTypes['UpdateStatus'];
+    isPlaceholder?: boolean;
   };
-  UpdateStatusMutationArg: { taskId: number; projectId: number; status: TaskTypes['UpdateStatusArg'] };
+  UpdateStatusMutationArg: {
+    taskId: number;
+    projectId: number;
+    status: TaskTypes['UpdateStatusArg'];
+    isPlaceholder?: boolean;
+  };
   DemoteOutsideProjectArg: { projectId: number };
   DemoteExceptTaskArg: { taskId: number };
   DemoteInProjectArg: { projectId: number };
@@ -82,10 +88,10 @@ export const tasksApi = api.injectEndpoints({
       providesTags: (_result, _error, taskId) => [{ type: 'TaskBlockers', id: taskId }]
     }),
     createTask: builder.mutation<TaskTypes['CreateResult'], TaskTypes['CreateArg']>({
-      query: ({ projectId, title }) =>
+      query: ({ projectId, title, is_placeholder }) =>
         buildPostReturn(routes.tasks, {
           project_id: projectId,
-          ...createTaskBodySchema.parse({ title })
+          ...createTaskBodySchema.parse({ title, is_placeholder })
         }),
       transformResponse: (response) => parsePostgrestCreateTaskResponse(response),
       invalidatesTags: (_result, _error, arg) => ['Tasks', { type: 'Tasks', id: arg.projectId }]
@@ -111,10 +117,10 @@ export const tasksApi = api.injectEndpoints({
       ]
     }),
     updateTask: builder.mutation<TaskTypes['CreateResult'], TaskTypes['UpdateArg']>({
-      query: ({ taskId, title, status }) =>
+      query: ({ taskId, title, status, isPlaceholder }) =>
         buildPatchSingle(
           `${routes.tasks}?id=eq.${taskId}`,
-          updateTaskBodySchema.parse({ title, status })
+          updateTaskBodySchema.parse({ title, status, is_placeholder: isPlaceholder })
         ),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskResponse),
       transformErrorResponse: mapNotFound('Task not found'),
@@ -128,10 +134,10 @@ export const tasksApi = api.injectEndpoints({
       TaskTypes['CreateResult'],
       TaskTypes['UpdateStatusMutationArg']
     >({
-      query: ({ taskId, status }) =>
+      query: ({ taskId, status, isPlaceholder }) =>
         buildPatchSingle(
           `${routes.tasks}?id=eq.${taskId}`,
-          updateTaskStatusBodySchema.parse({ status })
+          updateTaskStatusBodySchema.parse({ status, is_placeholder: isPlaceholder })
         ),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskResponse),
       transformErrorResponse: mapNotFound('Task not found'),

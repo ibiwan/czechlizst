@@ -5,7 +5,6 @@ class ProjectRowModel {
   constructor(data) {
     this.id = data.id;
     this.name = data.name;
-    this.status = data.status;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
   }
@@ -15,7 +14,6 @@ class ProjectPostgrestRow {
   constructor(data) {
     this.id = data.id;
     this.name = data.name;
-    this.status = data.status;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
   }
@@ -26,6 +24,7 @@ class TaskRowModel {
     this.id = data.id;
     this.projectId = data.projectId;
     this.title = data.title;
+    this.isPlaceholder = data.isPlaceholder;
     this.status = data.status;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
@@ -37,6 +36,7 @@ class TaskPostgrestRow {
     this.id = data.id;
     this.project_id = data.project_id;
     this.title = data.title;
+    this.is_placeholder = data.is_placeholder;
     this.status = data.status;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;

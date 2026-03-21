@@ -33,7 +33,11 @@ Tables:
 - `api.task_notes` (FK to `api.tasks`)
 
 Status enum:
-- `api."WorkStatus"` values: `todo`, `started`, `active`, `blocked`, `done`, `dropped`
+- `api."WorkStatus"` values: `todo`, `started`, `active`, `done`, `dropped`
+
+Notes:
+- `blocked` is derived from `api.task_blockers`, not stored in the enum
+- projects do not store workflow status; displayed project status is derived from task state
 
 ## Example requests
 

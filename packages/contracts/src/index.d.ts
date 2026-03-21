@@ -79,6 +79,7 @@ export declare const workStatusSchema: z.ZodType<WorkStatus>;
 export declare const workStatuses: ReadonlyArray<WorkStatus>;
 export declare const taskEditableWorkStatuses: ReadonlyArray<StoredWorkStatus>;
 export declare const resolvedBlockingStatuses: ReadonlyArray<'done' | 'dropped'>;
+export declare const placeholderTaskTitle: '•';
 export declare const allowedWorkStatusTransitions: Record<StoredWorkStatus, Array<StoredWorkStatus>>;
 export declare function canTransitionWorkStatus(
   from: StoredWorkStatus,
@@ -108,7 +109,6 @@ export declare function computeProjectStatusFromTasks(
 
 export declare const createProjectBodySchema: z.ZodType<import('./generated/public-types').CreateProjectBody>;
 export declare const updateProjectBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectBody>;
-export declare const updateProjectStatusBodySchema: z.ZodType<import('./generated/public-types').UpdateProjectStatusBody>;
 export declare const createTaskBodySchema: z.ZodType<import('./generated/public-types').CreateTaskBody>;
 export declare const updateTaskBodySchema: z.ZodType<import('./generated/public-types').UpdateTaskBody>;
 export declare const updateTaskStatusBodySchema: z.ZodType<import('./generated/public-types').UpdateTaskStatusBody>;
@@ -149,7 +149,6 @@ export type {
   TaskNote,
   UpdateProjectBody,
   UpdateProjectNoteBody,
-  UpdateProjectStatusBody,
   UpdateTaskBody,
   UpdateTaskNoteBody,
   UpdateTaskStatusBody

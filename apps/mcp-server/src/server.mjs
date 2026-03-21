@@ -116,13 +116,11 @@ server.tool(
   'Updates a project row in PostgREST.',
   {
     id: z.number().int().positive(),
-    name: z.string().min(1).max(120).optional(),
-    status: workStatusSchema.optional()
+    name: z.string().min(1).max(120).optional()
   },
-  async ({ id, name, status }) => {
+  async ({ id, name }) => {
     const payload = {};
     if (name !== undefined) payload.name = name;
-    if (status !== undefined) payload.status = status;
 
     ensureNonEmptyUpdate(payload, {
       addIssue: (issue) => {

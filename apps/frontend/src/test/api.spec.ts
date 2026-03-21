@@ -21,7 +21,6 @@ describe('PostgREST response adapters', () => {
       {
         id: 1,
         name: 'Roadmap',
-        status: 'todo',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -37,6 +36,7 @@ describe('PostgREST response adapters', () => {
         id: 1,
         project_id: 1,
         title: 'Ship v1',
+        is_placeholder: false,
         status: 'todo',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

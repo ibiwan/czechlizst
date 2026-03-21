@@ -10,6 +10,7 @@ export default tseslint.config(
       '**/dist/**',
       '**/node_modules/**',
       '**/*.d.ts',
+      'packages/contracts/src/generated/**',
       'apps/frontend/src/**/*.js',
       '.venv/**'
     ]

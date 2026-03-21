@@ -2,13 +2,10 @@ import {
   parsePostgrestCreateProjectResponse,
   parsePostgrestListProjectsResponse,
   updateProjectBodySchema,
-  updateProjectStatusBodySchema,
   routes,
   type CreateProjectBody,
   type CreateProjectResponse,
-  type ListProjectsResponse,
-  type UpdateProjectBody,
-  type UpdateProjectStatusBody
+  type ListProjectsResponse
 } from '@app/contracts';
 import {
   api,
@@ -24,11 +21,8 @@ type ProjectTypes = {
   ListArg: void;
   CreateResult: CreateProjectResponse;
   CreateArg: CreateProjectBody;
-  UpdateStatus: UpdateProjectBody['status'];
-  UpdateStatusArg: UpdateProjectStatusBody['status'];
-  UpdateArg: { projectId: number; name?: string; status?: ProjectTypes['UpdateStatus'] };
+  UpdateArg: { projectId: number; name?: string };
   DeleteArg: { projectId: number };
-  UpdateStatusMutationArg: { projectId: number; status: ProjectTypes['UpdateStatusArg'] };
 };
 
 export const projectsApi = api.injectEndpoints({
@@ -44,10 +38,10 @@ export const projectsApi = api.injectEndpoints({
       invalidatesTags: ['Projects']
     }),
     updateProject: builder.mutation<ProjectTypes['CreateResult'], ProjectTypes['UpdateArg']>({
-      query: ({ projectId, name, status }) =>
+      query: ({ projectId, name }) =>
         buildPatchSingle(
           `${routes.projects}?id=eq.${projectId}`,
-          updateProjectBodySchema.parse({ name, status })
+          updateProjectBodySchema.parse({ name })
         ),
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateProjectResponse),
       transformErrorResponse: mapNotFound('Project not found'),
@@ -58,19 +52,6 @@ export const projectsApi = api.injectEndpoints({
       transformResponse: parseSingleObjectResponse(parsePostgrestCreateProjectResponse),
       transformErrorResponse: mapNotFound('Project not found'),
       invalidatesTags: ['Projects', 'Tasks', 'ProjectNotes', 'TaskNotes']
-    }),
-    updateProjectStatus: builder.mutation<
-      ProjectTypes['CreateResult'],
-      ProjectTypes['UpdateStatusMutationArg']
-    >({
-      query: ({ projectId, status }) =>
-        buildPatchSingle(
-          `${routes.projects}?id=eq.${projectId}`,
-          updateProjectStatusBodySchema.parse({ status })
-        ),
-      transformResponse: parseSingleObjectResponse(parsePostgrestCreateProjectResponse),
-      transformErrorResponse: mapNotFound('Project not found'),
-      invalidatesTags: ['Projects']
     })
   }),
   overrideExisting: false
@@ -81,6 +62,5 @@ export const {
   useCreateProjectMutation,
   useDeleteProjectMutation,
   useListProjectsQuery,
-  useUpdateProjectMutation,
-  useUpdateProjectStatusMutation
+  useUpdateProjectMutation
 } = projectsApi;

@@ -63,6 +63,16 @@ describe('PostgREST API E2E', () => {
       const readPayload = (await read.json()) as Array<{ id: number; name: string }>;
       expect(readPayload).toHaveLength(1);
       expect(readPayload[0].name).toBe(projectName);
+
+      const projectTasks = await request(`/tasks?project_id=eq.${project.id}&select=*`);
+      expect(projectTasks.status).toBe(200);
+      const projectTasksPayload = (await projectTasks.json()) as Array<{
+        title: string;
+        is_placeholder: boolean;
+      }>;
+      expect(projectTasksPayload).toHaveLength(1);
+      expect(projectTasksPayload[0].title).toBe('•');
+      expect(projectTasksPayload[0].is_placeholder).toBe(true);
     } finally {
       if (projectId !== null) {
         await deleteProject(projectId);
@@ -117,6 +127,7 @@ describe('PostgREST API E2E', () => {
 
       const listPayload = (await taskList.json()) as Array<{ title: string }>;
       expect(listPayload.some((task) => task.title === taskTitle)).toBe(true);
+      expect(listPayload.some((task) => task.title === '•')).toBe(true);
     } finally {
       if (projectId !== null) {
         await deleteProject(projectId);
@@ -216,7 +227,99 @@ describe('PostgREST API E2E', () => {
     }
   });
 
-  it('allows free task status transitions while still rejecting manual project status updates when tasks exist', async () => {
+  it('cascades updated_at for task and note activity', async () => {
+    const projectName = uniqueName('timestamps-project');
+    const taskTitle = uniqueName('timestamps-task');
+    let projectId: number | null = null;
+    let taskId: number | null = null;
+
+    try {
+      const projectCreate = await request('/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({ name: projectName })
+      });
+      expect(projectCreate.status).toBe(201);
+      const projectPayload = (await projectCreate.json()) as Array<{
+        id: number;
+        updated_at: string;
+      }>;
+      projectId = projectPayload[0].id;
+      const initialProjectUpdatedAt = projectPayload[0].updated_at;
+
+      await new Promise((resolve) => setTimeout(resolve, 15));
+
+      const taskCreate = await request('/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({ project_id: projectId, title: taskTitle })
+      });
+      expect(taskCreate.status).toBe(201);
+      const taskPayload = (await taskCreate.json()) as Array<{
+        id: number;
+        updated_at: string;
+      }>;
+      taskId = taskPayload[0].id;
+      const initialTaskUpdatedAt = taskPayload[0].updated_at;
+
+      const projectAfterTaskCreate = await request(`/projects?id=eq.${projectId}&select=*`);
+      expect(projectAfterTaskCreate.status).toBe(200);
+      const projectAfterTaskCreatePayload = (await projectAfterTaskCreate.json()) as Array<{
+        updated_at: string;
+      }>;
+      expect(
+        Date.parse(projectAfterTaskCreatePayload[0].updated_at) >
+          Date.parse(initialProjectUpdatedAt)
+      ).toBe(true);
+
+      await new Promise((resolve) => setTimeout(resolve, 15));
+
+      const taskNoteCreate = await request('/task_notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({
+          task_id: taskId,
+          body: uniqueName('timestamps-note')
+        })
+      });
+      expect(taskNoteCreate.status).toBe(201);
+
+      const taskAfterNoteCreate = await request(`/tasks?id=eq.${taskId}&select=*`);
+      expect(taskAfterNoteCreate.status).toBe(200);
+      const taskAfterNoteCreatePayload = (await taskAfterNoteCreate.json()) as Array<{
+        updated_at: string;
+      }>;
+      expect(
+        Date.parse(taskAfterNoteCreatePayload[0].updated_at) >
+          Date.parse(initialTaskUpdatedAt)
+      ).toBe(true);
+
+      const projectAfterNoteCreate = await request(`/projects?id=eq.${projectId}&select=*`);
+      expect(projectAfterNoteCreate.status).toBe(200);
+      const projectAfterNoteCreatePayload = (await projectAfterNoteCreate.json()) as Array<{
+        updated_at: string;
+      }>;
+      expect(
+        Date.parse(projectAfterNoteCreatePayload[0].updated_at) >
+          Date.parse(projectAfterTaskCreatePayload[0].updated_at)
+      ).toBe(true);
+    } finally {
+      if (projectId !== null) {
+        await deleteProject(projectId);
+      }
+    }
+  });
+
+  it('allows free task status transitions while still allowing project rename updates when tasks exist', async () => {
     const projectName = uniqueName('transition-project');
     const taskTitle = uniqueName('transition-task');
     let projectId: number | null = null;
@@ -229,7 +332,7 @@ describe('PostgREST API E2E', () => {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ name: projectName, status: 'todo' })
+        body: JSON.stringify({ name: projectName })
       });
       expect(projectCreate.status).toBe(201);
       const projectPayload = (await projectCreate.json()) as Array<{ id: number }>;
@@ -267,28 +370,15 @@ describe('PostgREST API E2E', () => {
       });
       expect(secondTaskTransition.status).toBe(200);
 
-      const invalidProjectTransition = await request(`/projects?id=eq.${projectId}`, {
+      const projectRename = await request(`/projects?id=eq.${projectId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ status: 'done' })
+        body: JSON.stringify({ name: `${projectName}-renamed` })
       });
-      expect(invalidProjectTransition.status).toBe(400);
-
-      await request(`/tasks?id=eq.${taskId}`, { method: 'DELETE' });
-      taskId = null;
-
-      const allowedProjectManualUpdate = await request(`/projects?id=eq.${projectId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Prefer: 'return=representation'
-        },
-        body: JSON.stringify({ status: 'active' })
-      });
-      expect(allowedProjectManualUpdate.status).toBe(200);
+      expect(projectRename.status).toBe(200);
     } finally {
       if (projectId !== null) {
         await deleteProject(projectId);
@@ -308,7 +398,7 @@ describe('PostgREST API E2E', () => {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ name: projectName, status: 'todo' })
+        body: JSON.stringify({ name: projectName })
       });
       expect(projectCreate.status).toBe(201);
       const projectPayload = (await projectCreate.json()) as Array<{ id: number }>;
@@ -356,5 +446,92 @@ describe('PostgREST API E2E', () => {
         await deleteProject(projectId);
       }
     }
+  });
+
+  it('recreates a placeholder after deleting the last task in a project', async () => {
+    const projectName = uniqueName('placeholder-project');
+    let projectId: number | null = null;
+
+    try {
+      const projectCreate = await request('/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify({ name: projectName })
+      });
+      expect(projectCreate.status).toBe(201);
+      const projectPayload = (await projectCreate.json()) as Array<{ id: number }>;
+      projectId = projectPayload[0].id;
+
+      const initialTasks = await request(`/tasks?project_id=eq.${projectId}&select=*`);
+      expect(initialTasks.status).toBe(200);
+      const initialTasksPayload = (await initialTasks.json()) as Array<{
+        id: number;
+        title: string;
+        is_placeholder: boolean;
+      }>;
+      expect(initialTasksPayload).toHaveLength(1);
+
+      const placeholderId = initialTasksPayload[0].id;
+      const deleteTaskResponse = await request(`/tasks?id=eq.${placeholderId}`, {
+        method: 'DELETE',
+        headers: {
+          Prefer: 'return=representation'
+        }
+      });
+      expect(deleteTaskResponse.status).toBe(200);
+
+      const tasksAfterDelete = await request(`/tasks?project_id=eq.${projectId}&select=*`);
+      expect(tasksAfterDelete.status).toBe(200);
+      const tasksAfterDeletePayload = (await tasksAfterDelete.json()) as Array<{
+        id: number;
+        title: string;
+        is_placeholder: boolean;
+      }>;
+      expect(tasksAfterDeletePayload).toHaveLength(1);
+      expect(tasksAfterDeletePayload[0].id).not.toBe(placeholderId);
+      expect(tasksAfterDeletePayload[0].title).toBe('•');
+      expect(tasksAfterDeletePayload[0].is_placeholder).toBe(true);
+    } finally {
+      if (projectId !== null) {
+        await deleteProject(projectId);
+      }
+    }
+  });
+
+  it('deletes a project cleanly without placeholder restore during cascade', async () => {
+    const projectName = uniqueName('delete-project');
+
+    const projectCreate = await request('/projects', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation'
+      },
+      body: JSON.stringify({ name: projectName })
+    });
+    expect(projectCreate.status).toBe(201);
+    const projectPayload = (await projectCreate.json()) as Array<{ id: number }>;
+    const projectId = projectPayload[0].id;
+
+    const deleteResponse = await request(`/projects?id=eq.${projectId}`, {
+      method: 'DELETE',
+      headers: {
+        Prefer: 'return=representation'
+      }
+    });
+    expect(deleteResponse.status).toBe(200);
+
+    const readProject = await request(`/projects?id=eq.${projectId}&select=*`);
+    expect(readProject.status).toBe(200);
+    const readProjectPayload = (await readProject.json()) as Array<{ id: number }>;
+    expect(readProjectPayload).toHaveLength(0);
+
+    const readTasks = await request(`/tasks?project_id=eq.${projectId}&select=*`);
+    expect(readTasks.status).toBe(200);
+    const readTasksPayload = (await readTasks.json()) as Array<{ id: number }>;
+    expect(readTasksPayload).toHaveLength(0);
   });
 });

@@ -330,11 +330,10 @@ function renderPublicTypes(models, enums) {
 
   lines.push('');
   lines.push("export type CreateProjectBody = { name: string };");
-  lines.push("export type UpdateProjectBody = { name?: string; status?: WorkStatus };");
-  lines.push("export type UpdateProjectStatusBody = { status: WorkStatus };");
-  lines.push("export type CreateTaskBody = { title: string };");
-  lines.push("export type UpdateTaskBody = { title?: string; status?: WorkStatus };");
-  lines.push("export type UpdateTaskStatusBody = { status: WorkStatus };");
+  lines.push("export type UpdateProjectBody = { name?: string };");
+  lines.push("export type CreateTaskBody = { title: string; is_placeholder?: boolean };");
+  lines.push("export type UpdateTaskBody = { title?: string; status?: WorkStatus; is_placeholder?: boolean };");
+  lines.push("export type UpdateTaskStatusBody = { status: WorkStatus; is_placeholder?: boolean };");
   lines.push("export type CreateProjectNoteBody = { body: string; reference_url?: string | null };");
   lines.push("export type UpdateProjectNoteBody = { body: string; reference_url?: string | null };");
   lines.push("export type CreateTaskNoteBody = { body: string; reference_url?: string | null };");

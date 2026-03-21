@@ -29,7 +29,6 @@ function normalizePostgrestTimestamp(value) {
 const postgrestProjectRowSchema = z.object({
   id: z.number().int().positive(),
   name: z.string().min(1),
-  status: WorkStatusSchema,
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
 });
@@ -49,7 +48,6 @@ function projectFromPostgrestRow(row) {
   return projectSchema.parse({
     id: row.id,
     name: row.name,
-    status: row.status,
     createdAt: normalizePostgrestTimestamp(row.created_at),
     updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
   });
@@ -76,6 +74,7 @@ const postgrestTaskRowSchema = z.object({
   id: z.number().int().positive(),
   project_id: z.number().int().positive(),
   title: z.string().min(1),
+  is_placeholder: z.boolean(),
   status: WorkStatusSchema,
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
@@ -97,6 +96,7 @@ function taskFromPostgrestRow(row) {
     id: row.id,
     projectId: row.project_id,
     title: row.title,
+    isPlaceholder: row.is_placeholder,
     status: row.status,
     createdAt: normalizePostgrestTimestamp(row.created_at),
     updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
