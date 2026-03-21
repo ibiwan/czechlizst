@@ -4,7 +4,7 @@ import { TaskCard } from './TaskCard';
 import { type TaskView } from '@app-types/view';
 
 type TaskListItemProps = {
-  onDeleteTask: (taskId: number) => void;
+  effectiveStatus: WorkStatus;
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
   selectedTaskId: number | null;
@@ -15,7 +15,7 @@ type TaskListItemProps = {
 };
 
 export function TaskListItem({
-  onDeleteTask,
+  effectiveStatus,
   onUpdateTaskStatus,
   onUpdateTaskTitle,
   selectedTaskId,
@@ -34,6 +34,7 @@ export function TaskListItem({
         data-testid={`task-row-${task.id}`}
       >
         <TaskCard
+          effectiveStatus={effectiveStatus}
           onUpdateTaskStatus={onUpdateTaskStatus}
           onUpdateTaskTitle={onUpdateTaskTitle}
           isSelected={isSelected}

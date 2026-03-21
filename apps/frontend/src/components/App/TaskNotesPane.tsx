@@ -107,6 +107,7 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
     <>
       {model.activeTask && (
         <TaskCard
+          effectiveStatus={model.activeTaskEffectiveStatus ?? model.activeTask.status}
           onUpdateTaskStatus={model.onUpdateTaskStatus}
           onUpdateTaskTitle={model.onUpdateTaskTitle}
           isSelected

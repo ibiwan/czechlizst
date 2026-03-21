@@ -101,6 +101,22 @@ export function useTasksPanelModel() {
     activeTask === null
       ? null
       : effectiveTaskStatusById.get(activeTask.id) ?? activeTask.status;
+  const effectiveTasks = useMemo(
+    () =>
+      tasks.map((task) => ({
+        ...task,
+        status: effectiveTaskStatusById.get(task.id) ?? task.status
+      })),
+    [effectiveTaskStatusById, tasks]
+  );
+  const effectiveAllTasks = useMemo(
+    () =>
+      allTasks.map((task) => ({
+        ...task,
+        status: computeEffectiveTaskStatus(task, allTaskBlockers, allTasks)
+      })),
+    [allTaskBlockers, allTasks]
+  );
   const blockersByTaskId = useMemo(() => {
     const grouped = new Map<number, TaskBlocker[]>();
     for (const blocker of allTaskBlockers) {
@@ -275,6 +291,8 @@ export function useTasksPanelModel() {
     createTaskNoteState,
     createTaskState,
     deleteTaskBlockerState,
+    effectiveAllTasks,
+    effectiveTasks,
     effectiveTaskStatusById,
     newTaskNoteBody,
     newTaskNoteReferenceUrl,

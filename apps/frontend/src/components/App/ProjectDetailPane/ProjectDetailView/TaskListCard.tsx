@@ -14,7 +14,7 @@ export function TaskListCard({ model }: { model: TasksPanelModel }) {
     done: 4,
     dropped: 5
   };
-  const sortedTasks = [...model.tasks].sort((left, right) => {
+  const sortedTasks = [...model.effectiveTasks].sort((left, right) => {
     const leftPriority = statusPriority[left.status] ?? 99;
     const rightPriority = statusPriority[right.status] ?? 99;
     if (leftPriority !== rightPriority) {
@@ -77,8 +77,8 @@ export function TaskListCard({ model }: { model: TasksPanelModel }) {
                 )}
                 {sortedTasks.map((task) => (
                   <TaskListItem
+                    effectiveStatus={task.status}
                     key={task.id}
-                    onDeleteTask={model.onDeleteTask}
                     onUpdateTaskTitle={model.onUpdateTaskTitle}
                     task={task}
                     selectedTaskId={model.selectedTaskId}

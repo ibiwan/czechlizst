@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useListAllTasksQuery } from '@api';
 import { formatProjectTimestamp } from '@lib/format';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
@@ -46,8 +45,7 @@ function BirdsEyeTile({
 export function BirdsEyeView({ isDetailOpen, tasksModel }: { isDetailOpen: boolean; tasksModel: TasksPanelModel }) {
   const { projects, selectProject } = useProjectsPanel();
   const { selectTask, tasks: activeProjectTasks } = tasksModel;
-  const allTasksQuery = useListAllTasksQuery();
-  const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
+  const allTasks = tasksModel.effectiveAllTasks;
   const [pendingTaskSelection, setPendingTaskSelection] = useState<{
     projectId: number;
     taskId: number;

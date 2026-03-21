@@ -2,10 +2,12 @@ import { type WorkStatus } from '@app/contracts';
 import { type TaskView } from '@app-types/view';
 
 export function TaskStatusRow({
+  effectiveStatus,
   task,
   onUpdateTaskStatus,
   updateTaskStatusLoading,
 }: {
+  effectiveStatus: WorkStatus;
   task: TaskView;
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   updateTaskStatusLoading: boolean;
@@ -13,7 +15,7 @@ export function TaskStatusRow({
   return (
     <div className="status-row">
       <div className="status-row-left">
-        {task && task.status === 'started' && (
+        {task && effectiveStatus === 'started' && (
           <button
             className="activate-btn activate-btn-activate"
             type="button"
@@ -24,7 +26,7 @@ export function TaskStatusRow({
             Activate
           </button>
         )}
-        {task && task.status === 'active' && (
+        {task && effectiveStatus === 'active' && (
           <button
             className="activate-btn activate-btn-suspend"
             type="button"

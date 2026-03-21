@@ -11,6 +11,7 @@ import { TaskTimestamp } from './TaskTimestamp';
 import { TaskStatusRow } from './TaskStatusRow';
 
 type TaskCardProps = {
+  effectiveStatus?: WorkStatus;
   onUpdateTaskStatus: (taskId: number, currentStatus: WorkStatus, nextStatus: WorkStatus) => void;
   onUpdateTaskTitle: (taskId: number, title: string) => void;
   isSelected: boolean;
@@ -23,6 +24,7 @@ type TaskCardProps = {
 };
 
 export function TaskCard({
+  effectiveStatus,
   onUpdateTaskStatus,
   onUpdateTaskTitle,
   isSelected,
@@ -33,6 +35,7 @@ export function TaskCard({
   updateTaskStatusLoading,
   onInnerClick
 }: TaskCardProps) {
+  const shownStatus = effectiveStatus ?? task.status;
   const [editing, setEditing] = useState(false);
   const [draftTitle, setDraftTitle] = useState(task.title);
 
@@ -82,6 +85,7 @@ export function TaskCard({
           {isSelected ? (
             <>
               <TaskStatusRow
+                effectiveStatus={shownStatus}
                 task={task}
                 onUpdateTaskStatus={onUpdateTaskStatus}
                 updateTaskStatusLoading={updateTaskStatusLoading}
@@ -96,8 +100,8 @@ export function TaskCard({
               />
             </>
           ) : (
-            <span className={`status-pill status-${task.status}`} data-testid={`task-status-pill-${task.id}`}>
-              {task.status}
+            <span className={`status-pill status-${shownStatus}`} data-testid={`task-status-pill-${task.id}`}>
+              {shownStatus}
             </span>
           )}
           <TaskTimestamp taskId={task.id} timestamp={task.createdAt} />
