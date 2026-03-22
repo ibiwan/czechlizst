@@ -30,7 +30,7 @@ export function ProjectListPane() {
     if (leftPriority !== rightPriority) {
       return leftPriority - rightPriority;
     }
-    return right.createdAt.localeCompare(left.createdAt);
+    return right.updatedAt.localeCompare(left.updatedAt);
   });
 
   const projectFlipKey = sortedProjects

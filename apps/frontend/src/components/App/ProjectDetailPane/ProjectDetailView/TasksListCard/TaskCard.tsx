@@ -137,7 +137,7 @@ export function TaskCard({
               {shownStatus}
             </span>
           )}
-          <TaskTimestamp taskId={task.id} timestamp={task.createdAt} />
+          <TaskTimestamp taskId={task.id} timestamp={task.updatedAt} />
         </div>
       )}
     </div>

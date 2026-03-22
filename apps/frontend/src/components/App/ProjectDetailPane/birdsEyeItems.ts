@@ -6,13 +6,13 @@ type BirdsEyeTask = {
   title: string;
   status: WorkStatus;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt: string;
 };
 
 export type BirdsEyeItem = { type: 'task'; data: BirdsEyeTask };
 
 export function getItemRecency(item: BirdsEyeItem) {
-  return item.data.updatedAt ?? item.data.createdAt;
+  return item.data.updatedAt;
 }
 
 export function shuffleItems<T>(items: T[]) {

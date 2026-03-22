@@ -43,22 +43,6 @@
         "created_at": "2026-03-21T20:35:37.44",
         "reference_url": null,
         "updated_at": "2026-03-21T20:46:27.327973+00:00"
-      },
-      {
-        "id": 253,
-        "project_id": 175,
-        "body": "project-note-1774129798033-41798",
-        "created_at": "2026-03-21T21:49:58.047",
-        "reference_url": "project-note-ref-1774129798033-48546",
-        "updated_at": "2026-03-21T21:49:58.046725+00:00"
-      },
-      {
-        "id": 254,
-        "project_id": 182,
-        "body": "project-note-1774130145094-49759",
-        "created_at": "2026-03-21T21:55:45.1",
-        "reference_url": "project-note-ref-1774130145094-62929",
-        "updated_at": "2026-03-21T21:55:45.099996+00:00"
       }
     ],
     "projects": [
@@ -169,84 +153,6 @@
         "name": "Task Manager",
         "created_at": "2026-03-21T17:38:32.655",
         "updated_at": "2026-03-21T21:54:47.835892+00:00"
-      },
-      {
-        "id": 180,
-        "name": "project-1774130145050-93178",
-        "created_at": "2026-03-21T21:55:45.053",
-        "updated_at": "2026-03-21T21:55:45.053016+00:00"
-      },
-      {
-        "id": 181,
-        "name": "task-project-1774130145079-37134",
-        "created_at": "2026-03-21T21:55:45.081",
-        "updated_at": "2026-03-21T21:55:45.085048+00:00"
-      },
-      {
-        "id": 182,
-        "name": "notes-project-1774130145094-49268",
-        "created_at": "2026-03-21T21:55:45.095",
-        "updated_at": "2026-03-21T21:55:45.102139+00:00"
-      },
-      {
-        "id": 183,
-        "name": "timestamps-project-1774130145109-87457",
-        "created_at": "2026-03-21T21:55:45.109",
-        "updated_at": "2026-03-21T21:55:45.148154+00:00"
-      },
-      {
-        "id": 184,
-        "name": "transition-project-1774130145155-28768-renamed",
-        "created_at": "2026-03-21T21:55:45.156",
-        "updated_at": "2026-03-21T21:55:45.162851+00:00"
-      },
-      {
-        "id": 173,
-        "name": "project-1774129797951-13966",
-        "created_at": "2026-03-21T21:49:57.96",
-        "updated_at": "2026-03-21T21:49:57.960497+00:00"
-      },
-      {
-        "id": 174,
-        "name": "task-project-1774129798007-25267",
-        "created_at": "2026-03-21T21:49:58.009",
-        "updated_at": "2026-03-21T21:49:58.016001+00:00"
-      },
-      {
-        "id": 175,
-        "name": "notes-project-1774129798033-3785",
-        "created_at": "2026-03-21T21:49:58.034",
-        "updated_at": "2026-03-21T21:49:58.053854+00:00"
-      },
-      {
-        "id": 176,
-        "name": "timestamps-project-1774129798070-2210",
-        "created_at": "2026-03-21T21:49:58.071",
-        "updated_at": "2026-03-21T21:49:58.115607+00:00"
-      },
-      {
-        "id": 177,
-        "name": "transition-project-1774129798128-88235-renamed",
-        "created_at": "2026-03-21T21:49:58.129",
-        "updated_at": "2026-03-21T21:49:58.149605+00:00"
-      },
-      {
-        "id": 185,
-        "name": "parity-project-1774130145165-69466",
-        "created_at": "2026-03-21T21:55:45.165",
-        "updated_at": "2026-03-21T21:55:45.277366+00:00"
-      },
-      {
-        "id": 178,
-        "name": "parity-project-1774129798156-41242",
-        "created_at": "2026-03-21T21:49:58.156",
-        "updated_at": "2026-03-21T21:49:58.384259+00:00"
-      },
-      {
-        "id": 179,
-        "name": "placeholder-project-1774129798389-12115",
-        "created_at": "2026-03-21T21:49:58.389",
-        "updated_at": "2026-03-21T21:49:58.393961+00:00"
       }
     ],
     "task_blockers": [
@@ -343,38 +249,6 @@
         "created_at": "2026-03-21T17:53:04.96",
         "reference_url": null,
         "updated_at": "2026-03-21T17:53:04.959789+00:00"
-      },
-      {
-        "id": 677,
-        "task_id": 853,
-        "body": "task-note-1774129798033-36171",
-        "created_at": "2026-03-21T21:49:58.054",
-        "reference_url": "task-note-ref-1774129798033-10507",
-        "updated_at": "2026-03-21T21:49:58.053854+00:00"
-      },
-      {
-        "id": 678,
-        "task_id": 856,
-        "body": "timestamps-note-1774129798115-73925",
-        "created_at": "2026-03-21T21:49:58.116",
-        "reference_url": null,
-        "updated_at": "2026-03-21T21:49:58.115607+00:00"
-      },
-      {
-        "id": 679,
-        "task_id": 898,
-        "body": "task-note-1774130145094-29336",
-        "created_at": "2026-03-21T21:55:45.102",
-        "reference_url": "task-note-ref-1774130145094-80526",
-        "updated_at": "2026-03-21T21:55:45.102139+00:00"
-      },
-      {
-        "id": 680,
-        "task_id": 901,
-        "body": "timestamps-note-1774130145147-11731",
-        "created_at": "2026-03-21T21:55:45.148",
-        "reference_url": null,
-        "updated_at": "2026-03-21T21:55:45.148154+00:00"
       }
     ],
     "tasks": [
@@ -694,15 +568,6 @@
         "is_placeholder": false
       },
       {
-        "id": 852,
-        "project_id": 175,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.034",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.033695+00:00",
-        "is_placeholder": true
-      },
-      {
         "id": 664,
         "project_id": 126,
         "title": "allow \"activate\" button in todo state",
@@ -710,186 +575,6 @@
         "status": "done",
         "updated_at": "2026-03-21T21:54:47.835892+00:00",
         "is_placeholder": false
-      },
-      {
-        "id": 892,
-        "project_id": 180,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.053",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.053016+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 894,
-        "project_id": 181,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.081",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.080587+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 895,
-        "project_id": 181,
-        "title": "task-1774130145079-59020",
-        "created_at": "2026-03-21T21:55:45.085",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.085048+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 853,
-        "project_id": 175,
-        "title": "notes-task-1774129798033-74326",
-        "created_at": "2026-03-21T21:49:58.039",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.053854+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 897,
-        "project_id": 182,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.095",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.094666+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 898,
-        "project_id": 182,
-        "title": "notes-task-1774130145094-84454",
-        "created_at": "2026-03-21T21:55:45.098",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.102139+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 900,
-        "project_id": 183,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.109",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.109204+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 855,
-        "project_id": 176,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.071",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.070925+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 901,
-        "project_id": 183,
-        "title": "timestamps-task-1774130145109-74543",
-        "created_at": "2026-03-21T21:55:45.127",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.148154+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 903,
-        "project_id": 184,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.156",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.155646+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 906,
-        "project_id": 185,
-        "title": "•",
-        "created_at": "2026-03-21T21:55:45.165",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.165384+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 904,
-        "project_id": 184,
-        "title": "transition-task-1774130145155-70170",
-        "created_at": "2026-03-21T21:55:45.157",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:55:45.160869+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 856,
-        "project_id": 176,
-        "title": "timestamps-task-1774129798070-30851",
-        "created_at": "2026-03-21T21:49:58.092",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.115607+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 858,
-        "project_id": 177,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.129",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.128697+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 859,
-        "project_id": 177,
-        "title": "transition-task-1774129798128-81587",
-        "created_at": "2026-03-21T21:49:58.132",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.146234+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 847,
-        "project_id": 173,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:57.96",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:57.960497+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 849,
-        "project_id": 174,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.009",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.009332+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 850,
-        "project_id": 174,
-        "title": "task-1774129798008-79558",
-        "created_at": "2026-03-21T21:49:58.016",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.016001+00:00",
-        "is_placeholder": false
-      },
-      {
-        "id": 861,
-        "project_id": 178,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.156",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.156478+00:00",
-        "is_placeholder": true
-      },
-      {
-        "id": 889,
-        "project_id": 179,
-        "title": "•",
-        "created_at": "2026-03-21T21:49:58.394",
-        "status": "todo",
-        "updated_at": "2026-03-21T21:49:58.393961+00:00",
-        "is_placeholder": true
       }
     ]
   }

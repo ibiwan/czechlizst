@@ -234,12 +234,12 @@ export const updateTaskStatusBodySchema = z.object({
 
 export const createProjectNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
-  reference_url: z.string().min(1).max(5000).optional().nullable()
+  reference_url: z.string().min(1).optional().nullable()
 });
 
 export const createTaskNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
-  reference_url: z.string().min(1).max(5000).optional().nullable()
+  reference_url: z.string().min(1).optional().nullable()
 });
 
 export const createTaskBlockerBodySchema = z.object({
@@ -251,10 +251,10 @@ export const createTaskBlockerBodySchema = z.object({
 
 export const updateProjectNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
-  reference_url: z.string().min(1).max(5000).optional().nullable()
+  reference_url: z.string().min(1).optional().nullable()
 });
 
 export const updateTaskNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
-  reference_url: z.string().min(1).max(5000).optional().nullable()
+  reference_url: z.string().min(1).optional().nullable()
 });

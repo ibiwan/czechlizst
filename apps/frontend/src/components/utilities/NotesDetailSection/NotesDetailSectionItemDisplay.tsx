@@ -61,7 +61,7 @@ export function NotesDetailSectionItemDisplay({
           </div>
         )}
       </div>
-      <time>{formatTimestamp(note.createdAt)}</time>
+      <time>{formatTimestamp(note.updatedAt)}</time>
     </>
   );
 }

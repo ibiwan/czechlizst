@@ -128,12 +128,7 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
 
   async function handleCreateNote(body: string, referenceUrl: string | null) {
     if (!body || model.selectedTaskId === null) return;
-    // The existing onCreateTaskNote reads from local state, so we need to call the mutation directly
-    // First set the state, then call the handler
-    model.setNewTaskNoteBody(body);
-    model.setNewTaskNoteReferenceUrl(referenceUrl || '');
-    // Now call onCreateTaskNote which expects a form event
-    await model.onCreateTaskNote({ preventDefault: () => { } } as React.FormEvent<HTMLFormElement>);
+    await model.createTaskNoteWithValues(body, referenceUrl);
   }
 
   return (

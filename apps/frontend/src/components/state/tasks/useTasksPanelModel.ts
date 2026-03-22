@@ -163,11 +163,18 @@ export function useTasksPanelModel() {
 
   async function onCreateTaskNote(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const body = newTaskNoteBody.trim();
+    await createTaskNoteWithValues(newTaskNoteBody, newTaskNoteReferenceUrl);
+    setNewTaskNoteBody('');
+    setNewTaskNoteReferenceUrl('');
+    setTaskNoteInputOpen(false);
+  }
+
+  async function createTaskNoteWithValues(bodyInput: string, referenceUrlInput: string | null) {
+    const body = bodyInput.trim();
     if (!body || selectedTaskId === null) {
       return;
     }
-    const referenceUrl = newTaskNoteReferenceUrl.trim();
+    const referenceUrl = referenceUrlInput?.trim() ?? '';
     if (activeTask?.isPlaceholder) {
       await updateTask({
         taskId: activeTask.id,
@@ -180,9 +187,6 @@ export function useTasksPanelModel() {
       body,
       referenceUrl: referenceUrl ? referenceUrl : null
     }).unwrap();
-    setNewTaskNoteBody('');
-    setNewTaskNoteReferenceUrl('');
-    setTaskNoteInputOpen(false);
   }
 
   async function ensureProjectActive(projectId: number) {
@@ -359,6 +363,7 @@ export function useTasksPanelModel() {
     onCreateTaskBlocker,
     onCreateTask,
     onCreateTaskNote,
+    createTaskNoteWithValues,
     onDeleteTaskBlocker,
     onDeleteTaskNote,
     onDeleteTask,

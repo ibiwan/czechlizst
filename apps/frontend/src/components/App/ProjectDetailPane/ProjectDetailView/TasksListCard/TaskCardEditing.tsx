@@ -1,5 +1,5 @@
 import { type FormEvent } from 'react';
-import { IconButton, SaveIcon, CancelIcon } from '@utilities/IconButton';
+import { IconButton, CancelIcon, SaveIcon } from '@utilities/IconButton';
 import { handleEscapeCancel } from '@utilities/handleEscapeCancel';
 import { type TaskView } from '@app-types/view';
 
@@ -47,14 +47,16 @@ export function TaskCardEditing({
           data-testid={`task-edit-input-${task.id}`}
         />
       )}
-      <IconButton
+      <button
+        className="icon-btn"
+        type="submit"
         aria-label="Save task title"
-        onClick={() => { }}
         disabled={updateTaskLoading}
-        testId={`task-edit-save-${task.id}`}
+        onClick={(event) => event.stopPropagation()}
+        data-testid={`task-edit-save-${task.id}`}
       >
         <SaveIcon />
-      </IconButton>
+      </button>
       <IconButton aria-label="Cancel edit" onClick={onCancel} testId={`task-edit-cancel-${task.id}`}>
         <CancelIcon />
       </IconButton>

@@ -20,7 +20,7 @@ export function TaskListCard({ model }: { model: TasksPanelModel }) {
     if (leftPriority !== rightPriority) {
       return leftPriority - rightPriority;
     }
-    return right.createdAt.localeCompare(left.createdAt);
+    return right.updatedAt.localeCompare(left.updatedAt);
   });
   const taskFlipKey = `${model.tasksQuery.fulfilledTimeStamp ?? 0}|${sortedTasks
     .map((task) => `${task.id}-${task.status}`)

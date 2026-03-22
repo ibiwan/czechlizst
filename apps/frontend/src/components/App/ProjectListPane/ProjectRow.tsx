@@ -51,7 +51,7 @@ export function ProjectRow({ project }: ProjectRowProps) {
               {shownStatus}
             </span>
             <span className="project-created" data-testid={`project-created-${project.id}`}>
-              {formatProjectTimestamp(project.createdAt)}
+              {formatProjectTimestamp(project.updatedAt)}
             </span>
           </div>
         </div>

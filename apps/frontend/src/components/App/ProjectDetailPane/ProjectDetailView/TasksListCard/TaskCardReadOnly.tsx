@@ -29,7 +29,7 @@ export function TaskCardReadOnly({ task }: TaskCardReadOnlyProps) {
         </OverflowReveal>
       </div>
       <div className="task-card-right">
-        <TaskTimestamp taskId={task.id} timestamp={task.createdAt} />
+        <TaskTimestamp taskId={task.id} timestamp={task.updatedAt} />
         <IconButton aria-label={`Delete ${task.title}`} onClick={onDeleteTask} testId={`task-delete-${task.id}`}>
           <DeleteIcon />
         </IconButton>

@@ -14,6 +14,7 @@ const raw = readFileSync(inputPath, 'utf8');
 const parsed = JSON.parse(raw);
 const data = parsed?.data ?? {};
 const tables = Object.keys(data);
+const importOrder = ['projects', 'tasks', 'task_blockers', 'project_notes', 'task_notes'];
 
 if (tables.length === 0) {
   console.error('No tables found under "data" in snapshot file.');
@@ -26,6 +27,11 @@ for (const table of tables) {
     process.exit(1);
   }
 }
+
+const orderedTables = [
+  ...importOrder.filter((table) => tables.includes(table)),
+  ...tables.filter((table) => !importOrder.includes(table)).sort()
+];
 
 function runPsql(sql, label) {
   const args = [
@@ -54,21 +60,27 @@ function runPsql(sql, label) {
 }
 
 try {
-  for (const table of tables) {
+  for (const table of orderedTables) {
     runPsql(`TRUNCATE TABLE api."${table}" RESTART IDENTITY CASCADE;`, `truncate ${table}`);
   }
 
-  for (const table of tables) {
-    const rows = data[table];
-    if (!Array.isArray(rows) || rows.length === 0) {
-      continue;
-    }
+  const triggerTables = orderedTables
+    .map((table) => `ALTER TABLE api."${table}" DISABLE TRIGGER USER;`)
+    .join('\n');
+  runPsql(triggerTables, 'disable triggers');
 
-    const payload = JSON.stringify(rows).replace(/'/g, "''");
-    const sql = `INSERT INTO api."${table}" SELECT * FROM jsonb_populate_recordset(NULL::api."${table}", '${payload}'::jsonb);`;
-    runPsql(sql, `insert ${table}`);
+  try {
+    for (const table of orderedTables) {
+      const rows = data[table];
+      if (!Array.isArray(rows) || rows.length === 0) {
+        continue;
+      }
 
-    const syncSeqSql = `
+      const payload = JSON.stringify(rows).replace(/'/g, "''");
+      const sql = `INSERT INTO api."${table}" SELECT * FROM jsonb_populate_recordset(NULL::api."${table}", '${payload}'::jsonb);`;
+      runPsql(sql, `insert ${table}`);
+
+      const syncSeqSql = `
 DO $$
 DECLARE
   table_name text := '${table}';
@@ -84,7 +96,13 @@ BEGIN
     EXECUTE format('SELECT setval(%L, %s, true)', seq_name, max_id);
   END IF;
 END $$;`.trim();
-    runPsql(syncSeqSql, `sync sequence ${table}`);
+      runPsql(syncSeqSql, `sync sequence ${table}`);
+    }
+  } finally {
+    const enableTriggersSql = orderedTables
+      .map((table) => `ALTER TABLE api."${table}" ENABLE TRIGGER USER;`)
+      .join('\n');
+    runPsql(enableTriggersSql, 'enable triggers');
   }
 
   console.log(`Imported snapshot from ${inputPath}`);
