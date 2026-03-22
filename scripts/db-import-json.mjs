@@ -12,9 +12,18 @@ if (!inputArg) {
 const inputPath = resolve(inputArg);
 const raw = readFileSync(inputPath, 'utf8');
 const parsed = JSON.parse(raw);
-const data = parsed?.data ?? {};
+const data = { ...(parsed?.data ?? {}) };
+if (!('task_relations' in data) && Array.isArray(data.task_blockers)) {
+  data.task_relations = data.task_blockers.map((row) => ({
+    ...row,
+    related_task_id: row.blocking_task_id,
+    relation_type: 'blocked_by',
+    commentary: null
+  }));
+  delete data.task_blockers;
+}
 const tables = Object.keys(data);
-const importOrder = ['projects', 'tasks', 'task_blockers', 'project_notes', 'task_notes'];
+const importOrder = ['projects', 'tasks', 'task_relations', 'project_notes', 'task_notes'];
 
 if (tables.length === 0) {
   console.error('No tables found under "data" in snapshot file.');

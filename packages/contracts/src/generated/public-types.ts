@@ -4,7 +4,7 @@
 import type {
   ProjectRow,
   TaskRow,
-  TaskBlockerRow,
+  TaskRelationRow,
   ProjectNoteRow,
   TaskNoteRow,
 } from './prisma-types';
@@ -14,8 +14,8 @@ import type {
   ProjectPostgrestRowData,
   TaskRowModelData,
   TaskPostgrestRowData,
-  TaskBlockerRowModelData,
-  TaskBlockerPostgrestRowData,
+  TaskRelationRowModelData,
+  TaskRelationPostgrestRowData,
   ProjectNoteRowModelData,
   ProjectNotePostgrestRowData,
   TaskNoteRowModelData,
@@ -26,7 +26,7 @@ export type WorkStatus = 'todo' | 'started' | 'active' | 'done' | 'dropped';
 
 export type Project = ProjectRow;
 export type Task = TaskRow;
-export type TaskBlocker = TaskBlockerRow;
+export type TaskRelation = TaskRelationRow;
 export type ProjectNote = ProjectNoteRow;
 export type TaskNote = TaskNoteRow;
 
@@ -45,10 +45,12 @@ export type PostgrestTaskRow = Omit<TaskPostgrestRowData, 'updated_at'> & {
   created_at: string;
   updated_at?: string;
 };
-export type PostgrestTaskBlockerRow = Omit<TaskBlockerPostgrestRowData, 'updated_at'> & {
+export type PostgrestTaskRelationRow = Omit<TaskRelationPostgrestRowData, 'updated_at'> & {
   id: number;
   task_id: number;
-  blocking_task_id: number;
+  related_task_id: number;
+  relation_type: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   created_at: string;
   updated_at?: string;
 };
@@ -73,8 +75,8 @@ export type CreateProjectResponse = { project: Project };
 export type ListProjectsResponse = { projects: Project[] };
 export type CreateTaskResponse = { task: Task };
 export type ListTasksResponse = { tasks: Task[] };
-export type CreateTaskBlockerResponse = { taskBlocker: TaskBlocker };
-export type ListTaskBlockersResponse = { taskBlockers: TaskBlocker[] };
+export type CreateTaskRelationResponse = { taskRelation: TaskRelation };
+export type ListTaskRelationsResponse = { taskRelations: TaskRelation[] };
 export type CreateProjectNoteResponse = { note: ProjectNote };
 export type ListProjectNotesResponse = { notes: ProjectNote[] };
 export type CreateTaskNoteResponse = { note: TaskNote };

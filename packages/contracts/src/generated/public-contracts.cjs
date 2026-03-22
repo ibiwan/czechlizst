@@ -4,16 +4,17 @@
 const { z } = require('zod');
 import {
   WorkStatusSchema,
+  TaskRelationTypeSchema,
   ProjectRowSchema,
   TaskRowSchema,
-  TaskBlockerRowSchema,
+  TaskRelationRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } = require('./prisma-zod.cjs');
 
 const projectSchema = ProjectRowSchema;
 const taskSchema = TaskRowSchema;
-const taskBlockerSchema = TaskBlockerRowSchema;
+const taskRelationSchema = TaskRelationRowSchema;
 const projectNoteSchema = ProjectNoteRowSchema;
 const taskNoteSchema = TaskNoteRowSchema;
 
@@ -120,49 +121,53 @@ function parsePostgrestCreateTaskResponse(input) {
   });
 }
 
-const postgrestTaskBlockerRowSchema = z.object({
+const postgrestTaskRelationRowSchema = z.object({
   id: z.number().int().positive(),
   task_id: z.number().int().positive(),
-  blocking_task_id: z.number().int().positive(),
+  related_task_id: z.number().int().positive(),
+  relation_type: TaskRelationTypeSchema,
+  commentary: z.string().min(1).nullable().optional(),
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
 });
 
-const postgrestTaskBlockerRowsSchema = z.array(postgrestTaskBlockerRowSchema);
+const postgrestTaskRelationRowsSchema = z.array(postgrestTaskRelationRowSchema);
 
-const listTaskBlockersResponseSchema = z.object({
-  taskBlockers: z.array(taskBlockerSchema)
+const listTaskRelationsResponseSchema = z.object({
+  taskRelations: z.array(taskRelationSchema)
 });
 
-const createTaskBlockerResponseSchema = z.object({
-  taskBlocker: taskBlockerSchema
+const createTaskRelationResponseSchema = z.object({
+  taskRelation: taskRelationSchema
 });
 
-function taskBlockerFromPostgrestRow(row) {
+function taskRelationFromPostgrestRow(row) {
   const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return taskBlockerSchema.parse({
+  return taskRelationSchema.parse({
     id: row.id,
     taskId: row.task_id,
-    blockingTaskId: row.blocking_task_id,
+    relatedTaskId: row.related_task_id,
+    relationType: row.relation_type,
+    commentary: row.commentary,
     createdAt: normalizePostgrestTimestamp(row.created_at),
     updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
   });
 }
 
-function parsePostgrestListTaskBlockersResponse(input) {
-  const rows = postgrestTaskBlockerRowsSchema.parse(input);
-  return listTaskBlockersResponseSchema.parse({
-    taskBlockers: rows.map(taskBlockerFromPostgrestRow)
+function parsePostgrestListTaskRelationsResponse(input) {
+  const rows = postgrestTaskRelationRowsSchema.parse(input);
+  return listTaskRelationsResponseSchema.parse({
+    taskRelations: rows.map(taskRelationFromPostgrestRow)
   });
 }
 
-function parsePostgrestCreateTaskBlockerResponse(input) {
-  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+function parsePostgrestCreateTaskRelationResponse(input) {
+  const rows = postgrestTaskRelationRowsSchema.parse(input);
   if (rows.length === 0) {
-    throw new Error('Expected PostgREST create taskblocker response to include one row');
+    throw new Error('Expected PostgREST create taskrelation response to include one row');
   }
-  return createTaskBlockerResponseSchema.parse({
-    taskBlocker: taskBlockerFromPostgrestRow(rows[0])
+  return createTaskRelationResponseSchema.parse({
+    taskRelation: taskRelationFromPostgrestRow(rows[0])
   });
 }
 
@@ -279,14 +284,14 @@ module.exports = {
   taskFromPostgrestRow,
   parsePostgrestListTasksResponse,
   parsePostgrestCreateTaskResponse,
-  taskBlockerSchema,
-  postgrestTaskBlockerRowSchema,
-  postgrestTaskBlockerRowsSchema,
-  listTaskBlockersResponseSchema,
-  createTaskBlockerResponseSchema,
-  taskBlockerFromPostgrestRow,
-  parsePostgrestListTaskBlockersResponse,
-  parsePostgrestCreateTaskBlockerResponse,
+  taskRelationSchema,
+  postgrestTaskRelationRowSchema,
+  postgrestTaskRelationRowsSchema,
+  listTaskRelationsResponseSchema,
+  createTaskRelationResponseSchema,
+  taskRelationFromPostgrestRow,
+  parsePostgrestListTaskRelationsResponse,
+  parsePostgrestCreateTaskRelationResponse,
   projectNoteSchema,
   postgrestProjectNoteRowSchema,
   postgrestProjectNoteRowsSchema,

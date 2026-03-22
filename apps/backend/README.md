@@ -28,7 +28,7 @@ Single source of truth is Prisma:
 Tables:
 - `api.projects`
 - `api.tasks` (FK to `api.projects`)
-- `api.task_blockers` (task-to-task dependency links)
+- `api.task_relations` (typed task-to-task relationship edges)
 - `api.project_notes` (FK to `api.projects`)
 - `api.task_notes` (FK to `api.tasks`)
 
@@ -36,7 +36,7 @@ Status enum:
 - `api."WorkStatus"` values: `todo`, `started`, `active`, `done`, `dropped`
 
 Notes:
-- `blocked` is derived from `api.task_blockers`, not stored in the enum
+- `blocked` is derived from `api.task_relations` rows where `relation_type = 'blocked_by'`, not stored in the enum
 - projects do not store workflow status; displayed project status is derived from task state
 
 ## Example requests

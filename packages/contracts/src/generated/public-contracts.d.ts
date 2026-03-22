@@ -5,7 +5,7 @@ import { z } from 'zod';
 import {
   ProjectRowSchema,
   TaskRowSchema,
-  TaskBlockerRowSchema,
+  TaskRelationRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } from './prisma-zod';
@@ -18,10 +18,10 @@ import type {
   PostgrestTaskRow,
   ListTasksResponse,
   CreateTaskResponse,
-  TaskBlocker,
-  PostgrestTaskBlockerRow,
-  ListTaskBlockersResponse,
-  CreateTaskBlockerResponse,
+  TaskRelation,
+  PostgrestTaskRelationRow,
+  ListTaskRelationsResponse,
+  CreateTaskRelationResponse,
   ProjectNote,
   PostgrestProjectNoteRow,
   ListProjectNotesResponse,
@@ -34,7 +34,7 @@ import type {
 
 export declare const projectSchema: typeof ProjectRowSchema;
 export declare const taskSchema: typeof TaskRowSchema;
-export declare const taskBlockerSchema: typeof TaskBlockerRowSchema;
+export declare const taskRelationSchema: typeof TaskRelationRowSchema;
 export declare const projectNoteSchema: typeof ProjectNoteRowSchema;
 export declare const taskNoteSchema: typeof TaskNoteRowSchema;
 
@@ -54,13 +54,13 @@ export declare function taskFromPostgrestRow(row: PostgrestTaskRow): Task;
 export declare function parsePostgrestListTasksResponse(input: unknown): ListTasksResponse;
 export declare function parsePostgrestCreateTaskResponse(input: unknown): CreateTaskResponse;
 
-export declare const postgrestTaskBlockerRowSchema: z.ZodType<PostgrestTaskBlockerRow>;
-export declare const postgrestTaskBlockerRowsSchema: z.ZodArray<typeof postgrestTaskBlockerRowSchema>;
-export declare const listTaskBlockersResponseSchema: z.ZodType<ListTaskBlockersResponse>;
-export declare const createTaskBlockerResponseSchema: z.ZodType<CreateTaskBlockerResponse>;
-export declare function taskBlockerFromPostgrestRow(row: PostgrestTaskBlockerRow): TaskBlocker;
-export declare function parsePostgrestListTaskBlockersResponse(input: unknown): ListTaskBlockersResponse;
-export declare function parsePostgrestCreateTaskBlockerResponse(input: unknown): CreateTaskBlockerResponse;
+export declare const postgrestTaskRelationRowSchema: z.ZodType<PostgrestTaskRelationRow>;
+export declare const postgrestTaskRelationRowsSchema: z.ZodArray<typeof postgrestTaskRelationRowSchema>;
+export declare const listTaskRelationsResponseSchema: z.ZodType<ListTaskRelationsResponse>;
+export declare const createTaskRelationResponseSchema: z.ZodType<CreateTaskRelationResponse>;
+export declare function taskRelationFromPostgrestRow(row: PostgrestTaskRelationRow): TaskRelation;
+export declare function parsePostgrestListTaskRelationsResponse(input: unknown): ListTaskRelationsResponse;
+export declare function parsePostgrestCreateTaskRelationResponse(input: unknown): CreateTaskRelationResponse;
 
 export declare const postgrestProjectNoteRowSchema: z.ZodType<PostgrestProjectNoteRow>;
 export declare const postgrestProjectNoteRowsSchema: z.ZodArray<typeof postgrestProjectNoteRowSchema>;

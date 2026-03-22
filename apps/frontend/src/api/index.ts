@@ -15,17 +15,18 @@ export {
   useUpdateProjectMutation
 } from './projects';
 export {
-  useCreateTaskBlockerMutation,
+  useCreateTaskRelationMutation,
   useCreateTaskMutation,
-  useDeleteTaskBlockerMutation,
+  useDeleteTaskRelationMutation,
   useDeleteTaskMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
-  useListAllTaskBlockersQuery,
+  useListAllTaskRelationsQuery,
   useListAllTasksQuery,
-  useListTaskBlockersQuery,
+  useListTaskRelationsQuery,
   useListTasksQuery,
+  useUpdateTaskRelationMutation,
   useUpdateTaskMutation,
   useUpdateTaskStatusMutation
 } from './tasks';

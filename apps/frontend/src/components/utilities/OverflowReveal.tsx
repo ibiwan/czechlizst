@@ -136,7 +136,14 @@ export function OverflowReveal({
     }, REVEAL_DELAY_MS);
   }
 
-  useEffect(() => hideReveal, []);
+  useEffect(() => {
+    return () => {
+      if (delayRef.current !== null) {
+        window.clearTimeout(delayRef.current);
+        delayRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!overlay) {

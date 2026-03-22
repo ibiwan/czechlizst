@@ -73,36 +73,44 @@ export declare class TaskPostgrestRow {
   updated_at: string;
 }
 
-export type TaskBlockerRowModelData = {
+export type TaskRelationRowModelData = {
   id: number;
   taskId: number;
-  blockingTaskId: number;
+  relatedTaskId: number;
+  relationType: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   createdAt: string;
   updatedAt: string;
 };
 
-export declare class TaskBlockerRowModel {
-  constructor(data: TaskBlockerRowModelData);
+export declare class TaskRelationRowModel {
+  constructor(data: TaskRelationRowModelData);
   id: number;
   taskId: number;
-  blockingTaskId: number;
+  relatedTaskId: number;
+  relationType: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export type TaskBlockerPostgrestRowData = {
+export type TaskRelationPostgrestRowData = {
   id: number;
   task_id: number;
-  blocking_task_id: number;
+  related_task_id: number;
+  relation_type: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   created_at: string;
   updated_at: string;
 };
 
-export declare class TaskBlockerPostgrestRow {
-  constructor(data: TaskBlockerPostgrestRowData);
+export declare class TaskRelationPostgrestRow {
+  constructor(data: TaskRelationPostgrestRowData);
   id: number;
   task_id: number;
-  blocking_task_id: number;
+  related_task_id: number;
+  relation_type: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,5 +1,8 @@
 const { z } = require('zod');
-const { WorkStatusSchema: StoredWorkStatusSchema } = require('./generated/prisma-zod.cjs');
+const {
+  TaskRelationTypeSchema,
+  WorkStatusSchema: StoredWorkStatusSchema
+} = require('./generated/prisma-zod.cjs');
 const publicContracts = require('./generated/public-contracts.cjs');
 const prismaClasses = require('./generated/prisma-classes.cjs');
 
@@ -9,8 +12,8 @@ const routes = {
   projectsSelect: '/projects?select=*',
   tasks: '/tasks',
   tasksByProject: (projectId) => `/tasks?project_id=eq.${projectId}&select=*`,
-  taskBlockers: '/task_blockers',
-  taskBlockersByTask: (taskId) => `/task_blockers?task_id=eq.${taskId}&select=*`,
+  taskRelations: '/task_relations',
+  taskRelationsByTask: (taskId) => `/task_relations?task_id=eq.${taskId}&select=*`,
   projectNotes: '/project_notes',
   taskNotes: '/task_notes',
   projectNotesByProject: (projectId) =>
@@ -27,7 +30,10 @@ const storedWorkStatuses = storedWorkStatusSchema.options;
 const workStatusSchema = z.enum([...storedWorkStatuses, 'blocked']);
 const workStatuses = workStatusSchema.options;
 const taskEditableWorkStatuses = storedWorkStatuses;
+const taskRelationTypeSchema = TaskRelationTypeSchema;
+const taskRelationTypes = taskRelationTypeSchema.options;
 const resolvedBlockingStatuses = ['done', 'dropped'];
+const blockingTaskRelationType = 'blocked_by';
 const placeholderTaskTitle = '•';
 const allowedWorkStatusTransitions = Object.fromEntries(
   storedWorkStatuses.map((status) => [
@@ -61,10 +67,14 @@ function isResolvedBlockingStatus(status) {
   return resolvedBlockingStatuses.includes(status);
 }
 
-function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
-  const blockingTaskIds = blockers
-    .filter((blocker) => blocker.taskId === taskId)
-    .map((blocker) => blocker.blockingTaskId);
+function isBlockingTaskRelation(relation) {
+  return relation.relationType === blockingTaskRelationType;
+}
+
+function hasUnresolvedTaskBlockers(taskId, relations, tasks) {
+  const blockingTaskIds = relations
+    .filter((relation) => relation.taskId === taskId && isBlockingTaskRelation(relation))
+    .map((relation) => relation.relatedTaskId);
 
   if (blockingTaskIds.length === 0) {
     return false;
@@ -77,8 +87,8 @@ function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
   });
 }
 
-function computeEffectiveTaskStatus(task, blockers, tasks) {
-  return hasUnresolvedTaskBlockers(task.id, blockers, tasks) ? 'blocked' : task.status;
+function computeEffectiveTaskStatus(task, relations, tasks) {
+  return hasUnresolvedTaskBlockers(task.id, relations, tasks) ? 'blocked' : task.status;
 }
 
 function computeProjectStatusFromTasks(tasks) {
@@ -190,12 +200,26 @@ const createTaskNoteBodySchema = z.object({
   reference_url: z.string().min(1).optional().nullable()
 });
 
-const createTaskBlockerBodySchema = z.object({
+const createTaskRelationBodySchema = z.object({
   task_id: z.number().int().positive(),
-  blocking_task_id: z.number().int().positive()
-}).refine((value) => value.task_id !== value.blocking_task_id, {
-  message: 'A task cannot be blocked by itself.'
+  related_task_id: z.number().int().positive(),
+  relation_type: taskRelationTypeSchema,
+  commentary: z.string().min(1).optional().nullable()
+}).refine((value) => value.task_id !== value.related_task_id, {
+  message: 'A task cannot relate to itself.'
 });
+
+const updateTaskRelationBodySchema = z
+  .object({
+    relation_type: taskRelationTypeSchema.optional(),
+    commentary: z.string().min(1).optional().nullable()
+  })
+  .refine(
+    (value) => value.relation_type !== undefined || value.commentary !== undefined,
+    {
+      message: 'Provide at least one relation field to update.'
+    }
+  );
 
 const updateProjectNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),
@@ -217,13 +241,17 @@ module.exports = {
   workStatusSchema,
   workStatuses,
   taskEditableWorkStatuses,
+  taskRelationTypeSchema,
+  taskRelationTypes,
   resolvedBlockingStatuses,
+  blockingTaskRelationType,
   placeholderTaskTitle,
   allowedWorkStatusTransitions,
   canTransitionWorkStatus,
   getWorkStatusTransitionReason,
   isStoredWorkStatus,
   isResolvedBlockingStatus,
+  isBlockingTaskRelation,
   hasUnresolvedTaskBlockers,
   computeEffectiveTaskStatus,
   computeProjectStatusFromTasks,
@@ -234,7 +262,8 @@ module.exports = {
   updateTaskStatusBodySchema,
   createProjectNoteBodySchema,
   createTaskNoteBodySchema,
-  createTaskBlockerBodySchema,
+  createTaskRelationBodySchema,
+  updateTaskRelationBodySchema,
   updateProjectNoteBodySchema,
   updateTaskNoteBodySchema
 };

@@ -35,9 +35,9 @@ BEFORE UPDATE ON "api"."task_notes"
 FOR EACH ROW
 EXECUTE FUNCTION "api"."touch_updated_at"();
 
-DROP TRIGGER IF EXISTS "task_blockers_touch_updated_at" ON "api"."task_blockers";
-CREATE TRIGGER "task_blockers_touch_updated_at"
-BEFORE UPDATE ON "api"."task_blockers"
+DROP TRIGGER IF EXISTS "task_relations_touch_updated_at" ON "api"."task_relations";
+CREATE TRIGGER "task_relations_touch_updated_at"
+BEFORE UPDATE ON "api"."task_relations"
 FOR EACH ROW
 EXECUTE FUNCTION "api"."touch_updated_at"();
 
@@ -109,46 +109,46 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION "api"."cascade_task_and_project_updated_at_from_task_blocker"()
+CREATE OR REPLACE FUNCTION "api"."cascade_task_and_project_updated_at_from_task_relation"()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  blocked_task_id integer;
-  blocking_task_id integer;
-  blocked_project_id integer;
-  blocking_project_id integer;
+  task_id integer;
+  related_task_id integer;
+  task_project_id integer;
+  related_project_id integer;
 BEGIN
-  blocked_task_id := COALESCE(NEW.task_id, OLD.task_id);
-  blocking_task_id := COALESCE(NEW.blocking_task_id, OLD.blocking_task_id);
+  task_id := COALESCE(NEW.task_id, OLD.task_id);
+  related_task_id := COALESCE(NEW.related_task_id, OLD.related_task_id);
 
-  IF blocked_task_id IS NOT NULL THEN
-    PERFORM "api"."touch_task_updated_at"(blocked_task_id);
+  IF task_id IS NOT NULL THEN
+    PERFORM "api"."touch_task_updated_at"(task_id);
   END IF;
 
-  IF blocking_task_id IS NOT NULL THEN
-    PERFORM "api"."touch_task_updated_at"(blocking_task_id);
+  IF related_task_id IS NOT NULL THEN
+    PERFORM "api"."touch_task_updated_at"(related_task_id);
   END IF;
 
-  IF blocked_task_id IS NOT NULL THEN
+  IF task_id IS NOT NULL THEN
     SELECT project_id
-    INTO blocked_project_id
+    INTO task_project_id
     FROM "api"."tasks"
-    WHERE id = blocked_task_id;
+    WHERE id = task_id;
 
-    IF blocked_project_id IS NOT NULL THEN
-      PERFORM "api"."touch_project_updated_at"(blocked_project_id);
+    IF task_project_id IS NOT NULL THEN
+      PERFORM "api"."touch_project_updated_at"(task_project_id);
     END IF;
   END IF;
 
-  IF blocking_task_id IS NOT NULL THEN
+  IF related_task_id IS NOT NULL THEN
     SELECT project_id
-    INTO blocking_project_id
+    INTO related_project_id
     FROM "api"."tasks"
-    WHERE id = blocking_task_id;
+    WHERE id = related_task_id;
 
-    IF blocking_project_id IS NOT NULL AND blocking_project_id IS DISTINCT FROM blocked_project_id THEN
-      PERFORM "api"."touch_project_updated_at"(blocking_project_id);
+    IF related_project_id IS NOT NULL AND related_project_id IS DISTINCT FROM task_project_id THEN
+      PERFORM "api"."touch_project_updated_at"(related_project_id);
     END IF;
   END IF;
 
@@ -174,8 +174,8 @@ AFTER INSERT OR UPDATE OR DELETE ON "api"."task_notes"
 FOR EACH ROW
 EXECUTE FUNCTION "api"."cascade_task_and_project_updated_at_from_task_note"();
 
-DROP TRIGGER IF EXISTS "task_blockers_cascade_task_and_project_updated_at" ON "api"."task_blockers";
-CREATE TRIGGER "task_blockers_cascade_task_and_project_updated_at"
-AFTER INSERT OR UPDATE OR DELETE ON "api"."task_blockers"
+DROP TRIGGER IF EXISTS "task_relations_cascade_task_and_project_updated_at" ON "api"."task_relations";
+CREATE TRIGGER "task_relations_cascade_task_and_project_updated_at"
+AFTER INSERT OR UPDATE OR DELETE ON "api"."task_relations"
 FOR EACH ROW
-EXECUTE FUNCTION "api"."cascade_task_and_project_updated_at_from_task_blocker"();
+EXECUTE FUNCTION "api"."cascade_task_and_project_updated_at_from_task_relation"();

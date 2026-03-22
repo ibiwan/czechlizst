@@ -5,6 +5,8 @@ import { z } from 'zod';
 
 export const WorkStatusSchema = z.enum(['todo', 'started', 'active', 'done', 'dropped']);
 
+export const TaskRelationTypeSchema = z.enum(['blocked_by', 'has_subtask', 'related_to']);
+
 export const ProjectRowSchema = z.object({
   id: z.number().int(),
   name: z.string(),
@@ -22,10 +24,12 @@ export const TaskRowSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-export const TaskBlockerRowSchema = z.object({
+export const TaskRelationRowSchema = z.object({
   id: z.number().int(),
   taskId: z.number().int(),
-  blockingTaskId: z.number().int(),
+  relatedTaskId: z.number().int(),
+  relationType: TaskRelationTypeSchema,
+  commentary: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -51,7 +55,7 @@ export const TaskNoteRowSchema = z.object({
 export const PrismaRowSchemas = {
   Project: ProjectRowSchema,
   Task: TaskRowSchema,
-  TaskBlocker: TaskBlockerRowSchema,
+  TaskRelation: TaskRelationRowSchema,
   ProjectNote: ProjectNoteRowSchema,
   TaskNote: TaskNoteRowSchema,
 };

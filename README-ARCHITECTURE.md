@@ -36,7 +36,7 @@ Rationale:
 ## Data Model Decisions
 - `tasks` use stored enum `WorkStatus`:
   `todo`, `started`, `active`, `done`, `dropped`
-- `blocked` is derived from unresolved task blockers, not stored in Prisma
+- `blocked` is derived from unresolved `blocked_by` task relations, not stored in Prisma
 - `projects` are container records with derived effective status, not stored workflow status
 - Projects are never empty:
   - new projects get a placeholder task
@@ -45,7 +45,7 @@ Rationale:
   - `project_notes`
   - `task_notes`
 - Task dependencies are modeled explicitly:
-  - `task_blockers`
+  - `task_relations`
 
 Rationale:
 - Multiple notes need first-class rows (timestamps, clean UI editing).

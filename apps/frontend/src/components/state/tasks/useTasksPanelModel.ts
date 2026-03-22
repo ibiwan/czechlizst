@@ -1,25 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  blockingTaskRelationType,
   computeEffectiveTaskStatus,
   isStoredWorkStatus,
   placeholderTaskTitle,
   type StoredWorkStatus,
-  type TaskBlocker
+  type TaskRelationType,
+  type TaskRelation
 } from '@app/contracts';
 import {
-  useCreateTaskBlockerMutation,
+  useCreateTaskRelationMutation,
   useCreateTaskMutation,
   useCreateTaskNoteMutation,
-  useDeleteTaskBlockerMutation,
+  useDeleteTaskRelationMutation,
   useDeleteTaskNoteMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksOutsideProjectMutation,
   useDeleteTaskMutation,
-  useListAllTaskBlockersQuery,
+  useListAllTaskRelationsQuery,
   useListAllTasksQuery,
-  useListTaskBlockersQuery,
+  useListTaskRelationsQuery,
   useListTaskNotesQuery,
   useListTasksQuery,
+  useUpdateTaskRelationMutation,
   useUpdateTaskMutation,
   useUpdateTaskNoteMutation,
   useUpdateTaskStatusMutation
@@ -46,10 +49,10 @@ export function useTasksPanelModel() {
   const tasks = useMemo(() => tasksQuery.data?.tasks ?? [], [tasksQuery.data?.tasks]);
   const allTasksQuery = useListAllTasksQuery();
   const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
-  const allTaskBlockersQuery = useListAllTaskBlockersQuery();
-  const allTaskBlockers = useMemo(
-    () => allTaskBlockersQuery.data?.taskBlockers ?? [],
-    [allTaskBlockersQuery.data?.taskBlockers]
+  const allTaskRelationsQuery = useListAllTaskRelationsQuery();
+  const allTaskRelations = useMemo(
+    () => allTaskRelationsQuery.data?.taskRelations ?? [],
+    [allTaskRelationsQuery.data?.taskRelations]
   );
 
   useEffect(() => {
@@ -68,16 +71,25 @@ export function useTasksPanelModel() {
     skip: selectedTaskId === null
   });
   const taskNotes = taskNotesQuery.data?.notes ?? [];
-  const taskBlockersQuery = useListTaskBlockersQuery(selectedTaskId ?? 0, {
+  const taskRelationsQuery = useListTaskRelationsQuery(selectedTaskId ?? 0, {
     skip: selectedTaskId === null
   });
-  const taskBlockers = taskBlockersQuery.data?.taskBlockers ?? [];
+  const taskRelations = useMemo(
+    () => taskRelationsQuery.data?.taskRelations ?? [],
+    [taskRelationsQuery.data?.taskRelations]
+  );
+  const blockingTaskRelations = useMemo(
+    () =>
+      taskRelations.filter((relation) => relation.relationType === blockingTaskRelationType),
+    [taskRelations]
+  );
 
-  const [createTaskBlocker, createTaskBlockerState] = useCreateTaskBlockerMutation();
+  const [createTaskRelation, createTaskRelationState] = useCreateTaskRelationMutation();
   const [createTask, createTaskState] = useCreateTaskMutation();
   const [createTaskNote, createTaskNoteState] = useCreateTaskNoteMutation();
-  const [deleteTaskBlocker, deleteTaskBlockerState] = useDeleteTaskBlockerMutation();
+  const [deleteTaskRelation, deleteTaskRelationState] = useDeleteTaskRelationMutation();
   const [deleteTaskNote, deleteTaskNoteState] = useDeleteTaskNoteMutation();
+  const [updateTaskRelation, updateTaskRelationState] = useUpdateTaskRelationMutation();
   const [updateTask, updateTaskState] = useUpdateTaskMutation();
   const [updateTaskStatus, updateTaskStatusState] = useUpdateTaskStatusMutation();
   const [demoteActiveTasksOutsideProject] = useDemoteActiveTasksOutsideProjectMutation();
@@ -94,10 +106,10 @@ export function useTasksPanelModel() {
       new Map(
         tasks.map((task) => [
           task.id,
-          computeEffectiveTaskStatus(task, allTaskBlockers, allTasks)
+          computeEffectiveTaskStatus(task, allTaskRelations, allTasks)
         ])
       ),
-    [allTaskBlockers, allTasks, tasks]
+    [allTaskRelations, allTasks, tasks]
   );
   const activeTaskEffectiveStatus =
     activeTask === null
@@ -115,22 +127,25 @@ export function useTasksPanelModel() {
     () =>
       allTasks.map((task) => ({
         ...task,
-        status: computeEffectiveTaskStatus(task, allTaskBlockers, allTasks)
+        status: computeEffectiveTaskStatus(task, allTaskRelations, allTasks)
       })),
-    [allTaskBlockers, allTasks]
+    [allTaskRelations, allTasks]
   );
-  const blockersByTaskId = useMemo(() => {
-    const grouped = new Map<number, TaskBlocker[]>();
-    for (const blocker of allTaskBlockers) {
-      const existing = grouped.get(blocker.taskId);
+  const blockingRelationsByTaskId = useMemo(() => {
+    const grouped = new Map<number, TaskRelation[]>();
+    for (const relation of allTaskRelations) {
+      if (relation.relationType !== blockingTaskRelationType) {
+        continue;
+      }
+      const existing = grouped.get(relation.taskId);
       if (existing) {
-        existing.push(blocker);
+        existing.push(relation);
       } else {
-        grouped.set(blocker.taskId, [blocker]);
+        grouped.set(relation.taskId, [relation]);
       }
     }
     return grouped;
-  }, [allTaskBlockers]);
+  }, [allTaskRelations]);
 
   function findUntouchedPlaceholderTask(projectId: number, excludeTaskId?: number) {
     return (
@@ -141,7 +156,7 @@ export function useTasksPanelModel() {
           task.title === placeholderTaskTitle &&
           task.status === 'todo' &&
           task.id !== excludeTaskId &&
-          (blockersByTaskId.get(task.id)?.length ?? 0) === 0
+          (blockingRelationsByTaskId.get(task.id)?.length ?? 0) === 0
       ) ?? null
     );
   }
@@ -310,7 +325,11 @@ export function useTasksPanelModel() {
     }
   }
 
-  async function onCreateTaskBlocker(blockingTaskId: number) {
+  async function onCreateTaskRelation(
+    relatedTaskId: number,
+    relationType: TaskRelationType,
+    commentary: string | null = null
+  ) {
     if (selectedTaskId === null || activeTask === null) {
       return;
     }
@@ -321,19 +340,37 @@ export function useTasksPanelModel() {
         isPlaceholder: false
       }).unwrap();
     }
-    await createTaskBlocker({
+    await createTaskRelation({
       taskId: selectedTaskId,
-      blockingTaskId
+      relatedTaskId,
+      relationType,
+      commentary
     }).unwrap();
   }
 
-  async function onDeleteTaskBlocker(taskBlockerId: number) {
+  async function onDeleteTaskRelation(taskRelationId: number) {
     if (selectedTaskId === null) {
       return;
     }
-    await deleteTaskBlocker({
-      taskBlockerId,
+    await deleteTaskRelation({
+      taskRelationId,
       taskId: selectedTaskId
+    }).unwrap();
+  }
+
+  async function onUpdateTaskRelation(
+    taskRelationId: number,
+    relationType: TaskRelationType | undefined,
+    commentary: string | null
+  ) {
+    if (selectedTaskId === null) {
+      return;
+    }
+    await updateTaskRelation({
+      taskRelationId,
+      taskId: selectedTaskId,
+      relationType,
+      commentary
     }).unwrap();
   }
 
@@ -346,13 +383,14 @@ export function useTasksPanelModel() {
     activeTask,
     activeTaskEffectiveStatus,
     allTasks,
-    allTaskBlockers,
-    allTaskBlockersQuery,
-    blockersByTaskId,
-    createTaskBlockerState,
+    allTaskRelations,
+    allTaskRelationsQuery,
+    blockingRelationsByTaskId,
+    blockingTaskRelations,
+    createTaskRelationState,
     createTaskNoteState,
     createTaskState,
-    deleteTaskBlockerState,
+    deleteTaskRelationState,
     deleteTaskNoteState,
     effectiveAllTasks,
     effectiveTasks,
@@ -360,14 +398,15 @@ export function useTasksPanelModel() {
     newTaskNoteBody,
     newTaskNoteReferenceUrl,
     newTaskTitle,
-    onCreateTaskBlocker,
+    onCreateTaskRelation,
     onCreateTask,
     onCreateTaskNote,
     createTaskNoteWithValues,
-    onDeleteTaskBlocker,
+    onDeleteTaskRelation,
     onDeleteTaskNote,
     onDeleteTask,
     onUpdateTaskStatus,
+    onUpdateTaskRelation,
     onUpdateTaskTitle,
     onUpdateTaskNote,
     updateTaskStatusForProject,
@@ -379,13 +418,14 @@ export function useTasksPanelModel() {
     setTaskInputOpen,
     setTaskNoteInputOpen,
     taskInputOpen,
-    taskBlockers,
-    taskBlockersQuery,
+    taskRelations,
+    taskRelationsQuery,
     taskNoteInputOpen,
     taskNotes,
     taskNotesQuery,
     tasks,
     tasksQuery,
+    updateTaskRelationState,
     updateTaskState,
     updateTaskNoteState,
     updateTaskStatusState

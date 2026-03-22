@@ -4,16 +4,17 @@
 import { z } from 'zod';
 import {
   WorkStatusSchema,
+  TaskRelationTypeSchema,
   ProjectRowSchema,
   TaskRowSchema,
-  TaskBlockerRowSchema,
+  TaskRelationRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
 } from './prisma-zod.mjs';
 
 export const projectSchema = ProjectRowSchema;
 export const taskSchema = TaskRowSchema;
-export const taskBlockerSchema = TaskBlockerRowSchema;
+export const taskRelationSchema = TaskRelationRowSchema;
 export const projectNoteSchema = ProjectNoteRowSchema;
 export const taskNoteSchema = TaskNoteRowSchema;
 
@@ -120,49 +121,53 @@ export function parsePostgrestCreateTaskResponse(input) {
   });
 }
 
-export const postgrestTaskBlockerRowSchema = z.object({
+export const postgrestTaskRelationRowSchema = z.object({
   id: z.number().int().positive(),
   task_id: z.number().int().positive(),
-  blocking_task_id: z.number().int().positive(),
+  related_task_id: z.number().int().positive(),
+  relation_type: TaskRelationTypeSchema,
+  commentary: z.string().min(1).nullable().optional(),
   created_at: z.string().min(1),
   updated_at: z.string().min(1).optional(),
 });
 
-export const postgrestTaskBlockerRowsSchema = z.array(postgrestTaskBlockerRowSchema);
+export const postgrestTaskRelationRowsSchema = z.array(postgrestTaskRelationRowSchema);
 
-export const listTaskBlockersResponseSchema = z.object({
-  taskBlockers: z.array(taskBlockerSchema)
+export const listTaskRelationsResponseSchema = z.object({
+  taskRelations: z.array(taskRelationSchema)
 });
 
-export const createTaskBlockerResponseSchema = z.object({
-  taskBlocker: taskBlockerSchema
+export const createTaskRelationResponseSchema = z.object({
+  taskRelation: taskRelationSchema
 });
 
-export function taskBlockerFromPostgrestRow(row) {
+export function taskRelationFromPostgrestRow(row) {
   const createdAt = normalizePostgrestTimestamp(row.created_at);
-  return taskBlockerSchema.parse({
+  return taskRelationSchema.parse({
     id: row.id,
     taskId: row.task_id,
-    blockingTaskId: row.blocking_task_id,
+    relatedTaskId: row.related_task_id,
+    relationType: row.relation_type,
+    commentary: row.commentary,
     createdAt: normalizePostgrestTimestamp(row.created_at),
     updatedAt: row.updated_at ? normalizePostgrestTimestamp(row.updated_at) : createdAt,
   });
 }
 
-export function parsePostgrestListTaskBlockersResponse(input) {
-  const rows = postgrestTaskBlockerRowsSchema.parse(input);
-  return listTaskBlockersResponseSchema.parse({
-    taskBlockers: rows.map(taskBlockerFromPostgrestRow)
+export function parsePostgrestListTaskRelationsResponse(input) {
+  const rows = postgrestTaskRelationRowsSchema.parse(input);
+  return listTaskRelationsResponseSchema.parse({
+    taskRelations: rows.map(taskRelationFromPostgrestRow)
   });
 }
 
-export function parsePostgrestCreateTaskBlockerResponse(input) {
-  const rows = postgrestTaskBlockerRowsSchema.parse(input);
+export function parsePostgrestCreateTaskRelationResponse(input) {
+  const rows = postgrestTaskRelationRowsSchema.parse(input);
   if (rows.length === 0) {
-    throw new Error('Expected PostgREST create taskblocker response to include one row');
+    throw new Error('Expected PostgREST create taskrelation response to include one row');
   }
-  return createTaskBlockerResponseSchema.parse({
-    taskBlocker: taskBlockerFromPostgrestRow(rows[0])
+  return createTaskRelationResponseSchema.parse({
+    taskRelation: taskRelationFromPostgrestRow(rows[0])
   });
 }
 

@@ -1,17 +1,19 @@
 import {
-  createTaskBlockerBodySchema,
-  parsePostgrestCreateTaskBlockerResponse,
+  createTaskRelationBodySchema,
+  parsePostgrestCreateTaskRelationResponse,
   createTaskBodySchema,
-  parsePostgrestListTaskBlockersResponse,
+  parsePostgrestListTaskRelationsResponse,
   parsePostgrestCreateTaskResponse,
   parsePostgrestListTasksResponse,
   updateTaskBodySchema,
+  updateTaskRelationBodySchema,
   updateTaskStatusBodySchema,
   routes,
-  type CreateTaskBlockerResponse,
+  type CreateTaskRelationResponse,
   type CreateTaskBody,
   type CreateTaskResponse,
-  type ListTaskBlockersResponse,
+  type ListTaskRelationsResponse,
+  type TaskRelationType,
   type ListTasksResponse,
   type UpdateTaskBody,
   type UpdateTaskStatusBody
@@ -30,14 +32,25 @@ type TaskTypes = {
   ListResult: ListTasksResponse;
   ListArg: number;
   ListAllArg: void;
-  ListBlockersResult: ListTaskBlockersResponse;
-  ListBlockersArg: number;
-  ListAllBlockersArg: void;
+  ListRelationsResult: ListTaskRelationsResponse;
+  ListRelationsArg: number;
+  ListAllRelationsArg: void;
   CreateResult: CreateTaskResponse;
   CreateArg: { projectId: number } & CreateTaskBody;
-  CreateBlockerResult: CreateTaskBlockerResponse;
-  CreateBlockerArg: { taskId: number; blockingTaskId: number };
-  DeleteBlockerArg: { taskBlockerId: number; taskId: number };
+  CreateRelationResult: CreateTaskRelationResponse;
+  CreateRelationArg: {
+    taskId: number;
+    relatedTaskId: number;
+    relationType: TaskRelationType;
+    commentary?: string | null;
+  };
+  UpdateRelationArg: {
+    taskRelationId: number;
+    taskId: number;
+    relationType?: TaskRelationType;
+    commentary?: string | null;
+  };
+  DeleteRelationArg: { taskRelationId: number; taskId: number };
   UpdateStatus: UpdateTaskBody['status'];
   UpdateStatusArg: UpdateTaskStatusBody['status'];
   UpdateArg: {
@@ -66,26 +79,26 @@ export const tasksApi = api.injectEndpoints({
       transformResponse: (response) => parsePostgrestListTasksResponse(response),
       providesTags: ['Tasks']
     }),
-    listAllTaskBlockers: builder.query<
-      TaskTypes['ListBlockersResult'],
-      TaskTypes['ListAllBlockersArg']
+    listAllTaskRelations: builder.query<
+      TaskTypes['ListRelationsResult'],
+      TaskTypes['ListAllRelationsArg']
     >({
-      query: () => `${routes.taskBlockers}?select=*`,
-      transformResponse: (response) => parsePostgrestListTaskBlockersResponse(response),
-      providesTags: ['TaskBlockers']
+      query: () => `${routes.taskRelations}?select=*`,
+      transformResponse: (response) => parsePostgrestListTaskRelationsResponse(response),
+      providesTags: ['TaskRelations']
     }),
     listTasks: builder.query<TaskTypes['ListResult'], TaskTypes['ListArg']>({
       query: (projectId) => routes.tasksByProject(projectId),
       transformResponse: (response) => parsePostgrestListTasksResponse(response),
       providesTags: (_result, _error, projectId) => [{ type: 'Tasks', id: projectId }]
     }),
-    listTaskBlockers: builder.query<
-      TaskTypes['ListBlockersResult'],
-      TaskTypes['ListBlockersArg']
+    listTaskRelations: builder.query<
+      TaskTypes['ListRelationsResult'],
+      TaskTypes['ListRelationsArg']
     >({
-      query: (taskId) => routes.taskBlockersByTask(taskId),
-      transformResponse: (response) => parsePostgrestListTaskBlockersResponse(response),
-      providesTags: (_result, _error, taskId) => [{ type: 'TaskBlockers', id: taskId }]
+      query: (taskId) => routes.taskRelationsByTask(taskId),
+      transformResponse: (response) => parsePostgrestListTaskRelationsResponse(response),
+      providesTags: (_result, _error, taskId) => [{ type: 'TaskRelations', id: taskId }]
     }),
     createTask: builder.mutation<TaskTypes['CreateResult'], TaskTypes['CreateArg']>({
       query: ({ projectId, title, is_placeholder }) =>
@@ -96,22 +109,45 @@ export const tasksApi = api.injectEndpoints({
       transformResponse: (response) => parsePostgrestCreateTaskResponse(response),
       invalidatesTags: (_result, _error, arg) => ['Tasks', { type: 'Tasks', id: arg.projectId }]
     }),
-    createTaskBlocker: builder.mutation<
-      TaskTypes['CreateBlockerResult'],
-      TaskTypes['CreateBlockerArg']
+    createTaskRelation: builder.mutation<
+      TaskTypes['CreateRelationResult'],
+      TaskTypes['CreateRelationArg']
     >({
-      query: ({ taskId, blockingTaskId }) =>
+      query: ({ taskId, relatedTaskId, relationType, commentary }) =>
         buildPostReturn(
-          routes.taskBlockers,
-          createTaskBlockerBodySchema.parse({
+          routes.taskRelations,
+          createTaskRelationBodySchema.parse({
             task_id: taskId,
-            blocking_task_id: blockingTaskId
+            related_task_id: relatedTaskId,
+            relation_type: relationType,
+            commentary
           })
         ),
-      transformResponse: (response) => parsePostgrestCreateTaskBlockerResponse(response),
+      transformResponse: (response) => parsePostgrestCreateTaskRelationResponse(response),
       invalidatesTags: (_result, _error, arg) => [
-        'TaskBlockers',
-        { type: 'TaskBlockers', id: arg.taskId },
+        'TaskRelations',
+        { type: 'TaskRelations', id: arg.taskId },
+        'Tasks',
+        'Projects'
+      ]
+    }),
+    updateTaskRelation: builder.mutation<
+      TaskTypes['CreateRelationResult'],
+      TaskTypes['UpdateRelationArg']
+    >({
+      query: ({ taskRelationId, relationType, commentary }) =>
+        buildPatchSingle(
+          `${routes.taskRelations}?id=eq.${taskRelationId}`,
+          updateTaskRelationBodySchema.parse({
+            relation_type: relationType,
+            commentary
+          })
+        ),
+      transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskRelationResponse),
+      transformErrorResponse: mapNotFound('Task relation not found'),
+      invalidatesTags: (_result, _error, arg) => [
+        'TaskRelations',
+        { type: 'TaskRelations', id: arg.taskId },
         'Tasks',
         'Projects'
       ]
@@ -191,21 +227,22 @@ export const tasksApi = api.injectEndpoints({
         'Tasks',
         { type: 'Tasks', id: arg.projectId },
         'Projects',
-        'TaskBlockers',
-        { type: 'TaskBlockers', id: arg.taskId },
+        'TaskRelations',
+        { type: 'TaskRelations', id: arg.taskId },
         { type: 'TaskNotes', id: arg.taskId }
       ]
     }),
-    deleteTaskBlocker: builder.mutation<
-      TaskTypes['CreateBlockerResult'],
-      TaskTypes['DeleteBlockerArg']
+    deleteTaskRelation: builder.mutation<
+      TaskTypes['CreateRelationResult'],
+      TaskTypes['DeleteRelationArg']
     >({
-      query: ({ taskBlockerId }) => buildDeleteSingle(`${routes.taskBlockers}?id=eq.${taskBlockerId}`),
-      transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskBlockerResponse),
-      transformErrorResponse: mapNotFound('Task blocker not found'),
+      query: ({ taskRelationId }) =>
+        buildDeleteSingle(`${routes.taskRelations}?id=eq.${taskRelationId}`),
+      transformResponse: parseSingleObjectResponse(parsePostgrestCreateTaskRelationResponse),
+      transformErrorResponse: mapNotFound('Task relation not found'),
       invalidatesTags: (_result, _error, arg) => [
-        'TaskBlockers',
-        { type: 'TaskBlockers', id: arg.taskId },
+        'TaskRelations',
+        { type: 'TaskRelations', id: arg.taskId },
         'Tasks',
         'Projects'
       ]
@@ -216,17 +253,18 @@ export const tasksApi = api.injectEndpoints({
 
 export type TasksApi = typeof tasksApi;
 export const {
-  useCreateTaskBlockerMutation,
+  useCreateTaskRelationMutation,
   useCreateTaskMutation,
-  useDeleteTaskBlockerMutation,
+  useDeleteTaskRelationMutation,
   useDeleteTaskMutation,
   useDemoteActiveTasksExceptTaskMutation,
   useDemoteActiveTasksInProjectMutation,
   useDemoteActiveTasksOutsideProjectMutation,
-  useListAllTaskBlockersQuery,
+  useListAllTaskRelationsQuery,
   useListAllTasksQuery,
-  useListTaskBlockersQuery,
+  useListTaskRelationsQuery,
   useListTasksQuery,
+  useUpdateTaskRelationMutation,
   useUpdateTaskMutation,
   useUpdateTaskStatusMutation
 } = tasksApi;

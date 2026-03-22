@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useListAllTasksQuery } from '@api';
-import { type TaskBlocker } from '@app/contracts';
+import {
+  taskRelationTypes,
+  type TaskRelation,
+  type TaskRelationType
+} from '@app/contracts';
 import { type TaskView } from '@app-types/view';
 import { useProjectsPanel } from '@state/projects/useProjectsPanel';
 import { NotesDetailSection } from '@utilities/NotesDetailSection';
@@ -8,9 +12,26 @@ import { type TasksPanelModel } from '@state/tasks/TasksPanelModel';
 import { buildBirdsEyeItems } from './ProjectDetailPane/birdsEyeItems';
 import { TaskCard } from './ProjectDetailPane/ProjectDetailView/TasksListCard/TaskCard';
 
+const RELATION_TYPE_LABELS: Record<TaskRelationType, string> = {
+  blocked_by: 'Blocked By',
+  has_subtask: 'Has Subtask',
+  related_to: 'Related To'
+};
+
+const RELATION_TYPE_VERBS: Record<TaskRelationType, string> = {
+  blocked_by: 'blockers',
+  has_subtask: 'subtasks',
+  related_to: 'related tasks'
+};
+
 export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   const [isRandomPickLoading, setIsRandomPickLoading] = useState(false);
-  const [newBlockingTaskId, setNewBlockingTaskId] = useState('');
+  const [newRelationType, setNewRelationType] = useState<TaskRelationType>('blocked_by');
+  const [newRelatedTaskId, setNewRelatedTaskId] = useState('');
+  const [newRelationCommentary, setNewRelationCommentary] = useState('');
+  const [editingRelationId, setEditingRelationId] = useState<number | null>(null);
+  const [editingRelationType, setEditingRelationType] = useState<TaskRelationType>('blocked_by');
+  const [editingRelationCommentary, setEditingRelationCommentary] = useState('');
   const [pendingTaskSelection, setPendingTaskSelection] = useState<{
     projectId: number;
     taskId: number;
@@ -18,33 +39,43 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   const { selectProject } = useProjectsPanel();
   const allTasksQuery = useListAllTasksQuery();
   const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
+  const allTaskById = useMemo(() => new Map(allTasks.map((task) => [task.id, task])), [allTasks]);
   const { selectableItems } = useMemo(() => buildBirdsEyeItems(allTasks), [allTasks]);
-  const currentBlockingTasks = useMemo(() => {
-    const taskById = new Map(model.tasks.map((task) => [task.id, task]));
-    const blockingTasks: Array<{ taskBlocker: TaskBlocker; task: TaskView }> = [];
+  const currentRelations = useMemo(() => {
+    const relations: Array<{ taskRelation: TaskRelation; task: TaskView }> = [];
 
-    for (const taskBlocker of model.taskBlockers) {
-      const task = taskById.get(taskBlocker.blockingTaskId);
+    for (const taskRelation of model.taskRelations) {
+      const task = allTaskById.get(taskRelation.relatedTaskId);
       if (!task) {
         continue;
       }
-      blockingTasks.push({ taskBlocker, task });
+      relations.push({ taskRelation, task });
     }
 
-    return blockingTasks;
-  }, [model.taskBlockers, model.tasks]);
-  const availableBlockingTasks = useMemo(() => {
+    return relations;
+  }, [allTaskById, model.taskRelations]);
+  const relationsByType = useMemo(() => {
+    return new Map(
+      taskRelationTypes.map((relationType) => [
+        relationType,
+        currentRelations.filter((relation) => relation.taskRelation.relationType === relationType)
+      ])
+    );
+  }, [currentRelations]);
+  const availableRelatedTasks = useMemo(() => {
     if (!model.activeTask) {
       return [];
     }
-    const currentBlockingTaskIds = new Set(
-      model.taskBlockers.map((taskBlocker) => taskBlocker.blockingTaskId)
+    const currentRelatedTaskIds = new Set(
+      model.taskRelations
+        .filter((taskRelation) => taskRelation.relationType === newRelationType)
+        .map((taskRelation) => taskRelation.relatedTaskId)
     );
 
     return model.tasks.filter(
-      (task) => task.id !== model.activeTask?.id && !currentBlockingTaskIds.has(task.id)
+      (task) => task.id !== model.activeTask?.id && !currentRelatedTaskIds.has(task.id)
     );
-  }, [model.activeTask, model.taskBlockers, model.tasks]);
+  }, [model.activeTask, model.taskRelations, model.tasks, newRelationType]);
 
   useEffect(() => {
     if (!pendingTaskSelection) {
@@ -61,17 +92,17 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
   }, [model, pendingTaskSelection]);
 
   useEffect(() => {
-    if (availableBlockingTasks.length === 0) {
-      setNewBlockingTaskId('');
+    if (availableRelatedTasks.length === 0) {
+      setNewRelatedTaskId('');
       return;
     }
 
-    if (availableBlockingTasks.some((task) => String(task.id) === newBlockingTaskId)) {
+    if (availableRelatedTasks.some((task) => String(task.id) === newRelatedTaskId)) {
       return;
     }
 
-    setNewBlockingTaskId(String(availableBlockingTasks[0].id));
-  }, [availableBlockingTasks, newBlockingTaskId]);
+    setNewRelatedTaskId(String(availableRelatedTasks[0].id));
+  }, [availableRelatedTasks, newRelatedTaskId]);
 
   async function handlePickRandomTask() {
     if (selectableItems.length === 0 || isRandomPickLoading) {
@@ -92,14 +123,62 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
     }
   }
 
-  async function handleAddTaskBlocker(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAddTaskRelation(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const blockingTaskId = Number(newBlockingTaskId);
-    if (!blockingTaskId) {
+    const relatedTaskId = Number(newRelatedTaskId);
+    if (!relatedTaskId) {
       return;
     }
-    await model.onCreateTaskBlocker(blockingTaskId);
-    setNewBlockingTaskId('');
+    await model.onCreateTaskRelation(
+      relatedTaskId,
+      newRelationType,
+      newRelationCommentary.trim() || null
+    );
+    setNewRelatedTaskId('');
+    setNewRelationCommentary('');
+  }
+
+  function jumpToTask(taskId: number) {
+    const relatedTask = allTaskById.get(taskId);
+    if (!relatedTask) {
+      return;
+    }
+
+    if (model.activeProjectId === relatedTask.projectId) {
+      model.selectTask(relatedTask.id);
+      return;
+    }
+
+    setPendingTaskSelection({
+      projectId: relatedTask.projectId,
+      taskId: relatedTask.id
+    });
+    selectProject(relatedTask.projectId);
+  }
+
+  function beginEditingRelation(taskRelation: TaskRelation) {
+    setEditingRelationId(taskRelation.id);
+    setEditingRelationType(taskRelation.relationType);
+    setEditingRelationCommentary(taskRelation.commentary ?? '');
+  }
+
+  function cancelEditingRelation() {
+    setEditingRelationId(null);
+    setEditingRelationType('blocked_by');
+    setEditingRelationCommentary('');
+  }
+
+  async function handleUpdateTaskRelation(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (editingRelationId === null) {
+      return;
+    }
+    await model.onUpdateTaskRelation(
+      editingRelationId,
+      editingRelationType,
+      editingRelationCommentary.trim() || null
+    );
+    cancelEditingRelation();
   }
 
   if (model.activeProjectId === null) {
@@ -145,63 +224,186 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
           updateTaskStatusLoading={model.updateTaskStatusState.isLoading}
         />
       )}
-      <section className="detail-block" data-testid="task-blockers">
+      <section className="detail-block" data-testid="task-relations">
         <div className="panel-header">
-          <h3 className="panel-title">Blocked By</h3>
+          <h3 className="panel-title">Relationships</h3>
           <span className="meta-copy">
-            {currentBlockingTasks.length === 0
-              ? 'No blockers'
-              : `${currentBlockingTasks.length} blocker${currentBlockingTasks.length === 1 ? '' : 's'}`}
+            {currentRelations.length === 0
+              ? 'No relationships'
+              : `${currentRelations.length} link${currentRelations.length === 1 ? '' : 's'}`}
           </span>
         </div>
-        {model.taskBlockersQuery.isLoading ? (
-          <p className="state-copy">Loading blockers…</p>
-        ) : model.taskBlockersQuery.error ? (
-          <p className="state-copy">Could not load blockers.</p>
-        ) : currentBlockingTasks.length === 0 ? (
+        {model.taskRelationsQuery.isLoading ? (
+          <p className="state-copy">Loading relationships…</p>
+        ) : model.taskRelationsQuery.error ? (
+          <p className="state-copy">Could not load relationships.</p>
+        ) : currentRelations.length === 0 ? (
           <p className="state-copy">
-            This task is free to move unless you attach one or more blockers.
+            This task has no explicit links yet.
           </p>
         ) : (
-          <div className="task-blocker-list">
-            {currentBlockingTasks.map(({ taskBlocker, task }) => (
-              <div className="task-blocker-row" key={taskBlocker.id}>
-                <div className="task-blocker-copy">
-                  <span className="task-blocker-title">{task.title}</span>
-                  <span
-                    className={`status-pill status-${model.effectiveTaskStatusById.get(task.id) ?? task.status}`}
-                  >
-                    {model.effectiveTaskStatusById.get(task.id) ?? task.status}
-                  </span>
+          <div className="task-relation-groups">
+            {taskRelationTypes.map((relationType) => {
+              const relations = relationsByType.get(relationType) ?? [];
+              if (relations.length === 0) {
+                return null;
+              }
+              return (
+                <div className="task-relation-group" key={relationType}>
+                  <div className="panel-header">
+                    <h4 className="panel-subtitle">{RELATION_TYPE_LABELS[relationType]}</h4>
+                    <span className="meta-copy">
+                      {relations.length} {RELATION_TYPE_VERBS[relationType]}
+                    </span>
+                  </div>
+                  <div className="task-blocker-list">
+                    {relations.map(({ taskRelation, task }) => (
+                      <div className="task-blocker-row" key={taskRelation.id}>
+                        {editingRelationId === taskRelation.id ? (
+                          <form className="task-relation-editor" onSubmit={handleUpdateTaskRelation}>
+                            <div className="task-blocker-copy">
+                              <button
+                                type="button"
+                                className="link-inline task-relation-link"
+                                onClick={() => jumpToTask(task.id)}
+                                data-testid={`task-relation-jump-${taskRelation.id}`}
+                              >
+                                {task.title}
+                              </button>
+                              <span
+                                className={`status-pill status-${model.effectiveTaskStatusById.get(task.id) ?? task.status}`}
+                              >
+                                {model.effectiveTaskStatusById.get(task.id) ?? task.status}
+                              </span>
+                            </div>
+                            <div className="detail-action-row">
+                              <select
+                                className="text-input"
+                                value={editingRelationType}
+                                onChange={(event) =>
+                                  setEditingRelationType(event.target.value as TaskRelationType)
+                                }
+                                disabled={model.updateTaskRelationState.isLoading}
+                                data-testid={`task-relation-edit-type-${taskRelation.id}`}
+                              >
+                                {taskRelationTypes.map((candidateType) => (
+                                  <option key={candidateType} value={candidateType}>
+                                    {RELATION_TYPE_LABELS[candidateType]}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <textarea
+                              className="text-input"
+                              rows={3}
+                              value={editingRelationCommentary}
+                              onChange={(event) => setEditingRelationCommentary(event.target.value)}
+                              disabled={model.updateTaskRelationState.isLoading}
+                              placeholder="Optional commentary"
+                              data-testid={`task-relation-edit-commentary-${taskRelation.id}`}
+                            />
+                            <div className="detail-action-row">
+                              <button
+                                type="submit"
+                                className="mini-btn"
+                                disabled={model.updateTaskRelationState.isLoading}
+                                data-testid={`task-relation-save-${taskRelation.id}`}
+                              >
+                                Save
+                              </button>
+                              <button
+                                type="button"
+                                className="mini-btn mini-btn-subtle"
+                                onClick={cancelEditingRelation}
+                                disabled={model.updateTaskRelationState.isLoading}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <>
+                            <div className="task-blocker-copy">
+                              <button
+                                type="button"
+                                className="link-inline task-relation-link"
+                                onClick={() => jumpToTask(task.id)}
+                                data-testid={`task-relation-jump-${taskRelation.id}`}
+                              >
+                                {task.title}
+                              </button>
+                              <span
+                                className={`status-pill status-${model.effectiveTaskStatusById.get(task.id) ?? task.status}`}
+                              >
+                                {model.effectiveTaskStatusById.get(task.id) ?? task.status}
+                              </span>
+                              {taskRelation.commentary ? (
+                                <span className="task-relation-commentary">
+                                  {taskRelation.commentary}
+                                </span>
+                              ) : null}
+                            </div>
+                            <div className="detail-header-actions">
+                              <button
+                                type="button"
+                                className="link-inline"
+                                onClick={() => beginEditingRelation(taskRelation)}
+                                disabled={
+                                  model.updateTaskRelationState.isLoading ||
+                                  model.deleteTaskRelationState.isLoading
+                                }
+                                data-testid={`task-relation-edit-${taskRelation.id}`}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="link-danger"
+                                onClick={() => model.onDeleteTaskRelation(taskRelation.id)}
+                                disabled={model.deleteTaskRelationState.isLoading}
+                                data-testid={`task-relation-remove-${taskRelation.id}`}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  className="link-danger"
-                  onClick={() => model.onDeleteTaskBlocker(taskBlocker.id)}
-                  disabled={model.deleteTaskBlockerState.isLoading}
-                  data-testid={`task-blocker-remove-${taskBlocker.id}`}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
-        <form className="detail-actions" onSubmit={handleAddTaskBlocker}>
+        <form className="detail-actions" onSubmit={handleAddTaskRelation}>
           <div className="detail-action-row">
             <select
               className="text-input"
-              value={newBlockingTaskId}
-              onChange={(event) => setNewBlockingTaskId(event.target.value)}
-              disabled={
-                availableBlockingTasks.length === 0 || model.createTaskBlockerState.isLoading
-              }
-              data-testid="task-blocker-select"
+              value={newRelationType}
+              onChange={(event) => setNewRelationType(event.target.value as TaskRelationType)}
+              disabled={model.createTaskRelationState.isLoading}
+              data-testid="task-relation-type-select"
             >
-              {availableBlockingTasks.length === 0 ? (
+              {taskRelationTypes.map((relationType) => (
+                <option key={relationType} value={relationType}>
+                  {RELATION_TYPE_LABELS[relationType]}
+                </option>
+              ))}
+            </select>
+            <select
+              className="text-input"
+              value={newRelatedTaskId}
+              onChange={(event) => setNewRelatedTaskId(event.target.value)}
+              disabled={
+                availableRelatedTasks.length === 0 || model.createTaskRelationState.isLoading
+              }
+              data-testid="task-relation-select"
+            >
+              {availableRelatedTasks.length === 0 ? (
                 <option value="">No eligible tasks in this project</option>
               ) : (
-                availableBlockingTasks.map((task) => (
+                availableRelatedTasks.map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.title}
                   </option>
@@ -211,14 +413,23 @@ export function TaskNotesPane({ model }: { model: TasksPanelModel }) {
             <button
               type="submit"
               className="mini-btn"
-              disabled={!newBlockingTaskId || model.createTaskBlockerState.isLoading}
-              data-testid="task-blocker-add"
+              disabled={!newRelatedTaskId || model.createTaskRelationState.isLoading}
+              data-testid="task-relation-add"
             >
-              Add blocker
+              Add link
             </button>
           </div>
+          <textarea
+            className="text-input"
+            rows={3}
+            value={newRelationCommentary}
+            onChange={(event) => setNewRelationCommentary(event.target.value)}
+            disabled={model.createTaskRelationState.isLoading}
+            placeholder="Optional commentary"
+            data-testid="task-relation-commentary"
+          />
           <p className="meta-copy">
-            First pass is same-project only. Cross-project blockers can come later.
+            First pass is same-project only. Cross-project links can come later.
           </p>
         </form>
       </section>

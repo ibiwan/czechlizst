@@ -1,5 +1,5 @@
 import {
-  useListAllTaskBlockersQuery,
+  useListAllTaskRelationsQuery,
   useListAllTasksQuery,
   useListProjectNotesQuery,
   useListTasksQuery
@@ -23,10 +23,10 @@ export function useProjectsPanelModel() {
   const tasks = tasksQuery.data?.tasks ?? [];
   const allTasksQuery = useListAllTasksQuery();
   const allTasks = useMemo(() => allTasksQuery.data?.tasks ?? [], [allTasksQuery.data?.tasks]);
-  const allTaskBlockersQuery = useListAllTaskBlockersQuery();
-  const allTaskBlockers = useMemo(
-    () => allTaskBlockersQuery.data?.taskBlockers ?? [],
-    [allTaskBlockersQuery.data?.taskBlockers]
+  const allTaskRelationsQuery = useListAllTaskRelationsQuery();
+  const allTaskRelations = useMemo(
+    () => allTaskRelationsQuery.data?.taskRelations ?? [],
+    [allTaskRelationsQuery.data?.taskRelations]
   );
 
   const projectNotesQuery = useListProjectNotesQuery(activeProjectId ?? 0, {
@@ -38,7 +38,7 @@ export function useProjectsPanelModel() {
     const effectiveTasksByProjectId = new Map<number, Array<{ status: WorkStatus }>>();
 
     for (const task of allTasks) {
-      const effectiveStatus = computeEffectiveTaskStatus(task, allTaskBlockers, allTasks);
+      const effectiveStatus = computeEffectiveTaskStatus(task, allTaskRelations, allTasks);
       const existing = effectiveTasksByProjectId.get(task.projectId);
       if (existing) {
         existing.push({ status: effectiveStatus });
@@ -55,7 +55,7 @@ export function useProjectsPanelModel() {
         return [project.id, derivedStatus];
       })
     );
-  }, [allTaskBlockers, allTasks, projects]);
+  }, [allTaskRelations, allTasks, projects]);
 
   const effectiveProjectStatus =
     activeProject === null
@@ -73,8 +73,8 @@ export function useProjectsPanelModel() {
     projects,
     projectsQuery,
     selectProject,
-    allTaskBlockers,
-    allTaskBlockersQuery,
+    allTaskRelations,
+    allTaskRelationsQuery,
     tasks
   };
 }

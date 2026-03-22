@@ -1,23 +1,26 @@
 import { z } from 'zod';
-import { WorkStatusSchema as StoredWorkStatusSchema } from './generated/prisma-zod.mjs';
+import {
+  TaskRelationTypeSchema,
+  WorkStatusSchema as StoredWorkStatusSchema
+} from './generated/prisma-zod.mjs';
 
 export {
   createProjectNoteResponseSchema,
   createProjectResponseSchema,
-  createTaskBlockerResponseSchema,
+  createTaskRelationResponseSchema,
   createTaskNoteResponseSchema,
   createTaskResponseSchema,
   listProjectNotesResponseSchema,
   listProjectsResponseSchema,
-  listTaskBlockersResponseSchema,
+  listTaskRelationsResponseSchema,
   listTaskNotesResponseSchema,
   listTasksResponseSchema,
   postgrestProjectNoteRowSchema,
   postgrestProjectNoteRowsSchema,
   postgrestProjectRowSchema,
   postgrestProjectRowsSchema,
-  postgrestTaskBlockerRowSchema,
-  postgrestTaskBlockerRowsSchema,
+  postgrestTaskRelationRowSchema,
+  postgrestTaskRelationRowsSchema,
   postgrestTaskNoteRowSchema,
   postgrestTaskNoteRowsSchema,
   postgrestTaskRowSchema,
@@ -28,16 +31,16 @@ export {
   projectSchema,
   parsePostgrestCreateProjectNoteResponse,
   parsePostgrestCreateProjectResponse,
-  parsePostgrestCreateTaskBlockerResponse,
+  parsePostgrestCreateTaskRelationResponse,
   parsePostgrestCreateTaskNoteResponse,
   parsePostgrestCreateTaskResponse,
   parsePostgrestListProjectNotesResponse,
   parsePostgrestListProjectsResponse,
-  parsePostgrestListTaskBlockersResponse,
+  parsePostgrestListTaskRelationsResponse,
   parsePostgrestListTaskNotesResponse,
   parsePostgrestListTasksResponse,
-  taskBlockerFromPostgrestRow,
-  taskBlockerSchema,
+  taskRelationFromPostgrestRow,
+  taskRelationSchema,
   taskFromPostgrestRow,
   taskNoteFromPostgrestRow,
   taskNoteSchema,
@@ -61,8 +64,8 @@ export const routes = {
   projectsSelect: '/projects?select=*',
   tasks: '/tasks',
   tasksByProject: (projectId) => `/tasks?project_id=eq.${projectId}&select=*`,
-  taskBlockers: '/task_blockers',
-  taskBlockersByTask: (taskId) => `/task_blockers?task_id=eq.${taskId}&select=*`,
+  taskRelations: '/task_relations',
+  taskRelationsByTask: (taskId) => `/task_relations?task_id=eq.${taskId}&select=*`,
   projectNotes: '/project_notes',
   taskNotes: '/task_notes',
   projectNotesByProject: (projectId) =>
@@ -79,7 +82,10 @@ export const storedWorkStatuses = storedWorkStatusSchema.options;
 export const workStatusSchema = z.enum([...storedWorkStatuses, 'blocked']);
 export const workStatuses = workStatusSchema.options;
 export const taskEditableWorkStatuses = storedWorkStatuses;
+export const taskRelationTypeSchema = TaskRelationTypeSchema;
+export const taskRelationTypes = taskRelationTypeSchema.options;
 export const resolvedBlockingStatuses = ['done', 'dropped'];
+export const blockingTaskRelationType = 'blocked_by';
 export const placeholderTaskTitle = '•';
 export const allowedWorkStatusTransitions = Object.fromEntries(
   storedWorkStatuses.map((status) => [
@@ -113,10 +119,14 @@ export function isResolvedBlockingStatus(status) {
   return resolvedBlockingStatuses.includes(status);
 }
 
-export function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
-  const blockingTaskIds = blockers
-    .filter((blocker) => blocker.taskId === taskId)
-    .map((blocker) => blocker.blockingTaskId);
+export function isBlockingTaskRelation(relation) {
+  return relation.relationType === blockingTaskRelationType;
+}
+
+export function hasUnresolvedTaskBlockers(taskId, relations, tasks) {
+  const blockingTaskIds = relations
+    .filter((relation) => relation.taskId === taskId && isBlockingTaskRelation(relation))
+    .map((relation) => relation.relatedTaskId);
 
   if (blockingTaskIds.length === 0) {
     return false;
@@ -129,8 +139,8 @@ export function hasUnresolvedTaskBlockers(taskId, blockers, tasks) {
   });
 }
 
-export function computeEffectiveTaskStatus(task, blockers, tasks) {
-  return hasUnresolvedTaskBlockers(task.id, blockers, tasks) ? 'blocked' : task.status;
+export function computeEffectiveTaskStatus(task, relations, tasks) {
+  return hasUnresolvedTaskBlockers(task.id, relations, tasks) ? 'blocked' : task.status;
 }
 
 export function computeProjectStatusFromTasks(tasks) {
@@ -242,12 +252,26 @@ export const createTaskNoteBodySchema = z.object({
   reference_url: z.string().min(1).optional().nullable()
 });
 
-export const createTaskBlockerBodySchema = z.object({
+export const createTaskRelationBodySchema = z.object({
   task_id: z.number().int().positive(),
-  blocking_task_id: z.number().int().positive()
-}).refine((value) => value.task_id !== value.blocking_task_id, {
-  message: 'A task cannot be blocked by itself.'
+  related_task_id: z.number().int().positive(),
+  relation_type: taskRelationTypeSchema,
+  commentary: z.string().min(1).optional().nullable()
+}).refine((value) => value.task_id !== value.related_task_id, {
+  message: 'A task cannot relate to itself.'
 });
+
+export const updateTaskRelationBodySchema = z
+  .object({
+    relation_type: taskRelationTypeSchema.optional(),
+    commentary: z.string().min(1).optional().nullable()
+  })
+  .refine(
+    (value) => value.relation_type !== undefined || value.commentary !== undefined,
+    {
+      message: 'Provide at least one relation field to update.'
+    }
+  );
 
 export const updateProjectNoteBodySchema = z.object({
   body: z.string().min(1).max(5000),

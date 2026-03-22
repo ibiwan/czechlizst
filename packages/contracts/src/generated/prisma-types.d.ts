@@ -18,10 +18,12 @@ export type TaskRow = {
   updatedAt: string;
 };
 
-export type TaskBlockerRow = {
+export type TaskRelationRow = {
   id: number;
   taskId: number;
-  blockingTaskId: number;
+  relatedTaskId: number;
+  relationType: 'blocked_by' | 'has_subtask' | 'related_to';
+  commentary: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -47,7 +49,7 @@ export type TaskNoteRow = {
 export type PrismaRowModels = {
   Project: ProjectRow;
   Task: TaskRow;
-  TaskBlocker: TaskBlockerRow;
+  TaskRelation: TaskRelationRow;
   ProjectNote: ProjectNoteRow;
   TaskNote: TaskNoteRow;
 };

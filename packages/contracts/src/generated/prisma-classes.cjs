@@ -43,21 +43,25 @@ class TaskPostgrestRow {
   }
 }
 
-class TaskBlockerRowModel {
+class TaskRelationRowModel {
   constructor(data) {
     this.id = data.id;
     this.taskId = data.taskId;
-    this.blockingTaskId = data.blockingTaskId;
+    this.relatedTaskId = data.relatedTaskId;
+    this.relationType = data.relationType;
+    this.commentary = data.commentary;
     this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
   }
 }
 
-class TaskBlockerPostgrestRow {
+class TaskRelationPostgrestRow {
   constructor(data) {
     this.id = data.id;
     this.task_id = data.task_id;
-    this.blocking_task_id = data.blocking_task_id;
+    this.related_task_id = data.related_task_id;
+    this.relation_type = data.relation_type;
+    this.commentary = data.commentary;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
   }
@@ -112,8 +116,8 @@ module.exports = {
   ProjectPostgrestRow,
   TaskRowModel,
   TaskPostgrestRow,
-  TaskBlockerRowModel,
-  TaskBlockerPostgrestRow,
+  TaskRelationRowModel,
+  TaskRelationPostgrestRow,
   ProjectNoteRowModel,
   ProjectNotePostgrestRow,
   TaskNoteRowModel,

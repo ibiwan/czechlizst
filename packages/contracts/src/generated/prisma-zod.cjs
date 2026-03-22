@@ -5,6 +5,8 @@ const { z } = require('zod');
 
 const WorkStatusSchema = z.enum(['todo', 'started', 'active', 'done', 'dropped']);
 
+const TaskRelationTypeSchema = z.enum(['blocked_by', 'has_subtask', 'related_to']);
+
 const ProjectRowSchema = z.object({
   id: z.number().int(),
   name: z.string(),
@@ -22,10 +24,12 @@ const TaskRowSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-const TaskBlockerRowSchema = z.object({
+const TaskRelationRowSchema = z.object({
   id: z.number().int(),
   taskId: z.number().int(),
-  blockingTaskId: z.number().int(),
+  relatedTaskId: z.number().int(),
+  relationType: TaskRelationTypeSchema,
+  commentary: z.string().nullable(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -51,16 +55,17 @@ const TaskNoteRowSchema = z.object({
 const PrismaRowSchemas = {
   Project: ProjectRowSchema,
   Task: TaskRowSchema,
-  TaskBlocker: TaskBlockerRowSchema,
+  TaskRelation: TaskRelationRowSchema,
   ProjectNote: ProjectNoteRowSchema,
   TaskNote: TaskNoteRowSchema,
 };
 
 module.exports = {
   WorkStatusSchema,
+  TaskRelationTypeSchema,
   ProjectRowSchema,
   TaskRowSchema,
-  TaskBlockerRowSchema,
+  TaskRelationRowSchema,
   ProjectNoteRowSchema,
   TaskNoteRowSchema,
   PrismaRowSchemas

@@ -11,7 +11,8 @@ Implemented:
 - project effective status is derived from effective task statuses
 
 The core schema and contract work is already in place:
-- `task_blockers` exists in Prisma and the database
+- `task_relations` exists in Prisma and the database
+- `blocked_by` is the current relationship flavor used by blocked-state logic
 - generated contract types/wrappers include blocker support
 - shared helpers compute effective task status from stored status plus unresolved blockers
 
