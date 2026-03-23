@@ -1,11 +1,18 @@
 # Task Relationship Model
 
 ## Goal
-Generalize the current task-blocker system into a typed task-relationship graph without reintroducing unnecessary enterprise complexity.
+Document the relationship-system work in two layers:
+- what has already been implemented
+- what design pivot is now intended next
+
+The original goal for this file was:
+- generalize the current task-blocker system into a typed task-relationship graph without reintroducing unnecessary enterprise complexity
 
 This change should preserve the current blocker behavior while opening the door to additional relationship types that remain lightweight and flexible.
 
-## Chosen Model
+## Phase 1: Implemented Relationship Graph
+
+This section describes the model that has already been built in the repo.
 
 ### One graph, typed edges
 The system should be treated as one task graph with different-colored edges, not as separate tree/DAG/graph subsystems in the user’s mind.
@@ -106,29 +113,6 @@ The frontend UI is still intentionally blocker-focused for now:
 
 That means the graph model is now generic underneath, while the relationship UX is still on its first public slice.
 
-## Target Schema Direction
-
-Likely target:
-- rename `task_blockers` -> `task_relations`
-
-Likely fields:
-- `id`
-- `task_id`
-- `related_task_id`
-- `relation_type`
-- `commentary`
-- `created_at`
-- `updated_at`
-
-Likely enum:
-- `TaskRelationType`
-  - `blocked_by`
-  - `has_subtask`
-  - `related_to`
-
-Uniqueness:
-- unique `(task_id, related_task_id, relation_type)`
-
 ## Behavioral Rules
 
 ### Effective blocked status
@@ -144,7 +128,7 @@ Only `blocked_by` should participate in blocked-status computation.
 - `has_subtask` does not affect blocked status
 - `related_to` does not affect blocked status
 
-## Recommended Migration Path
+## Phase 1 Progress
 
 ### Phase 1: Backend and contracts
 Status: done.
@@ -163,18 +147,61 @@ Status: done for data/model plumbing, intentionally partial for UI wording.
 3. Keep pane 3 UI functionally blocker-focused at first if needed.
 
 ### Phase 3: UI expansion
-Status: not started.
+Status: started.
 
 1. Replace the blocker-only section with a generic relationships section.
 2. Support creating/viewing `blocked_by`, `has_subtask`, and `related_to`.
 3. Add `commentary` editing/display.
 
+Current note:
+- pane 3 now supports creating, viewing, editing, deleting, and clicking through generic task relations
+- UI is still same-project-only for relation creation
+
+## Phase 2: Intended Pivot
+
+The newer direction is to simplify hierarchy further by removing `has_subtask` from the generic relation table and making hierarchy a first-class task field.
+
+### Proposed task model
+- remove projects entirely
+- add `Task.is_anchor`
+- add `Task.parent_task_id`
+- keep generic task relations only for:
+  - `blocked_by`
+  - `related_to`
+
+This means:
+- left pane shows only anchor tasks
+- pane 2 shows direct children by `parent_task_id`
+- pane 3 shows the selected task
+- breadcrumbs come from the `parent_task_id` chain, not graph search
+
+### Anchor semantics
+- `is_anchor` is both semantic and UI-driving
+- anchor tasks are ordinary tasks with no action restrictions
+- new task from the left pane should be `is_anchor = true`
+- new task from other creation surfaces should be `is_anchor = false`
+- during migration, `is_anchor` should be nullable, with `NULL` treated as `false`
+
+### Hierarchy semantics
+- direct parent/child hierarchy should use `parent_task_id`
+- timestamp propagation should move upward through `parent_task_id`
+- random-pick eligibility should be leaf tasks only:
+  - tasks with no children
+  - `blocked_by` and `related_to` are allowed
+
+### Migration direction
+- add a temporary `projects.is_task_id`
+- create one anchor task for each existing project
+- move project notes onto that new anchor task
+- convert former project membership into task hierarchy
+- then remove `project_id` from tasks and drop projects/project_notes entirely
+
 ## Practical Next Step When Resuming
-If resuming cold, start here:
+If resuming cold and following the new intended direction, start here:
 
-1. expand pane 3 from blocker-only controls to generic relationship controls
-2. support `has_subtask` and `related_to` creation without changing blocked-status logic
-3. decide how `commentary` should be entered and displayed
-4. add frontend/browser coverage for mixed relation sets
+1. update docs and migration plan around `is_anchor` + `parent_task_id`
+2. treat current generic `has_subtask` work as an intermediate checkpoint, not the final hierarchy model
+3. design the project-to-anchor-task migration in detail before touching code
+4. keep `blocked_by` and `related_to` as the surviving generic relation types
 
-That should move the product from “generic relationship engine with blocker UI” to a genuinely multi-relation task graph.
+That should move the product from the current intermediate graph model to the cleaner anchor-task/tree-plus-overlay-links model.

@@ -1,0 +1,33 @@
+{
+  "name": "anchor-task-reboot",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../node_modules/vite/bin/vite.js",
+    "build": "node ../../node_modules/typescript/bin/tsc --noEmit && node ../../node_modules/vite/bin/vite.js build",
+    "test": "node ../../node_modules/vitest/vitest.mjs run --config ./vitest.config.ts",
+    "preview": "node ../../node_modules/vite/bin/vite.js preview",
+    "db:up": "docker compose -f ./backend/docker-compose.yml up -d",
+    "db:down": "docker compose -f ./backend/docker-compose.yml down",
+    "db:import:current-json": "node ./scripts/import-current-json.mjs",
+    "prisma:validate": "node ../../node_modules/prisma/build/index.js validate --schema ./prisma/schema.prisma",
+    "prisma:generate": "node ../../node_modules/prisma/build/index.js generate --schema ./prisma/schema.prisma",
+    "prisma:migrate:deploy": "node ../../node_modules/prisma/build/index.js migrate deploy --schema ./prisma/schema.prisma",
+    "db:start": "npm run db:up && npm run prisma:migrate:deploy && docker compose -f ./backend/docker-compose.yml restart postgrest"
+  },
+  "dependencies": {
+    "@ariakit/react": "^0.4.24",
+    "@prisma/client": "^6.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "prisma": "^6.5.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.1"
+  }
+}

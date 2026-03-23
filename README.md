@@ -20,8 +20,8 @@ Primary use case: conversational backlog management for board, card, and video g
    - MCP/tool usage: [README-TOOL.md](README-TOOL.md)
    - architecture rationale: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
    - blocking/dependency model: [README-BLOCKING.md](README-BLOCKING.md)
-   - project/task model: [README-PROJECT-MODEL.md](README-PROJECT-MODEL.md)
-   - task relationship model: [README-RELATIONSHIPS.md](README-RELATIONSHIPS.md)
+   - project/task model checkpoint: [README-PROJECT-MODEL.md](README-PROJECT-MODEL.md)
+   - task relationship model and next pivot: [README-RELATIONSHIPS.md](README-RELATIONSHIPS.md)
    - debt and priorities: [README-TECHDEBT.md](README-TECHDEBT.md)
 
 ## Quick Start
@@ -50,6 +50,6 @@ Endpoints:
 - Tooling and MCP integration: [README-TOOL.md](README-TOOL.md)
 - Architecture, component roles, and state patterns: [README-ARCHITECTURE.md](README-ARCHITECTURE.md)
 - Blocking/dependency model: [README-BLOCKING.md](README-BLOCKING.md)
-- Project/task model: [README-PROJECT-MODEL.md](README-PROJECT-MODEL.md)
-- Task relationship model: [README-RELATIONSHIPS.md](README-RELATIONSHIPS.md)
+- Project/task model checkpoint: [README-PROJECT-MODEL.md](README-PROJECT-MODEL.md)
+- Task relationship model and next pivot: [README-RELATIONSHIPS.md](README-RELATIONSHIPS.md)
 - PostgREST service details: [apps/backend/README.md](apps/backend/README.md)

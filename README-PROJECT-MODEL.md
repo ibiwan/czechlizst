@@ -1,6 +1,6 @@
 # Project Model
 
-## Current State
+## Phase 1: Current State
 The project model has been simplified around one rule:
 - every project always has at least one task
 
@@ -89,6 +89,7 @@ The architectural redesign is mostly done. The remaining items are narrower:
 ## Notes
 This README is now a current-state reference rather than a future implementation plan.
 For blocker-specific details, see [`README-BLOCKING.md`](/Users/jkent/Documents/git/czhechlizst/README-BLOCKING.md).
+For the newer relationship/anchor-task pivot, see [`README-RELATIONSHIPS.md`](/Users/jkent/Documents/git/czhechlizst/README-RELATIONSHIPS.md).
 
 ## Success Criteria
 - no project is ever empty
@@ -97,3 +98,22 @@ For blocker-specific details, see [`README-BLOCKING.md`](/Users/jkent/Documents/
 - placeholder tasks handle project bootstrap cleanly
 - `updated_at` reflects meaningful descendant activity
 - empty-project fallback logic disappears from BEV and related UI
+
+## Phase 2: Intended Replacement
+The newer intended direction is to remove projects entirely rather than keep refining the placeholder-project model.
+
+Planned replacement:
+- tasks become the only content entity
+- some tasks become left-pane entry points via `is_anchor`
+- hierarchy becomes first-class via `parent_task_id`
+- project notes migrate onto the new anchor task as task notes
+- generic relationships remain only for non-hierarchy links
+
+If this direction is taken:
+- the placeholder-task invariant disappears
+- `projects` and `project_notes` are temporary migration concerns, not long-term entities
+- pane 1 becomes an anchor-task list
+- pane 2 becomes direct children of the selected task
+- pane 3 remains task detail
+
+So this file now describes the current implemented project-era checkpoint, not the final intended end state.

@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["api"]
+}
+
+enum WorkStatus {
+  todo
+  started
+  active
+  done
+  dropped
+
+  @@schema("api")
+}
+
+enum TaskRelationType {
+  blocked_by
+  related_to
+
+  @@schema("api")
+}
+
+model Task {
+  id          Int       @id @default(autoincrement())
+  title       String
+  status      WorkStatus @default(todo)
+  isAnchor    Boolean?  @map("is_anchor")
+  parentTaskId Int?     @map("parent_task_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  parent      Task?     @relation("TaskTree", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  children    Task[]    @relation("TaskTree")
+  notes       TaskNote[]
+  relations   TaskRelation[] @relation("TaskRelations_Task")
+  relatedBy   TaskRelation[] @relation("TaskRelations_RelatedTask")
+
+  @@index([isAnchor])
+  @@index([parentTaskId])
+  @@map("tasks")
+  @@schema("api")
+}
+
+model TaskRelation {
+  id            Int              @id @default(autoincrement())
+  taskId        Int              @map("task_id")
+  relatedTaskId Int              @map("related_task_id")
+  relationType  TaskRelationType @map("relation_type")
+  commentary    String?
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at")
+
+  task          Task             @relation("TaskRelations_Task", fields: [taskId], references: [id], onDelete: Cascade)
+  relatedTask   Task             @relation("TaskRelations_RelatedTask", fields: [relatedTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, relatedTaskId, relationType])
+  @@index([taskId])
+  @@index([relatedTaskId])
+  @@index([relationType])
+  @@map("task_relations")
+  @@schema("api")
+}
+
+model TaskNote {
+  id           Int      @id @default(autoincrement())
+  taskId       Int      @map("task_id")
+  body         String
+  referenceUrl String?  @map("reference_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  task         Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId, createdAt])
+  @@map("task_notes")
+  @@schema("api")
+}
