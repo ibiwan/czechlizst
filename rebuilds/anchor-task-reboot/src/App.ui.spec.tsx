@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 
 import App from './App';
 import type { Task, TaskNote, TaskRelation } from './types';
@@ -13,6 +14,7 @@ const apiMocks = vi.hoisted(() => ({
   deleteTaskNote: vi.fn(),
   deleteTaskRelation: vi.fn(),
   seedDemoGraph: vi.fn(),
+  seedRandomGraph: vi.fn(),
   updateTask: vi.fn()
 }));
 
@@ -25,7 +27,21 @@ vi.mock('./api', () => ({
   deleteTaskNote: apiMocks.deleteTaskNote,
   deleteTaskRelation: apiMocks.deleteTaskRelation,
   seedDemoGraph: apiMocks.seedDemoGraph,
+  seedRandomGraph: apiMocks.seedRandomGraph,
   updateTask: apiMocks.updateTask
+}));
+
+vi.mock('@ariakit/react', () => ({
+  ComboboxProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+  Combobox: (props: ComponentPropsWithoutRef<'input'>) => <input {...props} />,
+  ComboboxPopover: ({ children, ...props }: ComponentPropsWithoutRef<'div'>) => (
+    <div {...props}>{children}</div>
+  ),
+  ComboboxItem: ({ children, ...props }: ComponentPropsWithoutRef<'button'>) => (
+    <button {...props} type="button">
+      {children}
+    </button>
+  )
 }));
 
 function createSnapshot() {
@@ -39,7 +55,8 @@ function createSnapshot() {
       isAnchor: true,
       parentTaskId: null,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     },
     {
       id: 2,
@@ -48,7 +65,8 @@ function createSnapshot() {
       isAnchor: false,
       parentTaskId: 1,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     },
     {
       id: 3,
@@ -57,7 +75,8 @@ function createSnapshot() {
       isAnchor: false,
       parentTaskId: 1,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     },
     {
       id: 4,
@@ -66,7 +85,8 @@ function createSnapshot() {
       isAnchor: false,
       parentTaskId: 3,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     },
     {
       id: 5,
@@ -75,7 +95,8 @@ function createSnapshot() {
       isAnchor: true,
       parentTaskId: null,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     },
     {
       id: 6,
@@ -84,7 +105,8 @@ function createSnapshot() {
       isAnchor: false,
       parentTaskId: 2,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      notes: []
     }
   ];
 
@@ -116,6 +138,7 @@ describe('Anchor task reboot UI', () => {
     apiMocks.deleteTaskNote.mockReset();
     apiMocks.deleteTaskRelation.mockReset();
     apiMocks.seedDemoGraph.mockReset();
+    apiMocks.seedRandomGraph.mockReset();
     apiMocks.updateTask.mockReset();
   });
 
@@ -129,6 +152,8 @@ describe('Anchor task reboot UI', () => {
 
     expect(await screen.findByTestId('anchor-row-1')).toBeInTheDocument();
     expect(await screen.findByTestId('anchor-row-5')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('anchor-row-1'));
 
     expect(await screen.findByTestId('pane-children-title')).toHaveTextContent(
       'Alpha anchor children'
@@ -153,5 +178,34 @@ describe('Anchor task reboot UI', () => {
     );
     expect(within(childrenPane).getByTestId('task-row-4')).toBeInTheDocument();
     expect(within(childrenPane).queryByTestId('task-row-2')).not.toBeInTheDocument();
+  });
+
+  it('loads random stress graph into an empty database', async () => {
+    apiMocks.loadSnapshot.mockResolvedValueOnce({ tasks: [], notes: [], relations: [] });
+    apiMocks.seedRandomGraph.mockResolvedValueOnce({
+      tasks: [
+        {
+          id: 100,
+          title: 'Random anchor 1',
+          status: 'todo',
+          isAnchor: true,
+          parentTaskId: null,
+          createdAt: '2026-03-31T10:00:00.000Z',
+          updatedAt: '2026-03-31T10:00:00.000Z'
+        }
+      ],
+      notes: [],
+      relations: []
+    });
+
+    render(<App />);
+
+    expect(await screen.findByText('Reboot database is empty.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Load random stress graph' }));
+
+    expect(apiMocks.seedRandomGraph).toHaveBeenCalled();
+
+    expect(await screen.findByTestId('anchor-row-100')).toBeInTheDocument();
   });
 });

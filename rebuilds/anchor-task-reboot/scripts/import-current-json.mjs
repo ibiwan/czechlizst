@@ -167,13 +167,12 @@ function runPsql(sql, label) {
     '-U',
     'app_user',
     '-d',
-    'anchor_reboot',
-    '-c',
-    sql
+    'anchor_reboot'
   ];
 
   const result = spawnSync('docker', args, {
-    stdio: 'inherit',
+    input: sql,
+    stdio: ['pipe', 'inherit', 'inherit'],
     shell: process.platform === 'win32'
   });
 

@@ -68,7 +68,8 @@ function mapTask(row: TaskRow): Task {
     isAnchor: row.is_anchor,
     parentTaskId: row.parent_task_id,
     createdAt: row.created_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
+    notes: []
   };
 }
 
@@ -284,6 +285,115 @@ export async function seedDemoGraph() {
       relatedTaskId,
       relationType: relation.relationType,
       commentary: relation.commentary
+    });
+  }
+
+  return loadSnapshot();
+}
+
+function randomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function randomElement<T>(items: T[]): T {
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+const defaultRandomGraphOpts = {
+  anchorCount: 3,
+  maxDepth: 3,
+  maxBranch: 2,
+  noteProbability: 0.35,
+  relationDensity: 0.15
+};
+
+export async function seedRandomGraph(opts?: Partial<typeof defaultRandomGraphOpts>) {
+  const options = { ...defaultRandomGraphOpts, ...opts };
+
+  const existing = await loadSnapshot();
+
+  if (existing.tasks.length > 0 || existing.notes.length > 0 || existing.relations.length > 0) {
+    throw new Error('Refusing to seed random graph into a non-empty reboot database.');
+  }
+
+  const allTasks = [] as { id: number; title: string }[];
+
+  async function createSubtree(parentTaskId: number | null, depth: number) {
+    if (depth > options.maxDepth) {
+      return;
+    }
+
+    const branchCount = randomInt(0, options.maxBranch);
+
+    for (let i = 0; i < branchCount; i += 1) {
+      const title = `Random task ${parentTaskId ?? 'root'}-${depth}-${i + 1}`;
+      const status = randomElement<import('./types').WorkStatus>([
+        'todo',
+        'started',
+        'active',
+        'done',
+        'dropped'
+      ]);
+
+      const created = await createTask({
+        title,
+        status,
+        isAnchor: false,
+        parentTaskId
+      });
+
+      allTasks.push({ id: created.id, title: created.title });
+
+      await createSubtree(created.id, depth + 1);
+    }
+  }
+
+  for (let i = 0; i < options.anchorCount; i += 1) {
+    const anchor = await createTask({
+      title: `Random anchor ${i + 1}`,
+      status: randomElement<import('./types').WorkStatus>([
+        'todo',
+        'started',
+        'active',
+        'done',
+        'dropped'
+      ]),
+      isAnchor: true,
+      parentTaskId: null
+    });
+
+    allTasks.push({ id: anchor.id, title: anchor.title });
+    await createSubtree(anchor.id, 1);
+  }
+
+  const taskCount = allTasks.length;
+
+  for (const task of allTasks) {
+    if (Math.random() < options.noteProbability) {
+      await createTaskNote({
+        taskId: task.id,
+        body: `Auto-generated note for ${task.title}`,
+        referenceUrl: null
+      });
+    }
+  }
+
+  const relationTypes: import('./types').TaskRelationType[] = ['blocked_by', 'related_to'];
+  const relationCount = Math.max(1, Math.floor(taskCount * options.relationDensity));
+
+  for (let i = 0; i < relationCount; i += 1) {
+    const from = randomElement(allTasks);
+    const to = randomElement(allTasks.filter((candidate) => candidate.id !== from.id));
+
+    if (!to) {
+      continue;
+    }
+
+    await createTaskRelation({
+      taskId: from.id,
+      relatedTaskId: to.id,
+      relationType: randomElement(relationTypes),
+      commentary: `Auto-generated relation ${i + 1}`
     });
   }
 

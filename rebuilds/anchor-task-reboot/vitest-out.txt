@@ -1,0 +1,42 @@
+Debugger listening on ws://127.0.0.1:59045/957b23c5-c775-4b44-b6f0-8babceaceec2
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger listening on ws://127.0.0.1:59048/8db416f0-c812-4c5f-9288-de3be1b6db32
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+
+ RUN  v3.2.4 /Users/jkent/Documents/git/czhechlizst/rebuilds/anchor-task-reboot
+
+Debugger listening on ws://127.0.0.1:59050/f970d20d-4413-43de-92c3-111a27c1eba5
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59051/5171cb37-d073-4022-bb54-c895fd850d37
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59052/6b7685bd-0034-47ac-8db8-26ed35694ba4
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59053/17035259-db54-49cd-a667-e25f07262136
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59054/2e993e64-b639-42ca-b556-f5404b62a040
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59055/5e34bbb5-93c8-4511-ad8c-81e38132f28d
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger listening on ws://127.0.0.1:59056/d4ff48d7-1f46-47da-ac1e-39883145ead9
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Debugger attached.
+Debugger attached.
+Debugger attached.
+Debugger attached.
+Debugger attached.
+Debugger attached.
+··
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  19:14:54
+   Duration  1.80s (transform 250ms, setup 122ms, collect 353ms, tests 160ms, environment 476ms, prepare 357ms)
+
+Debugger listening on ws://127.0.0.1:59066/0d1a8a80-ea3a-4b99-b09d-2fdeba1bd11f
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...

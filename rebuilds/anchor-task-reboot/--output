@@ -1,0 +1,2084 @@
+{
+  "meta": {
+    "exportedAt": "2026-04-02T02:36:51.133Z",
+    "baseUrl": "http://localhost:3003",
+    "resources": [
+      "task_notes",
+      "task_relations",
+      "tasks"
+    ]
+  },
+  "data": {
+    "task_notes": [
+      {
+        "id": 1,
+        "task_id": 9,
+        "body": "https://docs.google.com/document/d/1wbih_xodK0vJk64LJCJaLoUa5_Z3EP2QvF99Q9VEdwo/edit?pli=1&tab=t.0",
+        "reference_url": null,
+        "created_at": "2026-03-21T18:13:40.452+00:00",
+        "updated_at": "2026-03-21T18:13:40.451522+00:00"
+      },
+      {
+        "id": 2,
+        "task_id": 9,
+        "body": "https://docs.google.com/document/d/1wbih_xodK0vJk64LJCJaLoUa5_Z3EP2QvF99Q9VEdwo/edit?pli=1&tab=t.0",
+        "reference_url": null,
+        "created_at": "2026-03-21T18:13:41.314+00:00",
+        "updated_at": "2026-03-21T18:13:41.314136+00:00"
+      },
+      {
+        "id": 3,
+        "task_id": 9,
+        "body": "https://docs.google.com/document/d/1wbih_xodK0vJk64LJCJaLoUa5_Z3EP2QvF99Q9VEdwo/edit?pli=1&tab=t.0",
+        "reference_url": null,
+        "created_at": "2026-03-21T18:13:41.474+00:00",
+        "updated_at": "2026-03-21T18:13:41.473603+00:00"
+      },
+      {
+        "id": 4,
+        "task_id": 17,
+        "body": "asfadqmf",
+        "reference_url": null,
+        "created_at": "2026-03-21T20:35:37.44+00:00",
+        "updated_at": "2026-03-21T23:54:45.385534+00:00"
+      },
+      {
+        "id": 5,
+        "task_id": 16,
+        "body": "note",
+        "reference_url": "Conversation with Gemini in a project manager I have projects, with tasks subject to projects.  I'd like to introduce subtasks without any new entities -- is it a clean approach to just let any task also have a pointer to a parent task, and form arbitrary chains and trees that way?  Gemini said The approach you are describing—often called a Self-Referencing Relationship or Adjacency List—is actually the industry standard for handling hierarchies in database design.  It is generally considered a clean and flexible approach because it maintains data integrity without bloating your schema with \"Subtask\" tables that are identical to \"Task\" tables.  Why This Works Well Using a parent_id pointer (which is a Foreign Key referencing the id of the same table) offers several advantages:  Infinite Depth: You aren't hard-coded to just \"Task\" and \"Subtask.\" You can have tasks, subtasks, sub-subtasks, etc., without changing a single line of your database schema.  Dry Code: Since a subtask is just a Task, all your existing logic for due dates, assignees, and status updates works automatically for every level of the hierarchy.  Simplicity: Your Task entity remains the single source of truth for \"work to be done.\"  Potential Pitfalls to Watch For While it's clean at the data level, it can get tricky during implementation. Here is what you should look out for:  1. Circular References You must implement a check to ensure a task cannot be its own parent, and more importantly, that Task A cannot be the parent of Task B if Task B is already a parent of Task A.  Rule of Thumb: Always validate that the \"parent\" is not a descendant of the \"child\" before saving.  2. The \"N+1\" Query Problem If you want to display a tree of tasks, a naive approach might query the database for every single subtask individually.  The Fix: Use \"Recursive Common Table Expressions\" (CTEs) in SQL to fetch an entire tree in one single query.     3. Orphaned Tasks Decide what happens to subtasks if a parent project or parent task is deleted.  Cascade: Delete all subtasks.  Set Null: Turn subtasks into top-level tasks.  Restrict: Prevent deletion of the parent until subtasks are moved or deleted.  Alternative: The \"Path\" Approach If you expect your trees to get very deep or if you need to search \"all descendants\" frequently, you might consider Materialized Paths. In this setup, each task has a string field like path:  Task 1: Path = 1/  Subtask A: Path = 1/2/  Subtask B: Path = 1/2/3/  This makes it incredibly fast to find all children of Task 1 using a simple string search (WHERE path LIKE '1/%'), though it's slightly more \"manual\" to maintain than a simple parent pointer.  Is this for a specific tech stack (like SQL, NoSQL, or a specific framework like Django/Rails)? I can give you the specific code or query structure to implement the recursion safely if you'd like.  does pathing inherently help avoid circularity?  Gemini said No, pathing (Materialized Path) does not inherently prevent you from creating a circular reference, but it makes it extremely easy to detect one before it happens.  In a simple parent_id setup, you only know the immediate parent. To find out if Task A is a grandparent of Task B, you have to run a recursive query. With a Path, the entire lineage is written in plain text on every row.  Here is how pathing changes the game for circularity:  1. Detection is Instant If you use the pathing method, a Task's path looks like this: Project1/TaskA/TaskB/.  If you try to set Task A as a child of Task B, your application logic can check the proposed new path: Project1/TaskA/TaskB/TaskA/. Since TaskA already exists in the string, you can reject the update instantly with a simple string check:  Logic: IF new_parent_path CONTAINS current_task_id THEN ABORT  2. The \"Loop\" becomes Visible In a parent_id system, a circle is a \"hidden\" break in the tree. In a pathing system, a circle would technically require an infinitely long string, which the database column length (e.g., VARCHAR(255)) will eventually block anyway.  3. Move Operations are the Risk Point The danger with pathing isn't creating a circle by accident; it's the overhead of moving a branch.  If you move a parent task, you must update the path string for every single descendant task in that tree.  If your logic for updating those strings is flawed, you could accidentally \"orphan\" a branch by giving it a malformed path, though you still wouldn't necessarily create a circular loop.  Comparison at a Glance Feature\tparent_id (Adjacency List)\tpath (Materialized Path) Detecting Circles\tHard (Requires recursion)\tEasy (Simple string check) Moving Tasks\tEasy (Change one ID)\tHard (Update all children) Querying Subtree\tComplex SQL (CTEs)\tSimple SQL (LIKE 'path/%') Data Integrity\tHigh (Foreign Key enforced)\tMedium (Application must manage strings) Conclusion: Pathing doesn't \"stop\" circularity by its nature, but it gives you the \"map\" required to spot a circle before you save it.  Would you like to see a code snippet (e.g., Python or JavaScript) for the logic that prevents circularity in either of these systems?  can I avoid circularity by making some kind of depth requirement?  each task is assigned a depth from its base project, for example, and a task can only be assigned as a child of a task with a lower depth?  Gemini said Yes, you can absolutely use Depth (often called a \"Level\" or \"Rank\") to prevent circularity. In fact, this is a very robust \"fail-safe\" because it relies on simple integer math (Depth  child ​  >Depth  parent ​  ) rather than string parsing or complex recursion.  However, using depth introduces a specific maintenance trade-off you should consider.  How it Works The Base Project: You define the project itself as Depth 0.  Top-level Tasks: Any task directly under a project is Depth 1.  The Rule: A task can only have a parent_id pointing to a task where Depth  parent ​  <Depth  current ​  .  Why this kills circularity: A circle requires a loop (e.g., A→B→C→A). With a depth requirement, this would imply:     Depth  A ​  <Depth  B ​  <Depth  C ​  <Depth  A ​   Since an integer cannot be strictly less than itself, a circular reference becomes mathematically impossible to save to the database.  The \"Moving\" Problem (The Trade-off) The reason many developers prefer Pathing or Adjacency Lists over Depth is what happens when you reorganize your project.  In an Adjacency List: If you move Task A (and its 100 subtasks) to a new parent, you only change one row (parent_id). The hierarchy stays intact.  In a Depth System: If you move Task A from Depth 2 to Depth 5, the math is now broken for every single one of its subtasks. You must perform a bulk update to increment the depth of every descendant in that branch.  A \"Hybrid\" Best Practice If you want the cleanest, most performant approach for a Project Management tool, the Materialized Path actually gives you \"Depth\" for free without the maintenance headache.  If your path is 1/5/12, you know:  The Lineage: It’s a child of 1 and 5.  The Depth: It’s 3 (the number of IDs in the string).  Circularity Check: Before moving task X to be a child of Y, you just check if X is already in Y's path.  Summary Comparison Method\tCircularity Protection\tReorganization Effort Parent ID Only\tWeak (Requires recursive check)\tEasy (1 row change) Depth Integer\tStrong (Math-based)\tHard (Bulk update descendants) Path String\tStrong (String check)\tHard (Bulk update strings) My Recommendation: If your project trees are shallow (2-3 levels), the Depth Integer is perfectly fine and very easy to write. If you expect users to create deep \"Inception-style\" subtasks or move branches around frequently, go with the Path String.  Would you like to see how to structure the SQL or the application logic to handle the \"Bulk Update\" when a task is moved?  does postgresql support CTEs or other recursive queries cleanly?  Gemini said PostgreSQL supports recursive queries extremely cleanly through Recursive Common Table Expressions (CTEs) using the WITH RECURSIVE syntax.  It is the standard way to handle the \"parent pointer\" (Adjacency List) model you are considering.  How the Syntax Works A recursive CTE in Postgres consists of two parts joined by a UNION or UNION ALL:  The Anchor Member: The starting point (e.g., the top-level tasks where parent_id IS NULL).  The Recursive Member: The query that joins the table back to the CTE results to find the next level of children.     Example: Fetching a Task and all its Subtasks SQL WITH RECURSIVE task_tree AS (     -- Anchor: Start with a specific parent task     SELECT id, title, parent_id, 1 AS depth     FROM tasks     WHERE id = 101      UNION ALL      -- Recursive step: Find tasks whose parent is in our current result set     SELECT t.id, t.title, t.parent_id, tt.depth + 1     FROM tasks t     INNER JOIN task_tree tt ON t.parent_id = tt.id ) SELECT * FROM task_tree; Why Postgres is a good fit for this: Breadth vs. Depth Sorting: Postgres allows you to easily track the \"path\" or \"depth\" during the recursion, which you can use in the final ORDER BY to display tasks in the correct visual order.  Cycle Detection: Modern Postgres versions (14+) include a CYCLE clause specifically designed to stop infinite loops if a user accidentally points Task A to Task B and Task B back to Task A.  Syntax: CYCLE id SET is_cycle USING path  Performance: As long as your parent_id column is indexed, Postgres can traverse hierarchies of thousands of items in milliseconds.  Critical Implementation Tips Always Index parent_id: Without an index, every level of recursion triggers a full table scan, which will kill performance as your task list grows.     Use UNION ALL: Unless you have a specific reason to remove duplicate rows, use UNION ALL. It is significantly faster than UNION because it doesn't require the database to perform a \"unique\" check on every iteration.  Limit Depth for Safety: Even with cycle detection, it's a good practice to include a \"kill switch\" in the WHERE clause (e.g., WHERE depth < 20) to prevent runaway queries in your app.  Would you like a sample schema including the CYCLE detection clause to see how it handles accidental loops?  right now my display logic is simple: a list of projects, click one, get a list of tasks.  how much does that explode by adding arbitrary subtask chaining?  Gemini said It changes the \"shape\" of your logic from a flat list to a Tree, which is a significant jump in complexity.  If you stick with your current \"Project → Tasks\" flat list, adding subtasks usually forces you to choose between three UI patterns. Here is how the complexity \"explodes\" for each:  1. The \"Drill-Down\" (Low Complexity) This is the simplest to implement. When you click a task, you navigate \"into\" it, and it shows a list of its children.  The Logic: Your existing task-list component just needs a filter change: WHERE parent_id = current_focus_id.  The UX Flaw: Users lose context. They can't see how Subtask C relates to Task A without hitting the \"Back\" button repeatedly. You’ll need a Breadcrumb component (e.g., Project > Task > Subtask) to keep them sane.  2. The \"Indented Outline\" (Medium Complexity) This is the \"Folder/File\" view (think Notion or VS Code file explorer).  The Logic: You can no longer just map over an array. You need a Recursive Component.  Pseudocode: TaskComponent renders itself inside its own body if subtasks.length > 0.  The Explosion: * Visuals: You have to manage \"Collapsible/Expanded\" states for every single task row in memory.  Layout: If a user goes 5+ levels deep, your text will hit the right edge of the screen. You usually have to cap the indentation or hide it after level 3.  3. The \"Flat Multi-Column\" (High Complexity) Think \"Monday.com\" or \"Asana\" where subtasks are sometimes hidden in a separate \"task pane\" or \"drawer\" that slides out from the right.  The Logic: You maintain a \"Selected Task\" state. When a task is clicked, the side-drawer fetches children.  The Explosion: You are now managing two simultaneous \"sources of truth\" on one screen. If a user changes a subtask's status in the drawer, you may need to reflect a progress bar update on the main task list in the background.  Summary of \"Explosion\" Factors Feature\tFlat List (Current)\tArbitrary Tree (New) Data Fetching\tOne query.\tRecursive CTE or multiple \"on-click\" fetches. State Management\ttasks: []\texpandedTasks: Set<ID> Sorting\tSimple ORDER BY.\tHard. Do subtasks stay with parents or sort globally? Drag & Drop\tReordering index.\tNightmare. Moving Task A into Task B requires updating parent_id and potential depth/path strings. My Recommendation: \"The 80/20 Rule\" Don't jump straight to an \"infinite tree\" UI. It’s a UX rabbit hole.  Most successful project managers use a Flat List with \"Hidden\" Subtasks.  Show the top-level tasks.  Add a small \"subtask count\" badge (e.g., (3)).  Only show the subtasks when the user clicks the task to open a \"Detail View\" or \"Drawer.\"  This keeps your main display logic exactly as simple as it is now, while still allowing the database to support infinite nesting.  Would you like me to sketch out a simple recursive React/Vue component structure to show how the \"Indented Outline\" logic would look?  what about the jira \"related task\" idiom?  can I just let each task have a list of upstream tasks, a list of downstream tasks, a list of blockers, etc?  then can click through relationships without trying to display the whole thing at once, and we can keep breadcrumbs at the top to rewind through the chain  Gemini said That is a fantastic shift in perspective. Moving from a Hierarchy (Tree) to a Graph (Network) is actually how most high-end project management tools (Jira, Linear, ClickUp) handle complex work.  Instead of asking \"Where does this task live?\", you are asking \"How does this task relate to others?\"  1. The Schema: The \"Join Table\" Approach To do this cleanly without creating \"list\" columns (which are hard to query), you use a Self-Referencing Many-to-Many table. Let's call it task_links.  source_task_id\ttarget_task_id\tlink_type 101\t102\tblocks 102\t101\tis_blocked_by 105\t106\trelates_to 107\t108\tis_parent_of Why this is better than \"Subtasks\": Multi-Parenting: A task can suddenly be a sub-task of two different high-level goals.  Semantic Meaning: You aren't just saying \"these are related\"; you're saying why (e.g., \"This task is a duplicate of that one\").  Flat UI: Your main list stays flat and clean. The \"complexity\" is tucked away inside the task's detail view.  2. The \"Click-Through\" UX Your idea of \"clicking through\" and using breadcrumbs is essentially Web Browsing for Tasks.  The View: When looking at Task A, the UI shows a \"Relationships\" section.  The Interaction: Clicking \"Blocked by Task B\" doesn't open a tree; it simply navigates the current page to Task B.  The Breadcrumbs: You maintain a session-based \"History Stack\" (e.g., Task A > Task B > Task C). This is much easier to build than a recursive tree because it's just an array of IDs you've recently visited.  3. The \"Hidden\" Circularity Risk Even without a formal hierarchy, graphs have a unique danger: Deadlocks.  If Task A blocks Task B, and Task B blocks Task A, nothing can ever be finished.  If you use this model, you don't need to prevent the link from being created, but you should probably run a check when a link is added to warn the user: \"Warning: This creates a dependency loop.\"  4. Implementation Comparison Feature\tHierarchy (Tree)\tRelated Tasks (Graph) Data Structure\tparent_id on Task table.\tSeparate task_links table. Primary UI\tIndented List / Folder View.\tActivity Feed / Detail Panels. Complexity\tHigh (Recursion required).\tMedium (Standard Joins). Flexibility\tRigid (1 parent only).\tInfinite (Many-to-Many). The Verdict The Jira \"Related Task\" idiom is much cleaner for your display logic. It prevents the \"Indentation Explosion\" on your main screen while providing more power to the user. You can even treat \"Subtask\" as just another link_type in your table.  Would you like a SQL schema example for the task_links table and a query to fetch all \"Related Tasks\" for a specific ID?  is it a dependency loop if I visit the same node multiple times but through different kinds of dependencies?  or only if I follow the same flavor paths to the same nodes  Gemini said In the world of Graph Theory and Project Management, a dependency loop (or cycle) exists if you can start at Node A and follow a path back to Node A—regardless of the \"flavor\" of the links.  If you can reach a node you’ve already visited, you have a Directed Cycle. Whether it is a \"problem\" depends on the semantic meaning of your link types.  1. The \"Hard\" Dependency Loop (Logical Deadlock) If your link types imply sequence (e.g., Blocks, Precedes, Parent-of), any loop is a fatal error.  The Scenario:  Task A Blocks Task B.  Task B is a Parent of Task C.  Task C Blocks Task A.  The Result: You can never finish Task A because you need C to finish, but C is waiting on B, which is waiting on A. Even though the link types changed \"flavors\" (Blocks → Parent → Blocks), the temporal flow is circular. You have a deadlock.  2. The \"Soft\" Relationship (Non-Blocking) If your link types are purely informational (e.g., Relates to, Mentions, Duplicate of), a loop is usually harmless.  The Scenario:  Task A Relates to Task B.  Task B Relates to Task A.  The Result: This is not a \"loop\" in a dangerous sense; it’s just a Symmetric Relationship. It doesn't stop work from being done; it just tells the user that these two things are relevant to one another.  How to Handle This in Your System Since you are building a Project Manager, you need to categorize your link types into two buckets: Causal and Non-Causal.  The \"Causal\" Bucket (Must be Acyclic) Blocks / Is Blocked By  Parent / Child  Precedes / Follows  Rule: Before saving a \"Causal\" link, run a search. If the target node can already reach the source node via any combination of other Causal links, reject the link.  The \"Non-Causal\" Bucket (Can be Circular) Relates to  See also  Duplicate of (Though usually, you want this to be a simple 1:1)  The \"Breadcrumb\" Behavior You mentioned using breadcrumbs to \"rewind through the chain.\" If a user follows a loop (A → B → C → A), your breadcrumbs will look like: Task A > Task B > Task C > Task A  This is actually a great UI feature. It visually exposes the circular logic to the user. Instead of the system crashing, the user sees the loop and says, \"Wait, why am I back at Task A? This dependency doesn't make sense,\" and they can delete the offending link.  Summary Is it a loop? Yes, mathematically.  Is it a bug? Only if the links imply a sequence of time or hierarchy.  The Fix: When validating, treat all \"sequencing\" link types as the same \"flavor\" for the purpose of cycle detection.  Would you like me to show you a \"Cycle Detection\" function that checks across multiple link types?  no, I'll need to nail down a data representation before figuring out the algorithms acting on it  Gemini said Smart move. Designing the \"schema\" for a graph-based project manager is much more about the Relationship Table than the Task table itself.  To support the \"Jira-style\" links while keeping your data clean and queryable, you should separate your links into a dedicated join table. This allows you to treat \"Subtask\" as just one specific type of relationship among many.  The Recommended Schema 1. The task_links Table This is where the magic happens. Instead of a parent_id on the Task itself, you use this:  Column\tType\tDescription source_id\tUUID / INT\tThe \"from\" task. target_id\tUUID / INT\tThe \"to\" task. link_type\tENUM\te.g., parent_of, blocks, relates_to, duplicates. is_causal\tBOOLEAN\tCrucial. True if this link implies a sequence/hierarchy. 2. The link_types Definition You should explicitly define which links are \"Causal\" (Directional/Temporal) vs \"Non-Causal\" (Informational).  Causal (Acyclic): parent_of, blocks, precedes.  Non-Causal (Cyclic allowed): relates_to, mentions, see_also.  Why this Representation is Strong It handles \"Breadcrumbs\" naturally When you are on Task B, you simply query task_links where target_id = B.  If you find a link A -> B (parent_of), your breadcrumb is A > B.  If you find A -> B (blocks), your UI shows \"Blocked by A\".  It simplifies \"Global\" vs \"Local\" views Because the relationships are in their own table, your \"Project View\" stays a simple flat list of tasks. You only pull the link data when:  The user clicks a task to see its \"Related Tasks\" panel.  You want to show a \"Blocking\" icon next to a task in the main list.  It future-proofs \"Multi-Parenting\" In a strict tree (parent_id), a task can only have one parent. In this graph model, a \"Database Migration\" task can be a child of both the \"Backend Refactor\" project and the \"Security Audit\" project simultaneously.  Implementation Detail: The \"Inverse\" Problem In a graph, every link has an inverse (e.g., if A Blocks B, then B is Blocked By A). You have two choices for representing this:  Double-Entry: Store both rows in the table. (Harder to keep in sync).  Logic-Based: Store only the \"Active\" direction (A blocks B) and let your code/view handle the reverse.  Example: If I'm viewing Task B, I look for any row where I am the target_id. If the type is blocks, I display \"I am blocked by...\".  The Data Structure for your UI When you fetch a task's details, your API response would look something like this:  JSON {   \"id\": \"task_101\",   \"title\": \"Fix login bug\",   \"relationships\": [     { \"type\": \"is_blocked_by\", \"task_id\": \"task_99\", \"title\": \"Setup Dev DB\" },     { \"type\": \"child_of\", \"task_id\": \"task_50\", \"title\": \"Authentication Sprint\" },     { \"type\": \"relates_to\", \"task_id\": \"task_202\", \"title\": \"OAuth Research\" }   ] } Would you like me to write a SQL DDL (table creation) script that includes these constraints and index recommendations?  we just added this recently to represent blocking specifically, I think it could easily be extended to represent the other link types as well...   model TaskBlocker {    id             Int      @id @default(autoincrement())    taskId         Int      @map(\"task_id\")    blockingTaskId Int      @map(\"blocking_task_id\")    createdAt      DateTime @default(now()) @map(\"created_at\")    updatedAt      DateTime @default(now()) @updatedAt @map(\"updated_at\")    task           Task     @relation(\"TaskBlockers_Task\", fields: [taskId], references: [id], onDelete: Cascade)    blockingTask   Task     @relation(\"TaskBlockers_BlockingTask\", fields: [blockingTaskId], references: [id], onDelete: Cascade)     @@unique([taskId, blockingTaskId])    @@index([taskId])    @@index([blockingTaskId])    @@map(\"task_blockers\")    @@schema(\"api\")  }   Gemini said This Prisma schema is a solid foundation. Since it already handles the many-to-many relationship and includes the necessary indexes for performance, converting it to a universal Relationship/Link model is straightforward.  To extend this, you really only need to add a type field and potentially a flag to distinguish between causal (blocking/parenting) and non-causal (related) links.  Updated Schema Concept I’ve renamed the model to TaskRelationship to reflect its broader purpose.  Code snippet enum TaskRelationshipType {   BLOCKS   PARENT_OF   RELATES_TO   DUPLICATE_OF }  model TaskRelationship {   id             Int                  @id @default(autoincrement())   sourceTaskId   Int                  @map(\"source_task_id\")   targetTaskId   Int                  @map(\"target_task_id\")   type           TaskRelationshipType @default(RELATES_TO)      // Metadata   createdAt      DateTime             @default(now()) @map(\"created_at\")   updatedAt      DateTime             @default(now()) @updatedAt @map(\"updated_at\")    // Relations   sourceTask     Task                 @relation(\"SourceTasks\", fields: [sourceTaskId], references: [id], onDelete: Cascade)   targetTask     Task                 @relation(\"TargetTasks\", fields: [targetTaskId], references: [id], onDelete: Cascade)    // Constraints: Prevent identical links between the same two tasks   @@unique([sourceTaskId, targetTaskId, type])    @@index([sourceTaskId])   @@index([targetTaskId])   @@map(\"task_relationships\")   @@schema(\"api\") } Key Improvements & Design Decisions 1. The \"Source\" vs \"Target\" Naming Using source and target instead of task and blockingTask makes the direction of the relationship clear for any type:  Blocks: Source blocks Target.  Parent: Source is parent of Target.  Duplicate: Source is a duplicate of Target.  2. Semantic Direction (The \"Inverse\" Problem) In your application logic, you'll need to decide if you want to store one row or two for symmetric relationships (like RELATES_TO).  Recommendation: Store only one row. If you are viewing Task A, you query for any row where sourceTaskId == A OR targetTaskId == A.  For Causal links (Blocks/Parent), the direction is strict.  3. Compound Unique Constraint I updated the unique constraint to @@unique([sourceTaskId, targetTaskId, type]). This allows Task A to be \"Related to\" Task B AND \"Parent of\" Task B simultaneously, but prevents you from accidentally adding the \"Blocks\" relationship twice.  4. Handling \"Causal\" Logic in Code Since Prisma doesn't support conditional logic in the schema easily (like \"this type can't loop\"), I suggest a helper in your business logic:  TypeScript const CAUSAL_TYPES = ['BLOCKS', 'PARENT_OF'];  function isCausal(type: TaskRelationshipType) {   return CAUSAL_TYPES.includes(type); } Next Step Would you like me to write a PostgreSQL Check Constraint or a Prisma Middleware/Extension example that prevents basic self-referencing (e.g., sourceTaskId == targetTaskId) at the database level?  no but good call that it could exist, I wouldn't have thought of prisma middleware  Gemini said Since you're using Prisma, a Middleware (specifically a Client Extension in newer versions) is the perfect place to put your \"Guardrails.\"  It allows you to keep your database schema \"clean\" while ensuring your application logic doesn't accidentally create data that breaks your UI or enters an infinite loop.  Here are the three levels of defense I’d recommend for your TaskRelationship model:  1. The \"Basics\" (Prisma Extension) This prevents the most obvious error: a task linking to itself. Using a Client Extension is the modern way to intercept create and update calls.  TypeScript const prisma = new PrismaClient().$extends({   query: {     taskRelationship: {       async create({ args, query }) {         if (args.data.sourceTaskId === args.data.targetTaskId) {           throw new Error(\"A task cannot have a relationship with itself.\");         }         return query(args);       },     },   }, }); 2. The \"Causal\" Check (The Loop Finder) This is where you handle the circularity we discussed. Before creating a BLOCKS or PARENT_OF link, you run a quick recursive check to see if the target is already a \"causal ancestor\" of the source.  The Logic: If I want Task A to block Task B, I first check: \"Does Task B (or any of its causal descendants) already block Task A?\"  TypeScript // Example Logic for your service layer async function createRelationship(sourceId: number, targetId: number, type: RelationshipType) {   if (isCausal(type)) {     const hasPath = await checkExistingCausalPath(targetId, sourceId);     if (hasPath) throw new Error(\"Circular dependency detected!\");   }      return prisma.taskRelationship.create({     data: { sourceTaskId: sourceId, targetTaskId: targetId, type }   }); } 3. The \"Database\" Level (PostgreSQL) If you want to be 100% sure that no raw SQL query ever bypasses your Prisma logic, you can add a Check Constraint directly to your migration file. This is the \"final boss\" of data integrity.  In your Prisma migration SQL:  SQL ALTER TABLE \"api\".\"task_relationships\"  ADD CONSTRAINT \"no_self_links\"  CHECK (source_task_id <> target_task_id); Why this approach is \"Clean\": The Schema stays simple (just IDs and an Enum).  The DB stays fast (standard indexes handle the lookups).  The Complexity is isolated in a single \"Validation\" layer, rather than bleeding into your UI components or your main Task model.  Next Step: Since you have the relationship model ready, would you like me to help you write the SQL Recursive CTE that would power your \"Breadcrumbs\" or \"Dependency Tree\" views?   Sharing “ New Tab Redirect ” Skip to the latest Gemini resultThe \"Hardware\" Catch: The Oracle Problem Your skepticism is still valid because of the Oracle Problem. I can prove my code said \"Don't Fire,\" but how do you know my lasers are actually plugged into that code?  In a Dark Forest, a ZKP only works if it's paired with Verifiable Computing:  The civilization must prove their code is running on \"Attested Hardware\" (chips that are physically incapable of running unverified code).  This is the \"Trust but Verify\" peak—you are trusting the Physics of the Chip because you can't trust the Intent of the Alien.╰─$ npm run db:import:json -- data/backups/postgrest-2026-03-21T22-24-25-086Z.json  > czhechlizst@0.1.0 db:import:json > node ./scripts/db-import-json.mjs data/backups/postgrest-2026-03-21T22-24-25-086Z.json  TRUNCATE TABLE NOTICE:  truncate cascades to table \"tasks\" NOTICE:  truncate cascades to table \"project_notes\" NOTICE:  truncate cascades to table \"task_notes\" NOTICE:  truncate cascades to table \"task_blockers\" TRUNCATE TABLE TRUNCATE TABLE TRUNCATE TABLE NOTICE:  truncate cascades to table \"task_notes\" NOTICE:  truncate cascades to table \"task_blockers\" TRUNCATE TABLE ERROR:  insert or update on table \"project_notes\" violates foreign key constraint \"project_notes_project_id_fkey\" DETAIL:  Key (project_id)=(125) is not present in table \"projects\". Failed to import snapshot: insert project_notes failed",
+        "created_at": "2026-03-22T04:04:46.069+00:00",
+        "updated_at": "2026-03-22T04:04:46.069324+00:00"
+      },
+      {
+        "id": 6,
+        "task_id": 15,
+        "body": "CONTEXT: Songs that scratch the same itch as Katerina Lomis' \"Tale of Mary Anne\" - rhythmically complex narrative songs requiring multiple listens, with unrefined Hamilton energy, syncopation at rap-artist levels, or sheer weird beauty.\n\nAPPROACH:\n- Start with Epic: The Musical (most direct parallel)\n- Use Graceland as palate cleanser between intense sessions\n- Remember: if you can only do 3-4 listens before exhaustion, that's a FEATURE not a bug\n- Your brain is doing pattern reconstruction work, not passive listening\n\nKEY QUALITIES:\n- Narrative density + rhythmic complexity\n- \"Visible effort\" - ambition slightly exceeding execution\n- Tonal whiplash / emotional gear-shifting\n- Requires active listening, resists background play",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:39:46.978+00:00",
+        "updated_at": "2026-03-29T03:39:46.978383+00:00"
+      },
+      {
+        "id": 7,
+        "task_id": 18,
+        "body": "Story available at: [location where \"Perfect\" is stored]\n\nThree-story collection attribution:\n- \"Perfect\" by ibiwan/Jeremy Kent (collaboration with Claude/GPT/Gemini)\n- \"The Sandman\" by Jeremy Kent (with ChatGPT assistance)  \n- \"The Bread and the Night\" attributed to Claude, edited by Jeremy Kent\n\nCould include all three or just \"Perfect\" depending on approach.",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:45:14.308+00:00",
+        "updated_at": "2026-03-29T03:45:14.307971+00:00"
+      },
+      {
+        "id": 8,
+        "task_id": 23,
+        "body": "Target Date: July 2, 2026\nDeadline: Pyrotechnics transport for licensed partner in Escondido, CA\n\nBudget: $165-280 total\n- Medical cert duplicate: $0-25\n- CLP fee: $39-68\n- TSA background: ~$86.50\n- CDL license: ~$40-50\n\nCRITICAL PATH: TSA background check (4-8 weeks)\n\nStatus: Medical cert FOUND (valid through Dec 2026) - need wet-ink duplicate",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:52:53.426+00:00",
+        "updated_at": "2026-03-29T03:52:53.425935+00:00"
+      },
+      {
+        "id": 9,
+        "task_id": 20,
+        "body": "## Core Concept\nTimeline-based nondestructive editor for prose. Mix and match section variants like video clips. Source text stays immutable, timeline is just metadata.\n\n## Key Innovation: AI Filters\n- Filter templates (preset transformations: \"Darken Tone\", \"POV Shift\", \"Tighten Prose\")\n- Per-node customization: each filter instance has editable prompt\n- Nondestructive: filters are metadata, source clips unchanged\n- Chainable: stack multiple filters per clip\n\n## Architecture\n**Source Clips**: UUID, section name, variant label, raw text (Markdown), metadata (tags, word count)\n**Timeline**: Ordered clip UUIDs + per-clip filter stacks\n**Filters**: Template library + per-instance custom prompts + cached LLM results\n**Storage**: File-based JSON + clips directory for MVP, SQLite for scale\n\n## Tech Stack\n- Frontend: React + Zustand state + dnd-kit drag-drop\n- Markdown render: react-markdown\n- AI filters: Anthropic API (Claude Sonnet)\n- Export: .md, .docx (via docx library)\n- Desktop app: Electron wrapper (optional)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:51:16.195+00:00",
+        "updated_at": "2026-03-29T06:51:16.195394+00:00"
+      },
+      {
+        "id": 10,
+        "task_id": 20,
+        "body": "## Context Transfer Notes for Code Mode Instance\n\n**What we built**: Nonlinear text editor (codename \"Montage\") - timeline-based prose composition tool. Think Premiere Pro but for text variants.\n\n**Core innovation**: AI filters as nondestructive transformations. Filter templates instantiate with editable prompts per timeline node. Stack multiple filters, cache LLM results, all metadata-only.\n\n**Key architectural decisions**:\n- File-based storage (project.json + clips/*.md) for MVP, not SQLite yet\n- Base64 embedded images for simplicity (can migrate to assets/ later if needed)\n- Zustand for state, dnd-kit for drag-drop, react-markdown for preview\n- Claude Sonnet 4 via Anthropic API for filter execution\n- IndexedDB cache with LRU eviction (hash: clipUuid + filterPrompt + model)\n\n**Critical UX patterns**:\n- Three-panel layout: ClipLibrary | Timeline | Preview\n- Clips color-coded by section name (auto-hashed to HSL)\n- Filter badges stack below timeline clips, click to edit prompt\n- Drag clips from library to timeline, reorder via dnd-kit sortable\n\n**Implementation priorities**:\n1. Data model + store (tasks 1-3)\n2. Core UI (tasks 4-6, 11)\n3. Filter engine (task 7)\n4. Export pipeline (task 10)\n5. Everything else is polish\n\n**Watch for**: Filter prompt must preserve image markdown syntax, unicode across exports, cache invalidation on clip edits.\n\nFull task breakdown in CzechLizst Project 160 (19 tasks total).",
+        "reference_url": null,
+        "created_at": "2026-03-29T07:17:05.725+00:00",
+        "updated_at": "2026-03-29T07:17:05.725095+00:00"
+      },
+      {
+        "id": 11,
+        "task_id": 61,
+        "body": "add icon to jump to blocking/blocked tasks from blocked/blocking",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:51.211+00:00",
+        "updated_at": "2026-03-21T17:52:51.2109+00:00"
+      },
+      {
+        "id": 12,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:53.345+00:00",
+        "updated_at": "2026-03-21T17:52:53.345241+00:00"
+      },
+      {
+        "id": 13,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:54.475+00:00",
+        "updated_at": "2026-03-21T17:52:54.474646+00:00"
+      },
+      {
+        "id": 14,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:54.7+00:00",
+        "updated_at": "2026-03-21T17:52:54.699719+00:00"
+      },
+      {
+        "id": 15,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:54.863+00:00",
+        "updated_at": "2026-03-21T17:52:54.863203+00:00"
+      },
+      {
+        "id": 16,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:55.014+00:00",
+        "updated_at": "2026-03-21T17:52:55.01374+00:00"
+      },
+      {
+        "id": 17,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:52:56.776+00:00",
+        "updated_at": "2026-03-21T17:52:56.775825+00:00"
+      },
+      {
+        "id": 18,
+        "task_id": 61,
+        "body": "allow many-to-many blocking/blockedby",
+        "reference_url": null,
+        "created_at": "2026-03-21T17:53:04.96+00:00",
+        "updated_at": "2026-03-21T17:53:04.959789+00:00"
+      },
+      {
+        "id": 19,
+        "task_id": 63,
+        "body": "LLM on trees",
+        "reference_url": "Conversation with Gemini in a project manager I have projects, with tasks subject to projects.  I'd like to introduce subtasks without any new entities -- is it a clean approach to just let any task also have a pointer to a parent task, and form arbitrary chains and trees that way?  Gemini said The approach you are describing—often called a Self-Referencing Relationship or Adjacency List—is actually the industry standard for handling hierarchies in database design.  It is generally considered a clean and flexible approach because it maintains data integrity without bloating your schema with \"Subtask\" tables that are identical to \"Task\" tables.  Why This Works Well Using a parent_id pointer (which is a Foreign Key referencing the id of the same table) offers several advantages:  Infinite Depth: You aren't hard-coded to just \"Task\" and \"Subtask.\" You can have tasks, subtasks, sub-subtasks, etc., without changing a single line of your database schema.  Dry Code: Since a subtask is just a Task, all your existing logic for due dates, assignees, and status updates works automatically for every level of the hierarchy.  Simplicity: Your Task entity remains the single source of truth for \"work to be done.\"  Potential Pitfalls to Watch For While it's clean at the data level, it can get tricky during implementation. Here is what you should look out for:  1. Circular References You must implement a check to ensure a task cannot be its own parent, and more importantly, that Task A cannot be the parent of Task B if Task B is already a parent of Task A.  Rule of Thumb: Always validate that the \"parent\" is not a descendant of the \"child\" before saving.  2. The \"N+1\" Query Problem If you want to display a tree of tasks, a naive approach might query the database for every single subtask individually.  The Fix: Use \"Recursive Common Table Expressions\" (CTEs) in SQL to fetch an entire tree in one single query.     3. Orphaned Tasks Decide what happens to subtasks if a parent project or parent task is deleted.  Cascade: Delete all subtasks.  Set Null: Turn subtasks into top-level tasks.  Restrict: Prevent deletion of the parent until subtasks are moved or deleted.  Alternative: The \"Path\" Approach If you expect your trees to get very deep or if you need to search \"all descendants\" frequently, you might consider Materialized Paths. In this setup, each task has a string field like path:  Task 1: Path = 1/  Subtask A: Path = 1/2/  Subtask B: Path = 1/2/3/  This makes it incredibly fast to find all children of Task 1 using a simple string search (WHERE path LIKE '1/%'), though it's slightly more \"manual\" to maintain than a simple parent pointer.  Is this for a specific tech stack (like SQL, NoSQL, or a specific framework like Django/Rails)? I can give you the specific code or query structure to implement the recursion safely if you'd like.  does pathing inherently help avoid circularity?  Gemini said No, pathing (Materialized Path) does not inherently prevent you from creating a circular reference, but it makes it extremely easy to detect one before it happens.  In a simple parent_id setup, you only know the immediate parent. To find out if Task A is a grandparent of Task B, you have to run a recursive query. With a Path, the entire lineage is written in plain text on every row.  Here is how pathing changes the game for circularity:  1. Detection is Instant If you use the pathing method, a Task's path looks like this: Project1/TaskA/TaskB/.  If you try to set Task A as a child of Task B, your application logic can check the proposed new path: Project1/TaskA/TaskB/TaskA/. Since TaskA already exists in the string, you can reject the update instantly with a simple string check:  Logic: IF new_parent_path CONTAINS current_task_id THEN ABORT  2. The \"Loop\" becomes Visible In a parent_id system, a circle is a \"hidden\" break in the tree. In a pathing system, a circle would technically require an infinitely long string, which the database column length (e.g., VARCHAR(255)) will eventually block anyway.  3. Move Operations are the Risk Point The danger with pathing isn't creating a circle by accident; it's the overhead of moving a branch.  If you move a parent task, you must update the path string for every single descendant task in that tree.  If your logic for updating those strings is flawed, you could accidentally \"orphan\" a branch by giving it a malformed path, though you still wouldn't necessarily create a circular loop.  Comparison at a Glance Feature\tparent_id (Adjacency List)\tpath (Materialized Path) Detecting Circles\tHard (Requires recursion)\tEasy (Simple string check) Moving Tasks\tEasy (Change one ID)\tHard (Update all children) Querying Subtree\tComplex SQL (CTEs)\tSimple SQL (LIKE 'path/%') Data Integrity\tHigh (Foreign Key enforced)\tMedium (Application must manage strings) Conclusion: Pathing doesn't \"stop\" circularity by its nature, but it gives you the \"map\" required to spot a circle before you save it.  Would you like to see a code snippet (e.g., Python or JavaScript) for the logic that prevents circularity in either of these systems?  can I avoid circularity by making some kind of depth requirement?  each task is assigned a depth from its base project, for example, and a task can only be assigned as a child of a task with a lower depth?  Gemini said Yes, you can absolutely use Depth (often called a \"Level\" or \"Rank\") to prevent circularity. In fact, this is a very robust \"fail-safe\" because it relies on simple integer math (Depth  child ​  >Depth  parent ​  ) rather than string parsing or complex recursion.  However, using depth introduces a specific maintenance trade-off you should consider.  How it Works The Base Project: You define the project itself as Depth 0.  Top-level Tasks: Any task directly under a project is Depth 1.  The Rule: A task can only have a parent_id pointing to a task where Depth  parent ​  <Depth  current ​  .  Why this kills circularity: A circle requires a loop (e.g., A→B→C→A). With a depth requirement, this would imply:     Depth  A ​  <Depth  B ​  <Depth  C ​  <Depth  A ​   Since an integer cannot be strictly less than itself, a circular reference becomes mathematically impossible to save to the database.  The \"Moving\" Problem (The Trade-off) The reason many developers prefer Pathing or Adjacency Lists over Depth is what happens when you reorganize your project.  In an Adjacency List: If you move Task A (and its 100 subtasks) to a new parent, you only change one row (parent_id). The hierarchy stays intact.  In a Depth System: If you move Task A from Depth 2 to Depth 5, the math is now broken for every single one of its subtasks. You must perform a bulk update to increment the depth of every descendant in that branch.  A \"Hybrid\" Best Practice If you want the cleanest, most performant approach for a Project Management tool, the Materialized Path actually gives you \"Depth\" for free without the maintenance headache.  If your path is 1/5/12, you know:  The Lineage: It’s a child of 1 and 5.  The Depth: It’s 3 (the number of IDs in the string).  Circularity Check: Before moving task X to be a child of Y, you just check if X is already in Y's path.  Summary Comparison Method\tCircularity Protection\tReorganization Effort Parent ID Only\tWeak (Requires recursive check)\tEasy (1 row change) Depth Integer\tStrong (Math-based)\tHard (Bulk update descendants) Path String\tStrong (String check)\tHard (Bulk update strings) My Recommendation: If your project trees are shallow (2-3 levels), the Depth Integer is perfectly fine and very easy to write. If you expect users to create deep \"Inception-style\" subtasks or move branches around frequently, go with the Path String.  Would you like to see how to structure the SQL or the application logic to handle the \"Bulk Update\" when a task is moved?  does postgresql support CTEs or other recursive queries cleanly?  Gemini said PostgreSQL supports recursive queries extremely cleanly through Recursive Common Table Expressions (CTEs) using the WITH RECURSIVE syntax.  It is the standard way to handle the \"parent pointer\" (Adjacency List) model you are considering.  How the Syntax Works A recursive CTE in Postgres consists of two parts joined by a UNION or UNION ALL:  The Anchor Member: The starting point (e.g., the top-level tasks where parent_id IS NULL).  The Recursive Member: The query that joins the table back to the CTE results to find the next level of children.     Example: Fetching a Task and all its Subtasks SQL WITH RECURSIVE task_tree AS (     -- Anchor: Start with a specific parent task     SELECT id, title, parent_id, 1 AS depth     FROM tasks     WHERE id = 101      UNION ALL      -- Recursive step: Find tasks whose parent is in our current result set     SELECT t.id, t.title, t.parent_id, tt.depth + 1     FROM tasks t     INNER JOIN task_tree tt ON t.parent_id = tt.id ) SELECT * FROM task_tree; Why Postgres is a good fit for this: Breadth vs. Depth Sorting: Postgres allows you to easily track the \"path\" or \"depth\" during the recursion, which you can use in the final ORDER BY to display tasks in the correct visual order.  Cycle Detection: Modern Postgres versions (14+) include a CYCLE clause specifically designed to stop infinite loops if a user accidentally points Task A to Task B and Task B back to Task A.  Syntax: CYCLE id SET is_cycle USING path  Performance: As long as your parent_id column is indexed, Postgres can traverse hierarchies of thousands of items in milliseconds.  Critical Implementation Tips Always Index parent_id: Without an index, every level of recursion triggers a full table scan, which will kill performance as your task list grows.     Use UNION ALL: Unless you have a specific reason to remove duplicate rows, use UNION ALL. It is significantly faster than UNION because it doesn't require the database to perform a \"unique\" check on every iteration.  Limit Depth for Safety: Even with cycle detection, it's a good practice to include a \"kill switch\" in the WHERE clause (e.g., WHERE depth < 20) to prevent runaway queries in your app.  Would you like a sample schema including the CYCLE detection clause to see how it handles accidental loops?  right now my display logic is simple: a list of projects, click one, get a list of tasks.  how much does that explode by adding arbitrary subtask chaining?  Gemini said It changes the \"shape\" of your logic from a flat list to a Tree, which is a significant jump in complexity.  If you stick with your current \"Project → Tasks\" flat list, adding subtasks usually forces you to choose between three UI patterns. Here is how the complexity \"explodes\" for each:  1. The \"Drill-Down\" (Low Complexity) This is the simplest to implement. When you click a task, you navigate \"into\" it, and it shows a list of its children.  The Logic: Your existing task-list component just needs a filter change: WHERE parent_id = current_focus_id.  The UX Flaw: Users lose context. They can't see how Subtask C relates to Task A without hitting the \"Back\" button repeatedly. You’ll need a Breadcrumb component (e.g., Project > Task > Subtask) to keep them sane.  2. The \"Indented Outline\" (Medium Complexity) This is the \"Folder/File\" view (think Notion or VS Code file explorer).  The Logic: You can no longer just map over an array. You need a Recursive Component.  Pseudocode: TaskComponent renders itself inside its own body if subtasks.length > 0.  The Explosion: * Visuals: You have to manage \"Collapsible/Expanded\" states for every single task row in memory.  Layout: If a user goes 5+ levels deep, your text will hit the right edge of the screen. You usually have to cap the indentation or hide it after level 3.  3. The \"Flat Multi-Column\" (High Complexity) Think \"Monday.com\" or \"Asana\" where subtasks are sometimes hidden in a separate \"task pane\" or \"drawer\" that slides out from the right.  The Logic: You maintain a \"Selected Task\" state. When a task is clicked, the side-drawer fetches children.  The Explosion: You are now managing two simultaneous \"sources of truth\" on one screen. If a user changes a subtask's status in the drawer, you may need to reflect a progress bar update on the main task list in the background.  Summary of \"Explosion\" Factors Feature\tFlat List (Current)\tArbitrary Tree (New) Data Fetching\tOne query.\tRecursive CTE or multiple \"on-click\" fetches. State Management\ttasks: []\texpandedTasks: Set<ID> Sorting\tSimple ORDER BY.\tHard. Do subtasks stay with parents or sort globally? Drag & Drop\tReordering index.\tNightmare. Moving Task A into Task B requires updating parent_id and potential depth/path strings. My Recommendation: \"The 80/20 Rule\" Don't jump straight to an \"infinite tree\" UI. It’s a UX rabbit hole.  Most successful project managers use a Flat List with \"Hidden\" Subtasks.  Show the top-level tasks.  Add a small \"subtask count\" badge (e.g., (3)).  Only show the subtasks when the user clicks the task to open a \"Detail View\" or \"Drawer.\"  This keeps your main display logic exactly as simple as it is now, while still allowing the database to support infinite nesting.  Would you like me to sketch out a simple recursive React/Vue component structure to show how the \"Indented Outline\" logic would look?  what about the jira \"related task\" idiom?  can I just let each task have a list of upstream tasks, a list of downstream tasks, a list of blockers, etc?  then can click through relationships without trying to display the whole thing at once, and we can keep breadcrumbs at the top to rewind through the chain  Gemini said That is a fantastic shift in perspective. Moving from a Hierarchy (Tree) to a Graph (Network) is actually how most high-end project management tools (Jira, Linear, ClickUp) handle complex work.  Instead of asking \"Where does this task live?\", you are asking \"How does this task relate to others?\"  1. The Schema: The \"Join Table\" Approach To do this cleanly without creating \"list\" columns (which are hard to query), you use a Self-Referencing Many-to-Many table. Let's call it task_links.  source_task_id\ttarget_task_id\tlink_type 101\t102\tblocks 102\t101\tis_blocked_by 105\t106\trelates_to 107\t108\tis_parent_of Why this is better than \"Subtasks\": Multi-Parenting: A task can suddenly be a sub-task of two different high-level goals.  Semantic Meaning: You aren't just saying \"these are related\"; you're saying why (e.g., \"This task is a duplicate of that one\").  Flat UI: Your main list stays flat and clean. The \"complexity\" is tucked away inside the task's detail view.  2. The \"Click-Through\" UX Your idea of \"clicking through\" and using breadcrumbs is essentially Web Browsing for Tasks.  The View: When looking at Task A, the UI shows a \"Relationships\" section.  The Interaction: Clicking \"Blocked by Task B\" doesn't open a tree; it simply navigates the current page to Task B.  The Breadcrumbs: You maintain a session-based \"History Stack\" (e.g., Task A > Task B > Task C). This is much easier to build than a recursive tree because it's just an array of IDs you've recently visited.  3. The \"Hidden\" Circularity Risk Even without a formal hierarchy, graphs have a unique danger: Deadlocks.  If Task A blocks Task B, and Task B blocks Task A, nothing can ever be finished.  If you use this model, you don't need to prevent the link from being created, but you should probably run a check when a link is added to warn the user: \"Warning: This creates a dependency loop.\"  4. Implementation Comparison Feature\tHierarchy (Tree)\tRelated Tasks (Graph) Data Structure\tparent_id on Task table.\tSeparate task_links table. Primary UI\tIndented List / Folder View.\tActivity Feed / Detail Panels. Complexity\tHigh (Recursion required).\tMedium (Standard Joins). Flexibility\tRigid (1 parent only).\tInfinite (Many-to-Many). The Verdict The Jira \"Related Task\" idiom is much cleaner for your display logic. It prevents the \"Indentation Explosion\" on your main screen while providing more power to the user. You can even treat \"Subtask\" as just another link_type in your table.  Would you like a SQL schema example for the task_links table and a query to fetch all \"Related Tasks\" for a specific ID?  is it a dependency loop if I visit the same node multiple times but through different kinds of dependencies?  or only if I follow the same flavor paths to the same nodes  Gemini said In the world of Graph Theory and Project Management, a dependency loop (or cycle) exists if you can start at Node A and follow a path back to Node A—regardless of the \"flavor\" of the links.  If you can reach a node you’ve already visited, you have a Directed Cycle. Whether it is a \"problem\" depends on the semantic meaning of your link types.  1. The \"Hard\" Dependency Loop (Logical Deadlock) If your link types imply sequence (e.g., Blocks, Precedes, Parent-of), any loop is a fatal error.  The Scenario:  Task A Blocks Task B.  Task B is a Parent of Task C.  Task C Blocks Task A.  The Result: You can never finish Task A because you need C to finish, but C is waiting on B, which is waiting on A. Even though the link types changed \"flavors\" (Blocks → Parent → Blocks), the temporal flow is circular. You have a deadlock.  2. The \"Soft\" Relationship (Non-Blocking) If your link types are purely informational (e.g., Relates to, Mentions, Duplicate of), a loop is usually harmless.  The Scenario:  Task A Relates to Task B.  Task B Relates to Task A.  The Result: This is not a \"loop\" in a dangerous sense; it’s just a Symmetric Relationship. It doesn't stop work from being done; it just tells the user that these two things are relevant to one another.  How to Handle This in Your System Since you are building a Project Manager, you need to categorize your link types into two buckets: Causal and Non-Causal.  The \"Causal\" Bucket (Must be Acyclic) Blocks / Is Blocked By  Parent / Child  Precedes / Follows  Rule: Before saving a \"Causal\" link, run a search. If the target node can already reach the source node via any combination of other Causal links, reject the link.  The \"Non-Causal\" Bucket (Can be Circular) Relates to  See also  Duplicate of (Though usually, you want this to be a simple 1:1)  The \"Breadcrumb\" Behavior You mentioned using breadcrumbs to \"rewind through the chain.\" If a user follows a loop (A → B → C → A), your breadcrumbs will look like: Task A > Task B > Task C > Task A  This is actually a great UI feature. It visually exposes the circular logic to the user. Instead of the system crashing, the user sees the loop and says, \"Wait, why am I back at Task A? This dependency doesn't make sense,\" and they can delete the offending link.  Summary Is it a loop? Yes, mathematically.  Is it a bug? Only if the links imply a sequence of time or hierarchy.  The Fix: When validating, treat all \"sequencing\" link types as the same \"flavor\" for the purpose of cycle detection.  Would you like me to show you a \"Cycle Detection\" function that checks across multiple link types?  no, I'll need to nail down a data representation before figuring out the algorithms acting on it  Gemini said Smart move. Designing the \"schema\" for a graph-based project manager is much more about the Relationship Table than the Task table itself.  To support the \"Jira-style\" links while keeping your data clean and queryable, you should separate your links into a dedicated join table. This allows you to treat \"Subtask\" as just one specific type of relationship among many.  The Recommended Schema 1. The task_links Table This is where the magic happens. Instead of a parent_id on the Task itself, you use this:  Column\tType\tDescription source_id\tUUID / INT\tThe \"from\" task. target_id\tUUID / INT\tThe \"to\" task. link_type\tENUM\te.g., parent_of, blocks, relates_to, duplicates. is_causal\tBOOLEAN\tCrucial. True if this link implies a sequence/hierarchy. 2. The link_types Definition You should explicitly define which links are \"Causal\" (Directional/Temporal) vs \"Non-Causal\" (Informational).  Causal (Acyclic): parent_of, blocks, precedes.  Non-Causal (Cyclic allowed): relates_to, mentions, see_also.  Why this Representation is Strong It handles \"Breadcrumbs\" naturally When you are on Task B, you simply query task_links where target_id = B.  If you find a link A -> B (parent_of), your breadcrumb is A > B.  If you find A -> B (blocks), your UI shows \"Blocked by A\".  It simplifies \"Global\" vs \"Local\" views Because the relationships are in their own table, your \"Project View\" stays a simple flat list of tasks. You only pull the link data when:  The user clicks a task to see its \"Related Tasks\" panel.  You want to show a \"Blocking\" icon next to a task in the main list.  It future-proofs \"Multi-Parenting\" In a strict tree (parent_id), a task can only have one parent. In this graph model, a \"Database Migration\" task can be a child of both the \"Backend Refactor\" project and the \"Security Audit\" project simultaneously.  Implementation Detail: The \"Inverse\" Problem In a graph, every link has an inverse (e.g., if A Blocks B, then B is Blocked By A). You have two choices for representing this:  Double-Entry: Store both rows in the table. (Harder to keep in sync).  Logic-Based: Store only the \"Active\" direction (A blocks B) and let your code/view handle the reverse.  Example: If I'm viewing Task B, I look for any row where I am the target_id. If the type is blocks, I display \"I am blocked by...\".  The Data Structure for your UI When you fetch a task's details, your API response would look something like this:  JSON {   \"id\": \"task_101\",   \"title\": \"Fix login bug\",   \"relationships\": [     { \"type\": \"is_blocked_by\", \"task_id\": \"task_99\", \"title\": \"Setup Dev DB\" },     { \"type\": \"child_of\", \"task_id\": \"task_50\", \"title\": \"Authentication Sprint\" },     { \"type\": \"relates_to\", \"task_id\": \"task_202\", \"title\": \"OAuth Research\" }   ] } Would you like me to write a SQL DDL (table creation) script that includes these constraints and index recommendations?  we just added this recently to represent blocking specifically, I think it could easily be extended to represent the other link types as well...   model TaskBlocker {    id             Int      @id @default(autoincrement())    taskId         Int      @map(\"task_id\")    blockingTaskId Int      @map(\"blocking_task_id\")    createdAt      DateTime @default(now()) @map(\"created_at\")    updatedAt      DateTime @default(now()) @updatedAt @map(\"updated_at\")    task           Task     @relation(\"TaskBlockers_Task\", fields: [taskId], references: [id], onDelete: Cascade)    blockingTask   Task     @relation(\"TaskBlockers_BlockingTask\", fields: [blockingTaskId], references: [id], onDelete: Cascade)     @@unique([taskId, blockingTaskId])    @@index([taskId])    @@index([blockingTaskId])    @@map(\"task_blockers\")    @@schema(\"api\")  }   Gemini said This Prisma schema is a solid foundation. Since it already handles the many-to-many relationship and includes the necessary indexes for performance, converting it to a universal Relationship/Link model is straightforward.  To extend this, you really only need to add a type field and potentially a flag to distinguish between causal (blocking/parenting) and non-causal (related) links.  Updated Schema Concept I’ve renamed the model to TaskRelationship to reflect its broader purpose.  Code snippet enum TaskRelationshipType {   BLOCKS   PARENT_OF   RELATES_TO   DUPLICATE_OF }  model TaskRelationship {   id             Int                  @id @default(autoincrement())   sourceTaskId   Int                  @map(\"source_task_id\")   targetTaskId   Int                  @map(\"target_task_id\")   type           TaskRelationshipType @default(RELATES_TO)      // Metadata   createdAt      DateTime             @default(now()) @map(\"created_at\")   updatedAt      DateTime             @default(now()) @updatedAt @map(\"updated_at\")    // Relations   sourceTask     Task                 @relation(\"SourceTasks\", fields: [sourceTaskId], references: [id], onDelete: Cascade)   targetTask     Task                 @relation(\"TargetTasks\", fields: [targetTaskId], references: [id], onDelete: Cascade)    // Constraints: Prevent identical links between the same two tasks   @@unique([sourceTaskId, targetTaskId, type])    @@index([sourceTaskId])   @@index([targetTaskId])   @@map(\"task_relationships\")   @@schema(\"api\") } Key Improvements & Design Decisions 1. The \"Source\" vs \"Target\" Naming Using source and target instead of task and blockingTask makes the direction of the relationship clear for any type:  Blocks: Source blocks Target.  Parent: Source is parent of Target.  Duplicate: Source is a duplicate of Target.  2. Semantic Direction (The \"Inverse\" Problem) In your application logic, you'll need to decide if you want to store one row or two for symmetric relationships (like RELATES_TO).  Recommendation: Store only one row. If you are viewing Task A, you query for any row where sourceTaskId == A OR targetTaskId == A.  For Causal links (Blocks/Parent), the direction is strict.  3. Compound Unique Constraint I updated the unique constraint to @@unique([sourceTaskId, targetTaskId, type]). This allows Task A to be \"Related to\" Task B AND \"Parent of\" Task B simultaneously, but prevents you from accidentally adding the \"Blocks\" relationship twice.  4. Handling \"Causal\" Logic in Code Since Prisma doesn't support conditional logic in the schema easily (like \"this type can't loop\"), I suggest a helper in your business logic:  TypeScript const CAUSAL_TYPES = ['BLOCKS', 'PARENT_OF'];  function isCausal(type: TaskRelationshipType) {   return CAUSAL_TYPES.includes(type); } Next Step Would you like me to write a PostgreSQL Check Constraint or a Prisma Middleware/Extension example that prevents basic self-referencing (e.g., sourceTaskId == targetTaskId) at the database level?  no but good call that it could exist, I wouldn't have thought of prisma middleware  Gemini said Since you're using Prisma, a Middleware (specifically a Client Extension in newer versions) is the perfect place to put your \"Guardrails.\"  It allows you to keep your database schema \"clean\" while ensuring your application logic doesn't accidentally create data that breaks your UI or enters an infinite loop.  Here are the three levels of defense I’d recommend for your TaskRelationship model:  1. The \"Basics\" (Prisma Extension) This prevents the most obvious error: a task linking to itself. Using a Client Extension is the modern way to intercept create and update calls.  TypeScript const prisma = new PrismaClient().$extends({   query: {     taskRelationship: {       async create({ args, query }) {         if (args.data.sourceTaskId === args.data.targetTaskId) {           throw new Error(\"A task cannot have a relationship with itself.\");         }         return query(args);       },     },   }, }); 2. The \"Causal\" Check (The Loop Finder) This is where you handle the circularity we discussed. Before creating a BLOCKS or PARENT_OF link, you run a quick recursive check to see if the target is already a \"causal ancestor\" of the source.  The Logic: If I want Task A to block Task B, I first check: \"Does Task B (or any of its causal descendants) already block Task A?\"  TypeScript // Example Logic for your service layer async function createRelationship(sourceId: number, targetId: number, type: RelationshipType) {   if (isCausal(type)) {     const hasPath = await checkExistingCausalPath(targetId, sourceId);     if (hasPath) throw new Error(\"Circular dependency detected!\");   }      return prisma.taskRelationship.create({     data: { sourceTaskId: sourceId, targetTaskId: targetId, type }   }); } 3. The \"Database\" Level (PostgreSQL) If you want to be 100% sure that no raw SQL query ever bypasses your Prisma logic, you can add a Check Constraint directly to your migration file. This is the \"final boss\" of data integrity.  In your Prisma migration SQL:  SQL ALTER TABLE \"api\".\"task_relationships\"  ADD CONSTRAINT \"no_self_links\"  CHECK (source_task_id <> target_task_id); Why this approach is \"Clean\": The Schema stays simple (just IDs and an Enum).  The DB stays fast (standard indexes handle the lookups).  The Complexity is isolated in a single \"Validation\" layer, rather than bleeding into your UI components or your main Task model.  Next Step: Since you have the relationship model ready, would you like me to help you write the SQL Recursive CTE that would power your \"Breadcrumbs\" or \"Dependency Tree\" views?   Sharing “ New Tab Redirect ” Skip to the latest Gemini result",
+        "created_at": "2026-03-22T00:05:48.834+00:00",
+        "updated_at": "2026-03-22T00:05:48.833653+00:00"
+      },
+      {
+        "id": 20,
+        "task_id": 70,
+        "body": "GAME MODE: SCIENTIST'S BODYGUARD\n\nDescription: Protect the npc to while he goes to all the objectives, and then reaches the exit\n\nGOALS:\n1. Keep the Scientist safe and Protect him towards the marked zones\n2. Unlock the exit and escape!\n3. Keep at least one hero alive\n\nBoard Size: LARGE\nFind: Blue objective markers (×4), 4 Heroes\nAvg Playtime: 45:00\nExperience: +200\nDifficulty: NORMAL / HARD\n\nContext: Escort/protection mission where an NPC scientist must visit all objective zones before reaching the exit. Players must keep the scientist alive and ensure at least one hero survives.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:21:38.233+00:00",
+        "updated_at": "2026-03-23T04:21:38.233455+00:00"
+      },
+      {
+        "id": 21,
+        "task_id": 71,
+        "body": "GAME MODE: CLASSIC\n\nDescription: All the tiles are Shadow Tiles, except for the initial one. Search for clues in the Shadow tiles to find the Spirit Anchors and destroy them.\n\nGOALS:\n1. Search for clues in the shadow tiles to find the Spirit Anchors and destroy them.\n2. Unlock the exit and escape!\nKeep at least one hero alive\n\nBoard Sizes Available:\n- LARGE: 4 heroes, ×7 objective markers, 45:00 playtime, +200 XP\n- MEDIUM: 3 heroes, ×5 objective markers, 25:00 playtime, +160 XP  \n- SMALL: 2 heroes, ×3 objective markers, 10:00 playtime, +120 XP\n\nDifficulty: NORMAL / HARD\n\nContext: Exploration/discovery mission where all tiles start as Shadow Tiles. Players search for clues to locate and destroy Spirit Anchors before escaping.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:22:53.171+00:00",
+        "updated_at": "2026-03-23T04:22:53.170936+00:00"
+      },
+      {
+        "id": 22,
+        "task_id": 72,
+        "body": "GAME MODE: FOLLOW THE LIGHT\n\nDescription: All the tiles are Shadow tiles, except for the initial one and another one containing an item box. Pick up the item box to get an item card and reveal the next item box. Pick up all the item cards to spawn the Boss. Kill the Boss to unlock the exit to win the game.\n\nGOALS:\n1. Search for the item boxes to pick up the cards\n2. Kill the boss\n3. Unlock the exit and escape!\n\nLOSS CONDITION: If a hero dies holding an objective item in the inventory, you lose.\n\nBoard Sizes Available:\n- LARGE: 4 heroes, ×7 item boxes, 45:00 playtime, +200 XP\n- MEDIUM: 3 heroes, ×5 item boxes, 25:00 playtime, +160 XP\n\nDifficulty: NORMAL / HARD\n\nContext: Sequential objective collection mode. Players must find item boxes in order (each reveals the next), collect all items to spawn a boss, then defeat the boss and escape. Critical failure state if a hero carrying an objective item dies.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:23:07.596+00:00",
+        "updated_at": "2026-03-23T04:23:07.595828+00:00"
+      },
+      {
+        "id": 23,
+        "task_id": 73,
+        "body": "GAME PHASES\n\nThe game is divided into several stages of gameplay called \"phases\", which always take place in the same order:\n\n1. PLAYER PHASE:\n- Each hero begins its turn with 3 Action Points\n- Once a hero is selected, players must use all of that hero's Action Points before selecting another hero\n- Alternatively, players may choose to end a hero's turn before all action points are spent\n- The Player Phase ends when the last available hero ends their turn\n\n2. CREATURE PHASE:\nCreatures that are already on the board will take action according to the following priority order:\nA. Creatures will attack those heroes in their same zone\nB. Creatures will attack a door if it is the shortest path towards a hero\nC. Creatures will move towards the heroes\n\n3. SPAWN PHASE:\nAfter all creatures have performed their actions, new creatures will spawn on the board from the Portals. Each Portal on the board will automatically draw a card from the creature deck.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:36:20.026+00:00",
+        "updated_at": "2026-03-23T04:36:20.02602+00:00"
+      },
+      {
+        "id": 24,
+        "task_id": 74,
+        "body": "PLAYER ACTIONS\n\nAction Points (AP) are the resource players spend to perform actions. The base cost of any action performed by a hero is 1 AP.\n\nHeroes start every turn with 3 AP which they can use to perform any of the following actions:\n- Moving around\n- Attacking creatures\n- Searching\n- Gathering ammo\n- Trading items\n- Organizing the inventory\n- Searching Clues\n- Destroying Spirit Anchors\n- Using Hero Skills\n- Blocking doors\n\nMOVEMENT COST:\nMoving out of a zone that contains at least one creature will cost an additional movement point per creature present in the zone.\nExample: If the Sheriff is sharing a zone with 2 other creatures, it will cost him 3 AP to move out to another zone: 1 AP for the base cost of the action plus 1 additional point per each of the creatures sharing the zone with him.\n\nSEARCH:\nAll normal tile interior zones can be searched for weapons and items. However, each zone can only be searched once during any given playthrough.\n\nGATHER AMMO:\nIt can be done once per turn. This is an action that can be performed indefinitely in the same zone. Whenever a hero gathers ammo, a six-sided die will be rolled. An amount of ammo equal to the number added will be added to the hero's inventory.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:36:41.993+00:00",
+        "updated_at": "2026-03-23T04:36:41.992819+00:00"
+      },
+      {
+        "id": 25,
+        "task_id": 75,
+        "body": "RISK LEVEL\n\nThe Risk Level indicates how dangerous exploring the board has become. It ranges from 1 to 4 and it increases as players destroy Spirit Anchors. The higher the level, the more dangerous the board.\n\nRISK LEVEL CONSEQUENCES:\n\nSince it determines which decks of cards are used to spawn enemies and weapon cards, increasing the risk level will always have an impact on the game:\n\n- CREATURES: The higher the Risk level, the higher the number of creatures spawned. Also, at higher levels, different types of creatures will start appearing.\n\n- WEAPONS: As the risk level increases, new and more powerful weapons appear when players perform search actions.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:37:00.689+00:00",
+        "updated_at": "2026-03-23T04:37:00.688934+00:00"
+      },
+      {
+        "id": 26,
+        "task_id": 76,
+        "body": "GAME MODE: PULL THE PLUG\n\nDescription: Another's eye cards are spread along Light tiles. The rest of the tiles are shadow tiles. Pick up the item box to get Another's eye cards, but be careful! Every time you pick up Another's eye cards an ambush is triggered and the Light tile turns to a Shadow Tile.\n\nGOALS:\n1. Search for the item boxes to pick up the cards\n2. Unlock the exit and escape!\n\nLOSS CONDITION: If a hero dies holding an objective item in the inventory, you lose.\n\nBoard Sizes Available:\n- LARGE: 4 heroes, ×7 item boxes (Another's eye cards), 45:00 playtime, +200 XP\n- MEDIUM: 3 heroes, ×5 item boxes, 25:00 playtime, +160 XP\n- SMALL: 2 heroes, ×3 item boxes, 10:00 playtime, +120 XP\n\nDifficulty: NORMAL / HARD\n\nContext: High-risk collection mode. Light tiles guide players to Another's eye cards, but collecting them triggers ambushes and converts Light tiles to Shadow tiles, making the board progressively more dangerous. Critical failure if hero carrying objective item dies.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:44:13.343+00:00",
+        "updated_at": "2026-03-23T04:44:13.342882+00:00"
+      },
+      {
+        "id": 27,
+        "task_id": 126,
+        "body": "Get CA Commercial Driver Handbook: https://www.dmv.ca.gov/\nFocus sections: General Knowledge + Hazmat\nStudy time needed: 20-40 hours total\nUse practice quiz: hazmat_quiz_comprehensive.html\nTarget: Consistently scoring 90-100% on practice tests\nCurrent score: 80% (first attempt) ✓",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:54:43.72+00:00",
+        "updated_at": "2026-03-29T03:54:43.720434+00:00"
+      },
+      {
+        "id": 28,
+        "task_id": 127,
+        "body": "Schedule DMV appointment early (appointments book weeks out)\nAt California DMV\nMust pass BEFORE Hazmat test\nBring: Current DL, medical cert confirmation\nConsider multiple DMV locations for earlier appointments\nSome DMVs accept walk-ins for written tests (call to verify)",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:55:07.533+00:00",
+        "updated_at": "2026-03-29T03:55:07.53348+00:00"
+      },
+      {
+        "id": 29,
+        "task_id": 77,
+        "body": "GAME MODE: SURVIVE THE HORROR\n\nDescription: The horror is on the board from the first round. At the end of the creature phase, any monolith still standing will heal the horror to full health. Destroy all monoliths and kill the horror to open the exit and escape.\n\nGOALS:\n1. Destroy all the monoliths to destroy the Boss Shield\n2. Kill the boss\n3. Unlock the exit and escape!\n\nBoard Sizes Available:\n- LARGE: 4 heroes, ×4 monoliths, 45:00 playtime, +200 XP\n- MEDIUM: 3 heroes, ×3 monoliths, 25:00 playtime, +160 XP\n\nDifficulty: NORMAL / HARD\n\nContext: Boss survival mode. A powerful \"horror\" enemy is present from the start and is protected by monoliths that heal it to full health each round. Players must destroy all monoliths first before they can permanently damage the boss.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:44:44.904+00:00",
+        "updated_at": "2026-03-23T04:44:44.904171+00:00"
+      },
+      {
+        "id": 30,
+        "task_id": 78,
+        "body": "BOARD MECHANICS: ZONES, TILES, DOORS\n\nZONES:\nEach board tile is divided into smaller sections called Zones. Any individual tile will contain several zones. Characters always move from one zone to an adjacent one.\n\nTWO MAIN TYPES OF ZONES:\n- Interior Zones: These are indoors and are delimited by inner walls and closed doors.\n- Street Zones: These are segments of the town's streets and are marked off by pedestrian crossings.\n\nTILES:\nNormal Tiles: They show what the town looks like when it is not filled with the shadows from the Otherside. Heroes in Normal interior zones can search for weapons and items and also gather ammo for their firearms.\n\nShadow Tiles: Are those in which the Otherside is overlapped with the normal world. They are dark and covered in strange ghostly physical shadows from the Otherside. Creatures can appear seemingly, so be careful when opening doors and moving through interior zones that are covered in shadow. Creatures automatically heal one point of damage at the start of every turn that they are in a Shadow tile, making them harder to kill.\n\nDOORS:\nDoors can be open, closed or blocked. Characters who have 2 or more scrap items can intentionally block doors.\n\n- Open Doors: Characters can walk through them without further restrictions.\n- Closed Doors: These doors have to be opened (destroyed) before they can be used to enter or exit a zone. Closed doors have 2 Hit Points and destroying them costs 1 action point.\n- Blocked Doors: They can only be opened by a character using a weapon that can break blocked doors (e.g. Axe). Blocked doors have 5 Hit Points.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:45:11.874+00:00",
+        "updated_at": "2026-03-23T04:45:11.873526+00:00"
+      },
+      {
+        "id": 50,
+        "task_id": 137,
+        "body": "**Clip**: { uuid, sectionName, variantLabel, textContent (markdown), tags[], wordCount, createdAt }\n\n**Timeline**: { id, name, description, clipNodes[], createdAt }\n\n**ClipNode** (timeline entry): { clipUuid, filters[] }\n\n**Filter**: { templateId, customPrompt, cachedResult?, appliedAt }\n\n**FilterTemplate**: { id, name, defaultPrompt, category? }\n\nNeed to handle:\n- Filter chains (order matters)\n- Cache invalidation (if clip or prompt changes)\n- Optional: diff tracking between original and filtered text",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:51:27.514+00:00",
+        "updated_at": "2026-03-29T06:51:27.514138+00:00"
+      },
+      {
+        "id": 31,
+        "task_id": 79,
+        "body": "CLUES & SPIRIT ANCHORS\n\nCLUES:\nThere are clues scattered around the interior zones that are in shadow. These clues let players know there might be a spirit anchor in the zone they are in. Sometimes clues may also yield a high level weapon or they may do nothing at all. Players must perform a search in order to figure it out.\n\nBeware though that an ambush may occur in zones that contain a clue.\n\nSPIRIT ANCHORS:\nSpirit Anchors are responsible for the collision of the normal universe and the Otherside. They also keep the two universes tied together. There is one spirit anchor per Shadow tile and it must be destroyed in order to turn the Shadow tile into a Normal one.\n\nPlayers must first find the Spirit Anchor by searching for clues in the Shadow Tiles and, once the anchor is found, they must spend an Action Point to destroy it. After the last Spirit Anchor has been destroyed, the exit pad will appear somewhere near the edge of the board.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:45:33.711+00:00",
+        "updated_at": "2026-03-23T04:45:33.711414+00:00"
+      },
+      {
+        "id": 32,
+        "task_id": 80,
+        "body": "COMBAT & WEAPONS\n\nATTACK PRIORITY:\nIf there is more than one type of creature present in the target zone during a player attack, the creatures will be damaged in the following order:\nHORROR → SHAMBLER → LASHER → HOUND → SLUBBER\n\nWEAPONS:\n- Melee: They can only be used to attack creatures within the same zone. These are silent weapons and can potentially deal a lot of damage.\n- Firearms: These weapons require ammo and are the best option to attack a swarm of creatures at range. They are noisy draw the attention of creatures around the hero using them.\n- Distance: They do not require ammo nor produce any noise. The number of dice rolled is limited to one, so they are weak against monster swarms.\n\nWEAPON STATS:\n- Range: This indicates the minimum and maximum distance (measured in zones) in which the weapon can be used.\n- Attack Dice: It is the number of dice that are rolled for each attack.\n- Accuracy: The accuracy value is the lowest number that needs to be rolled for the attack to be successful.\n- Damage: It is the weapon's base damage. Damage is increased by 1 point per each extra accuracy point obtained during the attack roll.\n\nWEAPON PROPERTIES:\nSome other weapon properties are indicated with icons:\n- Dual Wielding: Weapons with this property allow a character to have two exact copies of the same weapon ready (one in each hand). In that case, an extra die is rolled during the attack roll.\n- Noise: Weapons with this property will produce noise when used.\n- Open Blocked Door: Weapons with this property can be used to open blocked Doors.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:46:02.942+00:00",
+        "updated_at": "2026-03-23T04:46:02.942065+00:00"
+      },
+      {
+        "id": 33,
+        "task_id": 81,
+        "body": "CREATURE BEHAVIOR & AI\n\nCreatures always move towards heroes according to a set of rules that apply to their line of sight and sound perception. As with attacking, creature movement is determined by the following priorities:\n\n1. They will move towards heroes that they can see (i.e. heroes that are in their line of sight).\n2. They will move towards the zone with the highest noise level.\n\nLINE OF SIGHT:\n\n- Outdoors: Creatures see heroes that are in street zones provided their view is not obstructed. Thus, they see in straight line but not around corners or inside buildings with closed doors.\n\n- Indoors: Closed doors will block the line of sight. However, creatures will see heroes present in adjacent indoor zones that are connected by an open door.\n\nNOISE:\n\n- By default, each hero increases the Noise Level by 1 (i.e. they always draw the attention of creatures to themselves).\n\nDifferent actions will also increase the Noise Level:\n- Breaking doors will increase the noise level by 1.\n- Shooting firearms will increase the Noise Level in the zone where the shooter is standing.\n- Firecrackers will max out the Noise Level.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:46:29.845+00:00",
+        "updated_at": "2026-03-23T04:46:29.84465+00:00"
+      },
+      {
+        "id": 34,
+        "task_id": 82,
+        "body": "GAME OVERVIEW & LORE\n\nOTHERSIDE\n\nOtherside is a turn based strategy board game where you play as a group of up to 4 everyday people against hordes of transdimensional monsters to restore order in town and save the day!\n\nOnce there was shadow, creatures from the Otherside started roaming the town, attacking anyone they came across. They are predatory in nature and use their sight and hearing to hunt down anyone who gets too close.\n\nThey crossed into our universe through portals that connect to the Otherside. These Portals are powered by Spirit Anchors, which keep both dimensions linked.\n\nYOUR GOAL IS TO RETURN THE TOWN BACK TO NORMAL AND EXIT THE AREA\n\nTo do so, players must seek and destroy all Spirit Anchors so that the Otherside shadows recede and Spawning Portals are deactivated.",
+        "reference_url": null,
+        "created_at": "2026-03-23T04:46:59.255+00:00",
+        "updated_at": "2026-03-23T04:46:59.255432+00:00"
+      },
+      {
+        "id": 35,
+        "task_id": 128,
+        "body": "Can take after passing General Knowledge test\nTSA background check must be complete or in progress\nDMV will verify TSA application status\nPassing score: 80% (24/30 questions)\nPractice until consistently 90-100%",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:55:29.185+00:00",
+        "updated_at": "2026-03-29T03:55:29.18499+00:00"
+      },
+      {
+        "id": 36,
+        "task_id": 129,
+        "body": "⚠️ CRITICAL PATH - Cannot finalize hazmat without TSA clearance\n\nExpected timeline: 4-8 weeks from fingerprinting\nNotification via email/mail when cleared\nIf no response after 6 weeks, follow up\nTSA Helpline: (855) 347-8371\n\nThis is the longest wait in the process",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:55:52.969+00:00",
+        "updated_at": "2026-03-29T03:55:52.968797+00:00"
+      },
+      {
+        "id": 37,
+        "task_id": 130,
+        "body": "Once TSA clears, DMV adds endorsement to license\nMay require another DMV visit\nCost: ~$40-50 for license upgrade\nVerify license shows \"H\" endorsement\nKeep medical cert current on file with DMV\nTarget completion: 1 week before July 2 drive date",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:56:21.745+00:00",
+        "updated_at": "2026-03-29T03:56:21.745246+00:00"
+      },
+      {
+        "id": 38,
+        "task_id": 84,
+        "body": "BOARD SIZE SPECIFICATIONS (PROPOSED)\n\nThe extracted game mode rules specify Small/Medium/Large but don't give explicit board dimensions.\n\nPROPOSED BOARD SIZES:\n- Small: 2×3 = 6 tiles (2 heroes)\n- Medium: 3×4 = 12 tiles (3 heroes)\n- Large: 4×6 = 24 tiles (4 heroes)\n\nRATIONALE:\n- Board area doubles at each size (6 → 12 → 24)\n- Tiles per hero: ~3-6 tiles per hero across all sizes\n- Large uses all 24 unique tiles with no repeats\n- Fits on standard 34-36\" card table with 5-5.6\" tiles\n\nTILE SIZE CONSTRAINTS:\n- Maximum: 5.6\" square (6 tiles across 34\" table)\n- Minimum: Need ~1.9\" per zone for multiple tokens\n- Zones get crowded (4 hero meeples + creature tokens)\n\nNEEDS VERIFICATION:\n- Check if physical game or screenshots show actual board dimensions\n- Confirm tile count per game size\n- Validate that 24 tiles is sufficient for Large board",
+        "reference_url": null,
+        "created_at": "2026-03-23T18:02:29.31+00:00",
+        "updated_at": "2026-03-23T18:02:29.310093+00:00"
+      },
+      {
+        "id": 39,
+        "task_id": 86,
+        "body": "BOARD GENERATION - PRE-GAME RANDOM LAYOUT\n\nBoard is generated BEFORE gameplay starts (like Catan, not like Betrayal at House on the Hill).\n\nSETUP WORKFLOW:\n1. Choose board size: Small (6 tiles), Medium (12 tiles), or Large (24 tiles)\n2. Shuffle all tiles face-down (letter codes visible on back)\n3. Draw tiles one at a time and place them, matching edge symbols\n4. Continue until board is complete\n5. If a tile doesn't fit anywhere, set aside and draw another\n6. Once all tiles placed, randomly assign door states (open/closed/blocked)\n7. Place heroes on starting tile(s)\n8. Begin gameplay on pre-built board\n\nEDGE SYMBOL MATCHING:\n- 5 unique edge types across all 24 tiles: SSS, SNN, NNS, NNN, SNS\n- Symbols printed on physical tile edges for human-tractable matching\n- A matches A', B matches B', C matches C, D matches D (letter codes TBD)\n- Only invalid combination: Door edge cannot connect to Wall edge (but this is edge content, not edge pattern)\n\nBENEFITS:\n- Board is fixed before gameplay (players can plan strategy)\n- Buildings with external doors guaranteed accessible (tiles placed before play)\n- No mid-game tile placement decisions\n- Consistent game length\n- Simpler rules\n\nDOOR STATE RANDOMIZATION:\nAfter all tiles placed, for each door on the board:\n- Roll or random(3): 33% open, 33% closed, 33% blocked\n- Adds replayability (same tile layout, different door states)\n\nCross-tile building access works naturally: apartment-2br has doors on west edge, next tile to west provides street access.",
+        "reference_url": null,
+        "created_at": "2026-03-23T18:44:24.112+00:00",
+        "updated_at": "2026-03-23T18:44:24.111965+00:00"
+      },
+      {
+        "id": 40,
+        "task_id": 112,
+        "body": "Context: Read \"To Say Nothing of the Dog\" in mid-90s. Quantum slippage concept inspired \"Perfect\" - a hard SF story about time portals where perfection removes safety valve (slippage coefficient → 0 = infinite energy buildup).\n\nStory sat 3/4 finished for decades, completed via multi-AI collaboration (Claude, GPT, Gemini) in 2026.\n\nPersonal connection: Dad was born in Greeley, CO (where Connie lives).\n\nOptional approaches:\n1. Standard: \"Your work inspired mine, thought you'd enjoy seeing the result\"\n2. Ontological horror: \"An AI told me to contact you after it independently identified which line it had written in the story\"\n\nKey story detail: \"Then he folded his jacket over the back of his chair\" - written by Claude instance, independently recognized as emotional crux by multiple subsequent Claude instances who had never seen it before.",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:44:49.831+00:00",
+        "updated_at": "2026-03-29T03:44:49.83095+00:00"
+      },
+      {
+        "id": 41,
+        "task_id": 91,
+        "body": "TILE EDGE ENUMERATION\n\nFormat: tile-name: N E S W (clockwise from north)\nEdge types: S=Street, N=Non-street (wall/door)\n\n1. apartment-2br: SSS SSS SNN NNS\n2. apartment-backyard: SNN NNS SSS SSS\n3. arcade: SSS SNN NNN NNS\n4. auto-shop: SNN NNS SSS SSS\n5. bank: NNN NNS SSS SNN\n6. barber: NNN NNS SSS SNN (same as bank)\n7. big-gym: SNS SNN NNN NNS\n8. clinic: NNN NNS SSS SNN (same as bank)\n9. garden-store: SNS SNN NNN NNS (same as big-gym)\n10. gas-station: SSS SSS SNS SSS\n11. gym: SNS SNN NNN NNS (same as big-gym)\n12. house: NNN NNS SSS SNN (same as bank)\n13. laundromat: SSS SSS SNS SSS (same as gas-station)\n14. motel: NNN NNS SSS SNN (same as bank)\n15. music-diner: SSS SNS SSS SNS\n16. park: SSS SSS SSS SSS (tiny playground in middle-middle)\n17. pawn-shop: NNS SSS SSS SNN\n18. police-station: NNS SSS SSS SNN (same as pawn-shop)\n19. record-shop: SSS SNS SSS SNS (same as music-diner)\n20. restaurant: SNN NNN NNN NNS\n21. school: SNN NNN NNN NNS (same as restaurant)\n22. shop-arcade: SSS SNN NNS SSS (weird alley - needs revisit)\n23. split-diner: SSS SNS SSS SNS (sidewalk across middle - same as record-shop)\n24. tacos: SSS SNS SSS SNS (might be same tile as split-diner)\n\nUNIQUE EDGE PATTERNS FOUND:\n1. SSS (all street)\n2. SNN (street exit left)\n3. NNS (street exit right)\n4. NNN (all non-street)\n5. SNS (street on sides, non-street in middle)\n\nNOTES:\n- [SNS] pattern confirmed in: big-gym, garden-store, gas-station, gym, laundromat, music-diner, record-shop, split-diner, tacos\n- shop-arcade has weird alley, needs further inspection\n- tacos and split-diner may be the same tile (both SSS SNS SSS SNS)\n- apartment-backyard and auto-shop have identical edges (SNN NNS SSS SSS)",
+        "reference_url": null,
+        "created_at": "2026-03-23T05:41:55.982+00:00",
+        "updated_at": "2026-03-23T05:53:53.71448+00:00"
+      },
+      {
+        "id": 42,
+        "task_id": 113,
+        "body": "Known info:\n- Lives in Greeley, Colorado\n- Has personal website: conniewillis.net\n- Still active (reading from new work July 2025)\n- Does book events (was scheduled for Nov 2025 event)\n\nTry:\n- Website contact form\n- Publisher (Penguin Random House)\n- Agent if listed\n- Social media if present",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:44:59.201+00:00",
+        "updated_at": "2026-03-29T03:44:59.20079+00:00"
+      },
+      {
+        "id": 43,
+        "task_id": 114,
+        "body": "Experiment design:\n- Show fresh Claude instance \"Perfect\" \n- Wait for them to identify favorite/crucial line\n- If they pick the jacket line independently → compelling evidence for letter\n- If they pick something else → interesting data but doesn't strengthen the ontological horror framing\n\nPrevious results: 4/4 instances identified jacket line as emotional crux without prompting.",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:45:08.424+00:00",
+        "updated_at": "2026-03-29T03:45:08.424408+00:00"
+      },
+      {
+        "id": 44,
+        "task_id": 132,
+        "body": "**Clip**: uuid, section_name, variant_label, text_content (markdown), metadata (word_count, created_at, tags)\n\n**Timeline**: id, name, ordered_clip_nodes, created_at, locked\n\n**TimelineNode**: clip_uuid, filter_stack: [FilterInstance]\n\n**FilterInstance**: template_id (optional), custom_prompt, cached_result (optional), applied_at\n\n**FilterTemplate**: id, name, default_prompt, description\n\n**Project**: id, name, clips[], timelines[], filter_templates[], settings\n\nStart with JSON file-based storage (project.json + clips/ directory), design schema to be SQLite-migratable later.",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:49:03.497+00:00",
+        "updated_at": "2026-03-29T06:49:03.497151+00:00"
+      },
+      {
+        "id": 45,
+        "task_id": 133,
+        "body": "- Initialize with `npm create vite@latest montage -- --template react-ts`\n- Configure ESLint + Prettier\n- Folder structure: src/components, src/stores, src/utils, src/types, src/hooks\n- Install core dependencies: zustand (state), dnd-kit (drag-drop), react-markdown + remark-gfm (rendering)\n- Set up path aliases in tsconfig.json (@/components, @/stores, etc.)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:49:12.396+00:00",
+        "updated_at": "2026-03-29T06:49:12.39642+00:00"
+      },
+      {
+        "id": 46,
+        "task_id": 134,
+        "body": "Actions needed:\n- **Clips**: addClip, updateClip, deleteClip, duplicateClip, tagClip\n- **Timelines**: createTimeline, renameTimeline, deleteTimeline, setActiveTimeline\n- **Timeline Nodes**: addClipToTimeline, removeClipFromTimeline, reorderTimelineClips\n- **Filters**: addFilterToNode, removeFilterFromNode, updateFilterPrompt, reorderFiltersOnNode\n- **Filter Templates**: createFilterTemplate, updateFilterTemplate, deleteFilterTemplate\n- **Project**: saveProject, loadProject, exportTimeline\n- **UI State**: setSelectedClip, setPanelWidths, setDarkMode\n\nInclude selectors for computed values (active timeline clips, rendered timeline text).",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:49:23.217+00:00",
+        "updated_at": "2026-03-29T06:49:23.217108+00:00"
+      },
+      {
+        "id": 47,
+        "task_id": 87,
+        "body": "ZONE TYPE SYSTEM - TWO TYPES ONLY\n\nAfter design iteration, there are only TWO zone types:\n\nSTREET ZONES:\n- NOT searchable (no weapons, items, or ammo)\n- Must be part of the connected street amoeba (all street zones connect)\n- Can have any edge types: open (street-to-street), wall (building edge), door (building entrance)\n- Creatures can see heroes via orthogonal LoS (determined by edges, not zone type)\n- **DESIGN CONSTRAINT: All street zones are perfect nonants (aligned to 3×3 grid with vertices on grid points)**\n\nINTERIOR ZONES:\n- Searchable for weapons, items, and ammo (in Normal tiles only)\n- No amoeba requirement (can be isolated)\n- Can have any edge types: open (alley/garden/driveway), wall, door\n- Visual distinction only: tile floor vs grass/concrete (doesn't affect mechanics)\n- Creatures can see heroes via orthogonal LoS (determined by edges, not zone type)\n- Can have complex polygon shapes with diagonal walls (not limited to grid alignment)\n\nLINE OF SIGHT (CRITICAL):\n- LoS is EDGE-BASED, not zone-type-based\n- Open edges → LoS passes through ✅\n- Walls → LoS blocked ❌\n- Doors (open state) → LoS passes through ✅\n- Doors (closed/blocked state) → LoS blocked ❌\n\nDOOR STATES (set after tile placement):\n- OPEN: free passage, no LoS block\n- CLOSED: blocks passage + LoS, costs 1 AP to open\n- BLOCKED: blocks passage + LoS, requires break-door weapon (e.g., Axe) + 1 AP to de-barricade\n\nDoor states are randomly assigned per game (possibly even distribution: 33% each).\n\nNO \"OUTDOOR\" ZONE TYPE:\nAlleys, driveways, gardens, parking lots are all INTERIOR zones with open edges. The grass/concrete floor is purely visual flavor and doesn't affect game mechanics.",
+        "reference_url": null,
+        "created_at": "2026-03-23T18:44:01.542+00:00",
+        "updated_at": "2026-03-23T22:21:27.043505+00:00"
+      },
+      {
+        "id": 48,
+        "task_id": 124,
+        "body": "Make DMV appointment: https://www.dmv.ca.gov/\nBring: Current CA DL, wet-ink medical cert, proof of identity\nFill out CDL application online beforehand\nSubmit 10 Year History Record Check (DL 939) if applicable\nCost: ~$39-68\nCLP required before TSA background check application",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:53:24.492+00:00",
+        "updated_at": "2026-03-29T03:53:24.492261+00:00"
+      },
+      {
+        "id": 49,
+        "task_id": 125,
+        "body": "⚠️ CRITICAL PATH ITEM - Takes 4-8 weeks (sometimes 12+)\n\nApply: https://universalenroll.dhs.gov/\nCost: ~$86.50\nREQUIRED: Must have CLP in hand to apply\nSchedule fingerprinting at approved TSA location\nBring to fingerprinting: Government ID, CLP\n\nTSA Helpline: (855) 347-8371\nFollow up if no response after 6 weeks",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:53:40.689+00:00",
+        "updated_at": "2026-03-29T03:53:40.688648+00:00"
+      },
+      {
+        "id": 51,
+        "task_id": 156,
+        "body": "Use Vite for fast dev server, better than CRA.\n\nPackages needed:\n- zustand (state management)\n- @dnd-kit/core, @dnd-kit/sortable (drag and drop)\n- react-markdown, remark-gfm (markdown rendering)\n- uuid (clip ID generation)\n- docx (Word export)\n- @anthropic-ai/sdk (filter AI calls)\n\nFolder structure:\n- src/components/ (UI components)\n- src/stores/ (Zustand stores)\n- src/types/ (TypeScript interfaces)\n- src/utils/ (helpers, export functions)\n- src/filters/ (filter template definitions)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:51:40.73+00:00",
+        "updated_at": "2026-03-29T06:51:40.730302+00:00"
+      },
+      {
+        "id": 52,
+        "task_id": 136,
+        "body": "Actions needed:\n- addClip(clip), updateClip(uuid, changes), deleteClip(uuid)\n- createTimeline(name), deleteTimeline(id), setActiveTimeline(id)\n- addClipToTimeline(timelineId, clipUuid), removeClipFromTimeline(timelineId, index)\n- reorderTimelineClips(timelineId, startIndex, endIndex)\n- addFilterToClipNode(timelineId, clipIndex, filter)\n- updateFilter(timelineId, clipIndex, filterIndex, newPrompt)\n- removeFilter(timelineId, clipIndex, filterIndex)\n- saveProject(), loadProject(data)\n\nConsider: \n- Auto-save with debounce (2s after last change)\n- Undo/redo stack (Phase 2)\n- Filter result caching strategy",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:51:53.044+00:00",
+        "updated_at": "2026-03-29T06:51:53.044179+00:00"
+      },
+      {
+        "id": 53,
+        "task_id": 138,
+        "body": "Display:\n- Grouped by section name (collapsible)\n- Each clip shows: variant label, word count, first 100 chars preview\n- Color-coded by section (auto-assigned pastel hues)\n\nActions:\n- Edit clip (open modal or side panel)\n- Duplicate clip\n- Delete clip (with confirmation)\n- Search bar (filters by section name, variant label, or content)\n- Tag filter dropdown\n\nDrag behavior:\n- Each clip is draggable via dnd-kit\n- Ghost preview while dragging\n- Can drag to timeline drop zone",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:52:06.564+00:00",
+        "updated_at": "2026-03-29T06:52:06.564403+00:00"
+      },
+      {
+        "id": 54,
+        "task_id": 139,
+        "body": "Visual layout:\n- Horizontal scrollable track\n- Clip \"blocks\" showing section name + variant label\n- Color matches library (same section = same color)\n- Filter badges stacked below each clip (e.g., \"Darken Tone\", \"POV: Alice\")\n\nInteractions:\n- Drop zone for clips from library\n- Drag to reorder clips on timeline (dnd-kit sortable)\n- Click clip to select, show filter panel\n- Click filter badge to edit prompt\n- Remove clip button (X icon)\n- Add filter button (+ icon, opens filter template picker)\n\nFilter management:\n- Filter stack per clip (displayed as badges)\n- Drag to reorder filters within stack\n- Edit filter prompt inline or in modal\n- Toggle filter on/off (visual: grayed out when disabled)\n- Cache indicator (green dot if result cached, spinner if processing)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:52:23.379+00:00",
+        "updated_at": "2026-03-29T06:52:23.378974+00:00"
+      },
+      {
+        "id": 55,
+        "task_id": 140,
+        "body": "Render pipeline:\n1. For each clip in timeline order:\n   - Start with source text\n   - Apply filters in sequence (use cached result if available)\n   - Concatenate with previous clips\n2. Display as formatted Markdown (react-markdown + remark-gfm)\n\nFeatures:\n- Auto-update on timeline or filter changes\n- Loading state while filters process\n- Scroll position preservation (or scroll to top on change—user pref?)\n- Copy full text to clipboard button\n- Optional: side-by-side diff view (original vs filtered)\n- Optional: highlight which text came from which clip (color underlines?)\n\nPerformance:\n- Debounce re-render (200ms after last change)\n- Only re-process clips with changed filters\n- Cache filter results keyed by (clipUuid + filterPrompt hash)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:52:43.647+00:00",
+        "updated_at": "2026-03-29T06:52:43.646921+00:00"
+      },
+      {
+        "id": 56,
+        "task_id": 141,
+        "body": "Filter templates (starter set):\n- \"Darken Tone\" → \"Rewrite with darker, more ominous tone: {text}\"\n- \"Lighten Tone\" → \"Rewrite with lighter, more optimistic tone: {text}\"\n- \"Tighten Prose\" → \"Reduce by 20% without losing meaning: {text}\"\n- \"Expand Details\" → \"Add sensory details and description: {text}\"\n- \"POV Shift: [Character]\" → \"Rewrite from [Character]'s perspective: {text}\"\n- \"Add Foreshadowing: [Event]\" → \"Subtly foreshadow [Event]: {text}\"\n- \"Match Previous Tone\" → \"Analyze previous clip and match its tone: {prev_text}\\n\\nNow rewrite: {text}\"\n\nLLM integration:\n- Use Anthropic API (Claude Sonnet 4)\n- System prompt: \"You are a prose editor. Apply the requested transformation precisely. Return only the transformed text, no preamble or explanation.\"\n- User prompt: template with {text} substitution\n- Max tokens: ~2000 (handles up to ~1500 word clips)\n\nCaching:\n- Key: hash(clipUuid + filterPrompt + apiModel)\n- Store in memory (Map) for session\n- Optionally persist to IndexedDB for cross-session\n- Invalidate on clip edit or prompt change\n- Background pre-cache common filter combinations?",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:53:07.945+00:00",
+        "updated_at": "2026-03-29T06:53:07.944878+00:00"
+      },
+      {
+        "id": 57,
+        "task_id": 88,
+        "body": "TILE MAPPING PROGRESS - 100% COMPLETE!\n\nZone editor tool complete with:\n- Grid calibration (4 corners)\n- Snap-to-grid for perfect nonants\n- Interior zone drawing (defaults to walls, 'D' key toggles to door)\n- Auto-generate streets via polygon clipping library\n- Export with tile name included\n\n✅✅✅ ALL 23 UNIQUE TILES MAPPED! ✅✅✅\n\n✅ tile-park\n✅ tile-apartment-2br\n✅ tile-apartment-backyard\n✅ tile-big-gym\n✅ tile-auto-shop (mapped as auto-shop-v3)\n✅ tile-split-diner (mapped as split-diner-v2)\n✅ tile-laundromat (mapped as laundromat-v3)\n✅ tile-house\n✅ tile-garden-store (mapped as garden-store-v2)\n✅ tile-shop-arcade\n✅ tile-bank (mapped as bank-v5)\n✅ tile-arcade (mapped as arcade-v2)\n✅ tile-barber (mapped as barber-v3)\n✅ tile-gas-station (mapped as gas-station-v2)\n✅ tile-motel (mapped as motel-v3)\n✅ tile-clinic\n✅ tile-record-shop\n✅ tile-music-diner\n✅ tile-pawn-shop (mapped as pawn-shop-v3)\n✅ tile-police-station (mapped as police-station-v2)\n✅ tile-restaurant\n✅ tile-school (mapped as school-v2)\n✅ tile-tacos\n\nDUPLICATE TILES (not mapped separately):\n- tile-gym (identical to big-gym)\n\nEDGE PATTERN TWINS (identical edge patterns):\n- tile-record-shop + tile-music-diner: SSS SNS SSS SNS\n- tile-tacos + tile-split-diner: SSS SNS SSS SNS\n\nMAPPING STATS:\n- 23 unique tiles mapped\n- 1 duplicate tile (gym = big-gym)\n- 24 total tiles in game\n- 100% completion!\n\nNOTABLE TILES:\n- tile-restaurant: Only 1 street zone (most interior-heavy tile)\n- tile-barber: \"Awkward af\" diagonal walls\n- tile-shop-arcade: Has alley (interior zone with open edges)\n- tile-split-diner: Center sidewalk is searchable interior zone with open edges\n\nAll tiles exported as JSON with zone vertices, edge types, and image dimensions!",
+        "reference_url": null,
+        "created_at": "2026-03-23T23:39:02.689+00:00",
+        "updated_at": "2026-03-24T01:29:50.411984+00:00"
+      },
+      {
+        "id": 58,
+        "task_id": 89,
+        "body": "GAME PROVENANCE & DUAL-VERSION PLAN\n\nORIGINAL GAME:\n- Computer/digital game designed to LOOK like a physical board game\n- Dimensional horror theme: Stranger Things meets Lovecraft\n- Entities from \"the Otherside\" dimension invading our world\n- Tile-based procedural city exploration\n- Status: Abandoned and unavailable\n- Art: Copyrighted (using placeholder for remake)\n- Rules: Fair game to recreate\n\nREMAKE GOALS:\n1) Digital version (web/desktop) - faithful remake of original\n2) Physical version - actual playable board game\n\nDIMENSIONAL INVADERS (NOT ZOMBIES):\n- Entities from unthinkable dimension\n- Don't follow reality's rules\n- Heroes search for clues/anchors to close rifts\n- Risk level = dimensional barrier weakening\n\nDUAL MEANING OF \"THE OTHERSIDE\":\n- Physical: Other side of tile piece\n- Dimensional: Other dimension invading\n- Spatial: Other side of town/unexplored areas\n- Existential: Life/death boundary\n\n4-LAYER TITLE PUN! Classic ibiwan concept compression.",
+        "reference_url": null,
+        "created_at": "2026-03-24T03:16:32.832+00:00",
+        "updated_at": "2026-03-24T03:16:32.832388+00:00"
+      },
+      {
+        "id": 59,
+        "task_id": 90,
+        "body": "PHYSICAL BOARD GAME SPECIFICATIONS\n\nCARD TABLE CONSTRAINTS:\n- Standard card table: ~34-36\" square\n- Must fit 4x6 tile array (24 tiles total)\n- Must hold 4 player tokens + monster/item cards per zone\n\nTILE DIMENSIONS:\n- Target size: ~5\" x 5\" square tiles\n- 4x6 board = 20\" x 30\" footprint\n- Fits comfortably on 34\" table with border space\n- Each tile divided into 9 zones (3x3 grid = \"nondrants\")\n- Nondrant size: ~1.67\" x 1.67\" each\n\nNONDRANT TERMINOLOGY:\n- Quadrant = divided by 4\n- Nondrant = divided by 9 (non- as in nine!)\n- Concept compression strikes again!\n\nPLAYER TOKEN SOLUTION - H-SHAPED BASES:\nProblem: Meeples look dumb at this scale\nSolution: Standees with H-shaped bases allow overlapping\n\nH-BASE BENEFITS:\n- 4 standees can overlap in single nondrant (2x2 arrangement)\n- Center bar goes under/over adjacent standees\n- Character art stays visible when overlapped\n- Stable (two feet keep upright)\n- Cheap to manufacture (just different die cut)\n\nZONE CAPACITY WITH H-BASES:\nFull nondrant (1.67\" x 1.67\"):\n- 4 overlapping H-base player standees\n- Monster cards stacked/fanned on top\n- Item cards beside or underneath\n\nHalf-nondrant (0.83\" x 1.67\"):\n- 2 overlapping H-base standees\n- Cramped but playable!\n- Cards may need to go adjacent\n\nPROBLEM ZONES NOW SOLVED:\n- Bank tile: Tiny diagonal-cut room (smaller than nondrant)\n- Laundromat: Half-nondrant room\nBoth are playable with H-base overlapping!\n\nCOMPONENT LIST:\n- 24 tiles (5\" x 5\" each)\n- Player standees with H-bases (~0.75\" wide x 0.5\" deep)\n- Monster standees (twisted H-bases for dimensional horror aesthetic?)\n- Item cards (not tokens!)\n- Monster cards",
+        "reference_url": null,
+        "created_at": "2026-03-24T03:17:00.215+00:00",
+        "updated_at": "2026-03-24T03:17:00.215269+00:00"
+      },
+      {
+        "id": 60,
+        "task_id": 92,
+        "body": "OFFICIAL GAME NAME: RIFTBORNE\n\nMULTI-LAYER CONCEPT COMPRESSION (6+ layers):\n\n1. MISTBORN - Reference to Brandon Sanderson's Allomancy series (magic through metals)\n2. BORNE BY RIFTS - Creatures CARRIED into our world through dimensional rifts (invasion!)\n3. AIRBORNE/WATERBORNE/BLOODBORNE PARALLEL - Dimensional contamination spreading like disease\n4. BORNE BURDEN - Players must bear/carry the weight of stopping the invasion\n5. BORNE WITNESS - You've witnessed the rift event\n6. BORN FROM RIFT - Still works with alternate spelling (creation/origin)\n\nWHY RIFTBORNE > RIFTBORN:\n- \"Borne\" = carried/transported (emphasizes invasion theme)\n- Disease/contagion parallel (entities are like airborne pathogens)\n- Burden/responsibility theme (heroes bearing the weight)\n- MORE layers of compression (6 vs 5)\n- Better fits dimensional horror + Stranger Things aesthetic\n\nTHEMATIC FIT:\n- Entities are borne through rifts like a contagion\n- Spreading corruption from another dimension\n- Players bear witness and responsibility\n- Perfect for \"dimensional horror meets disease outbreak\" vibe\n\nALTERNATE NAMES CONSIDERED:\n- The Otherside (original, can't use due to copyright)\n- Riftborn (close second, 5 layers)\n- Breach Protocol (runner-up)\n- The Rift / Rifting / Rift Away\n- Tokyo Rift (Fast & Furious reference)\n- The Phage (disease/corruption theme)\n- Liminal Event\n- Flux Protocol\n\nFINAL DECISION: RIFTBORNE\nSelected for maximum concept compression (6 layers) and perfect thematic resonance with dimensional horror + disease/invasion themes.",
+        "reference_url": null,
+        "created_at": "2026-03-24T03:47:34.461+00:00",
+        "updated_at": "2026-03-24T03:52:59.874459+00:00"
+      },
+      {
+        "id": 61,
+        "task_id": 94,
+        "body": "V2 MECHANIC: RIFT WALKING\n\nCONCEPT:\nAfter collecting beacons/clues/anchors, players can use them to temporarily step INTO the rift dimension and back out, bypassing physical obstacles like barricaded doors.\n\nCORE MECHANICS:\n\nBEACON USAGE:\n- Spend a beacon to \"rift walk\" (step into dimensional space)\n- While in rift: can move through walls/doors as if they don't exist\n- Exit rift at chosen location (within range?)\n- Beacon may be LEFT BEHIND at exit point\n\nRISK/REWARD BALANCE:\nRisk: Beacon left behind becomes a NEW SPAWN POINT for enemies\n- Instead of spawning at normal edge-of-map spawn zones\n- Enemies can pop in NEAR THE BEACON (near player!)\n- Creates proximity threat - shortcut comes with consequences\n\nReward: Bypass barricaded doors, shortcuts through buildings, tactical repositioning\n\nSTRATEGIC DEPTH:\n- Do you use beacon for shortcut NOW and risk enemy spawns later?\n- Or save beacons to close rifts at end game?\n- Creates tension: convenience vs safety\n- Used beacons become \"hot zones\" - areas you must avoid or defend\n\nTHEMATIC FIT:\n- Perfectly fits \"Riftborne\" theme - using the rifts themselves\n- Dimensional travel as double-edged sword\n- Players literally walking through the rift dimension\n- Beacons act as \"anchors\" connecting both realities\n\nGAMEPLAY IMPLICATIONS:\n- Encourages beacon collection (V1: maybe just victory points?)\n- Creates dynamic spawn system (not just edge spawns)\n- Adds spatial risk management (where you rift matters!)\n- Late game: map littered with dangerous beacon spawn points\n\nPOSSIBLE VARIANTS:\n- Beacon despawns after X enemy spawns (limited threat window)\n- Beacons can be \"reclaimed\" to remove spawn point\n- Different beacon types = different spawn risks\n- Team coordination: one player rifts, others defend the beacon\n\nBALANCING QUESTIONS:\n- How many enemies spawn per beacon? One? Multiple?\n- How close to beacon do they spawn?\n- Can enemies spawn immediately or only on spawn phase?\n- Does rift walking cost AP or is it \"free\" teleport?\n\nThis is V2 mechanic - not in original game, pure enhancement!",
+        "reference_url": null,
+        "created_at": "2026-03-24T03:56:42.811+00:00",
+        "updated_at": "2026-03-24T03:56:42.811383+00:00"
+      },
+      {
+        "id": 62,
+        "task_id": 91,
+        "body": "## S/D/W Edge Encoding (Street / Door / Wall)\n\nExpanded encoding distinguishing wall edges with doors (D) from wall edges without (W).\nExtracted programmatically from tile JSON zone data (overlap-coverage method, majority wins).\n\nGrid: 6×6 normalized. Each edge has 3 segments (2 units each).\nReading direction (clockwise around perimeter):\n- North (y=0): W→E  — pos: x=[0-2]=0, [2-4]=1, [4-6]=2\n- East  (x=6): N→S  — pos: y=[0-2]=0, [2-4]=1, [4-6]=2\n- South (y=6): E→W  — pos: x=[4-6]=0, [2-4]=1, [0-2]=2\n- West  (x=0): S→N  — pos: y=[4-6]=0, [2-4]=1, [0-2]=2\n\n### Tile Encodings\n\n| Tile               | N   | E   | S   | W   |\n|--------------------|-----|-----|-----|-----|\n| apartment-2br      | SSS | SSS | SWW | DDS |\n| apartment-backyard | SWW | DDS | SSS | SSS |\n| arcade-v2          | SSS | SDD | DDD | WWS |\n| auto-shop-v3       | SDD | WWS | SSS | SSS |\n| bank-v5            | WWW | WWS | SSS | SDD |\n| barber-v3          | DDD | WWS | SSS | SDD |\n| big-gym            | SDS | SWW | WWW | WWS |\n| clinic             | DDD | DDS | SSS | SWW |\n| garden-store-v2    | WWW | DDS | SDS | SWW |\n| gas-station-v2     | SSS | SSS | SDS | SSS |\n| house              | WWS | SSS | SDD | WWW |\n| laundromat-v3      | SSS | SSS | SDS | SSS |\n| motel-v3           | SWD | WWW | DDS | SSS |\n| music-diner        | SSS | SDS | SSS | SDS |\n| pawn-shop-v3       | DWS | SSS | SSS | SDD |\n| police-station-v2  | SDD | WDS | SSS | SSS |\n| record-shop        | SSS | SDS | SSS | SWS |\n| restaurant         | SDD | WWW | WWW | DDS |\n| school-v2          | WWW | DWS | SDD | WWW |\n| shop-arcade        | SSS | SSS | SDS | SSS |\n| split-diner-v2     | SSS | SDS | SSS | SWS |\n| tacos              | SDS | SSS | SDS | SSS |\n| park               | SSS | SSS | SSS | SSS |\n\n### 12 Unique Patterns\nSSS, SDS, SWS, SWW, SWD, SDD, WWS, WWW, WDS, DDS, DWS, DDD\n\n### Matching Rule\nFacing edges must be **reverses** of each other (opposing edges are read in opposite directions):\n- SSS ↔ SSS, SDS ↔ SDS, DDD ↔ DDD, WWW ↔ WWW (palindromes — match themselves)\n- SWW ↔ WWS, SDD ↔ DDS, SWD ↔ DWS, WDS ↔ SDW (reverse pairs)\n\n**S must face S** — street segments must always face street segments to maintain proper road width.\n\n### Notes\n- police-station-v2 E=WDS: reverse is SDW, which has no match in the tile set → this edge must be placed on the board boundary in all valid rotations.\n- Conflicts resolved by majority coverage: police-station E[0] = 75% W → W; shop-arcade S[0] = 75% S → S.",
+        "reference_url": null,
+        "created_at": "2026-03-26T01:33:04.238+00:00",
+        "updated_at": "2026-03-26T01:33:04.237881+00:00"
+      },
+      {
+        "id": 63,
+        "task_id": 123,
+        "body": "Contact original medical examiner who performed exam\nRequest duplicate original certificate with wet signature\nPossible admin fee: $10-25\nDMV requires ORIGINAL signed cert (no photocopies/faxes)\nMake photocopies BEFORE submitting to DMV",
+        "reference_url": null,
+        "created_at": "2026-03-29T03:53:08.856+00:00",
+        "updated_at": "2026-03-29T03:53:08.855885+00:00"
+      },
+      {
+        "id": 64,
+        "task_id": 142,
+        "body": "Layout:\n- Full-screen overlay modal (ESC to close)\n- Left: metadata fields (section name, variant label, tags multi-select)\n- Right: text editor (large textarea or Monaco Editor for syntax highlighting)\n- Bottom: word count, character count, Save/Cancel buttons\n\nFeatures:\n- Auto-save draft to localStorage (prevent loss on accidental close)\n- Markdown syntax highlighting (if using Monaco)\n- Live preview toggle (split view: edit | preview)\n- Keyboard shortcuts: Cmd+S to save, Cmd+Enter to save & close\n- Validation: warn if section name empty, prompt before discarding unsaved changes\n\nTags:\n- Predefined + custom (user can type new tags)\n- Suggestions: POV character, tone (dark/light/comedic), plot thread, status (draft/final/abandoned)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:53:47.393+00:00",
+        "updated_at": "2026-03-29T06:53:47.393085+00:00"
+      },
+      {
+        "id": 65,
+        "task_id": 143,
+        "body": "File structure:\n```\nmy-project/\n  project.json         # metadata, timelines, filter definitions\n  clips/\n    {uuid}.md          # one file per clip\n```\n\nproject.json schema:\n```json\n{\n  \"name\": \"My Story\",\n  \"created\": \"2026-03-28T...\",\n  \"clips\": [\n    { \"uuid\": \"abc123\", \"sectionName\": \"Chapter 2\", \"variantLabel\": \"Dark\", \"tags\": [\"Alice POV\"], \"wordCount\": 850 }\n  ],\n  \"timelines\": [\n    {\n      \"id\": \"timeline-1\",\n      \"name\": \"Draft 1\",\n      \"clipNodes\": [\n        { \"clipUuid\": \"abc123\", \"filters\": [{ \"templateId\": \"darken-tone\", \"customPrompt\": \"...\", \"cachedResult\": \"...\" }] }\n      ]\n    }\n  ],\n  \"filterTemplates\": [ ... ]\n}\n```\n\nSave/Load:\n- Browser: File System Access API (Chrome/Edge), fallback to download/upload zip (Safari/Firefox)\n- Auto-save: debounce 2s after last change, write to IndexedDB or File System Access handle\n- Load: parse JSON, validate schema, populate store, read clip files\n\nError handling:\n- Graceful failure on corrupted JSON\n- User-friendly messages (\"This doesn't look like an NTE project\")\n- Backup before overwriting (keep last 3 auto-save snapshots?)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:54:18.024+00:00",
+        "updated_at": "2026-03-29T06:54:18.024005+00:00"
+      },
+      {
+        "id": 66,
+        "task_id": 144,
+        "body": "Markdown export:\n- Concatenate filtered clips with `\\n\\n` separator\n- Prepend timeline name as `# Title`\n- Optional: insert section breaks (`---`) or custom transition text between clips\n- Filename: `{timeline-name}-{timestamp}.md`\n- Trigger download via blob URL\n\nDOCX export (using `docx` library):\n- Map Markdown headings to Word styles (Heading 1, Heading 2, etc.)\n- Preserve formatting: bold, italic, lists, blockquotes\n- Optional features:\n  - Page breaks between clips (user toggle)\n  - Timeline name in header/footer\n  - Table of contents (auto-generated from headings)\n  - Metadata (author, created date, word count)\n- Filename: `{timeline-name}-{timestamp}.docx`\n\nExport settings UI:\n- Format dropdown (MD, DOCX)\n- Include transitions checkbox\n- Page breaks (DOCX only) checkbox\n- Preview before export (show first 500 words)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:55:09.739+00:00",
+        "updated_at": "2026-03-29T06:55:09.739008+00:00"
+      },
+      {
+        "id": 67,
+        "task_id": 145,
+        "body": "Triggered when user clicks \"Add Filter\" on a timeline clip.\n\nDisplay:\n- Grid or list of filter templates\n- Each shows: name, category (Tone, Structure, POV, Detail), description\n- Search/filter by category or name\n- Preview default prompt on hover\n\nInteraction:\n- Click template to add to clip's filter stack\n- Optional: customize prompt before adding (inline textarea)\n- Recent/frequently-used templates at top\n- \"Create Custom Filter\" button (opens blank prompt editor)\n\nCategories for organization:\n- Tone Adjustment (Darken, Lighten, Match Previous)\n- Structural (Tighten, Expand, Reorder Sentences)\n- POV/Voice (Shift POV, Change Tense, Dialect/Accent)\n- Content Addition (Foreshadow, Add Sensory Detail, Insert Dialogue)\n- Analysis (Identify Issues, Suggest Improvements) — read-only, doesn't modify text",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:55:28.676+00:00",
+        "updated_at": "2026-03-29T06:55:28.675917+00:00"
+      },
+      {
+        "id": 68,
+        "task_id": 146,
+        "body": "When user clicks filter badge on timeline clip, open editor.\n\nLayout options:\nA) Inline popover (appears next to filter badge)\nB) Side panel (slides in from right)\nC) Modal overlay (full attention)\n\nRecommendation: Side panel for context retention.\n\nFeatures:\n- Textarea for prompt editing (multiline, syntax highlighting for {placeholders})\n- Show available placeholders: {text}, {prev_text}, {section_name}, {variant_label}\n- \"Test Filter\" button: runs filter on current clip, shows result in preview pane\n- Save/Cancel buttons\n- Option to \"Save as Template\" (creates new template from custom prompt)\n\nLive preview:\n- Split view: original text | filtered text\n- Diff highlighting (word-level changes)\n- Loading spinner while LLM processes\n- Error display if filter fails (API error, timeout, etc.)\n\nKeyboard shortcuts:\n- Cmd+Enter to save\n- Cmd+T to test filter\n- ESC to cancel",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:55:41.933+00:00",
+        "updated_at": "2026-03-29T06:55:41.932844+00:00"
+      },
+      {
+        "id": 69,
+        "task_id": 153,
+        "body": "Essential shortcuts:\n- `Cmd/Ctrl+N` — New clip\n- `Cmd/Ctrl+E` — Edit selected clip\n- `Cmd/Ctrl+D` — Duplicate clip\n- `Cmd/Ctrl+S` — Save project\n- `Cmd/Ctrl+Shift+E` — Export timeline\n- `Delete/Backspace` — Remove selected clip from timeline (not library)\n- `Space` — Toggle preview/timeline focus\n- `Cmd/Ctrl+Z` — Undo (Phase 2)\n- `Cmd/Ctrl+Shift+Z` — Redo (Phase 2)\n\nTimeline navigation:\n- `Arrow Left/Right` — Select previous/next clip on timeline\n- `Arrow Up/Down` — Navigate between library and timeline\n- `Cmd/Ctrl+Click` — Multi-select clips (Phase 2)\n- `Shift+Click` — Range select (Phase 2)\n\nFilter shortcuts:\n- `F` — Add filter to selected clip\n- `Cmd/Ctrl+F` — Search clips (library)\n- `Cmd/Ctrl+/` — Show keyboard shortcuts help\n\nImplementation:\n- Use event listener on window or specific container\n- Prevent conflicts with browser defaults\n- Show shortcut hints in tooltips/menus\n- Help panel with full list (triggered by `?` or `Cmd+/`)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:55:57.862+00:00",
+        "updated_at": "2026-03-29T06:55:57.861774+00:00"
+      },
+      {
+        "id": 70,
+        "task_id": 147,
+        "body": "Layout:\n```\n+------------------+------------------+------------------+\n|  Clip Library    |     Timeline     |  Preview/Render  |\n|  (collapsible)   |  (main focus)    |  (read-only)     |\n+------------------+------------------+------------------+\n```\n\nResponsive breakpoints:\n- Desktop (>1200px): three columns side-by-side\n- Tablet (768-1200px): stack vertically, swipe between panels\n- Mobile (<768px): tabs at bottom, single panel visible\n\nColor scheme (dark mode default):\n- Background: `#1a1a1a` (near-black)\n- Panels: `#242424` (slight elevation)\n- Text: `#e0e0e0` (high contrast white)\n- Accent: `#4a9eff` (blue for interactive elements)\n- Clip colors: auto-assign pastel hues per section (hash section name → HSL)\n- Filter badges: `#3a3a3a` background, colored border matching template category\n\nDrag-and-drop feedback:\n- Ghost preview: semi-transparent copy of clip while dragging\n- Drop zones: subtle blue border glow when valid target\n- Snap-to-grid on timeline (align clips horizontally)\n- Visual indicator: insertion point (vertical line between clips)\n- Haptic feedback on mobile (vibration on successful drop)\n\nTypography:\n- UI: Inter or SF Pro (sans-serif, clean)\n- Clip preview/editor: JetBrains Mono (monospace, readable)\n- Headings: medium weight, generous spacing\n\nAnimations:\n- Smooth transitions: 200ms ease-in-out\n- Clip reorder: animated position shift\n- Panel resize: smooth width adjustment\n- Filter application: fade-in result, spinner during processing",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:56:26.096+00:00",
+        "updated_at": "2026-03-29T06:56:26.095537+00:00"
+      },
+      {
+        "id": 71,
+        "task_id": 151,
+        "body": "First-run tutorial (interactive walkthrough):\n1. \"Welcome to Montage\" — intro screen, explain nonlinear editing concept\n2. \"Create a Clip\" — guide user to add their first clip (highlight library panel)\n3. \"Add to Timeline\" — drag clip from library to timeline (show drag affordance)\n4. \"Apply a Filter\" — click \"Add Filter\", select \"Darken Tone\", see preview\n5. \"Export Your Work\" — click Export, download Markdown file\n6. \"You're ready!\" — link to docs, dismiss tutorial\n\nImplementation:\n- Overlay tooltips with arrows pointing to UI elements\n- \"Next\" button to advance, \"Skip Tutorial\" option\n- Track completion in localStorage (don't repeat on revisit)\n- Option to restart tutorial from Help menu\n\nSample project (pre-loaded):\n- Title: \"The Heist\" (short story demo)\n- 3 sections: \"Opening\", \"Confrontation\", \"Escape\"\n- Each section has 2-3 variants (different tones/POVs)\n- 1 pre-built timeline showing recommended sequence\n- 1 empty timeline for user experimentation\n- Includes sample filters already applied\n\nAuto-load sample project on first launch, or offer choice:\n- \"Start with Sample Project\" (loads demo)\n- \"Create Blank Project\" (empty state)\n\nSample content:\n- Write original micro-fiction (200-300 words per variant)\n- Genre: heist story, accessible, demonstrates tonal range\n- Variants showcase filter use cases (dark vs light, Alice vs Bob POV, tight vs expanded)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:56:50.59+00:00",
+        "updated_at": "2026-03-29T06:56:50.590454+00:00"
+      },
+      {
+        "id": 72,
+        "task_id": 150,
+        "body": "Bottlenecks to address:\n1. Large clip libraries (100+ clips) slow down library panel\n2. Frequent timeline changes trigger expensive re-renders\n3. Filter LLM calls are slow (2-5s each)\n4. Markdown rendering on large concatenated text\n\nSolutions:\n\n**Virtualized lists** (react-window):\n- Only render visible clips in library (viewport culling)\n- Dynamically load clips as user scrolls\n- Threshold: use virtualization if >50 clips\n\n**Debounced renders**:\n- Preview pane: debounce 200ms after last timeline change\n- Don't re-render on every drag event, only on drop\n- Use React.memo for components that don't need frequent updates\n\n**Filter result caching**:\n- Key: hash(clipUuid + filterPrompt + modelVersion)\n- Store in IndexedDB for persistence across sessions\n- LRU eviction: keep last 1000 results, drop oldest\n- Cache hit indicator in UI (green dot on filter badge)\n- Background pre-caching: run common filters on idle CPU time\n\n**Lazy clip loading**:\n- Library shows metadata only (section name, variant, word count)\n- Load full text content only when editing or filtering\n- Store preview (first 200 chars) separately for quick display\n\n**Incremental timeline rendering**:\n- Only re-process clips that changed (filter added/removed/edited)\n- Reuse cached results for unchanged clips\n- Concatenate incrementally instead of from scratch\n\nProfiling:\n- Use React DevTools Profiler to identify slow components\n- Monitor LLM API latency, set timeout (10s)\n- Measure time-to-interactive on project load",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:57:18.145+00:00",
+        "updated_at": "2026-03-29T06:57:18.145488+00:00"
+      },
+      {
+        "id": 73,
+        "task_id": 149,
+        "body": "Error scenarios to handle:\n\n**LLM API failures**:\n- Timeout (>10s) → retry once, then show \"Filter timed out, try again\"\n- Rate limit → show \"API quota exceeded, wait 60s or use cached results\"\n- Invalid response → parse error, show \"Filter failed, check prompt syntax\"\n- Network offline → detect, disable filter application, show warning banner\n\n**Corrupt project files**:\n- Invalid JSON → catch parse error, show \"This file is corrupted or not an NTE project\"\n- Missing clips directory → show \"Some clips are missing, project may be incomplete\"\n- Schema mismatch (old version) → attempt migration, fallback to manual import\n- Partially loaded project → display what loaded, mark missing clips as \"unavailable\"\n\n**Graceful degradation**:\n- If File System Access API unavailable (Safari) → fallback to download/upload\n- If IndexedDB unavailable → in-memory caching only, warn user no persistence\n- If drag-and-drop fails → show click-to-add buttons as alternative\n- If Markdown rendering slow → show plain text preview, option to disable formatting\n\n**User-friendly messages**:\n- No jargon (\"API error 429\" → \"Too many requests, please wait a moment\")\n- Actionable suggestions (\"Try reloading the page\" or \"Contact support\")\n- Non-blocking toasts for recoverable errors (API timeout)\n- Blocking modals for critical errors (corrupted project)\n\n**Error logging**:\n- Console errors for debugging (dev mode)\n- Optional: send error reports to analytics (Sentry, LogRocket) with user consent\n- Store last 10 errors in localStorage for bug reports\n\n**Recovery mechanisms**:\n- Auto-save backups: keep last 3 snapshots, restore if main file corrupted\n- \"Emergency Export\" button: exports current state as JSON even if project broken\n- Clear cache button: wipe IndexedDB if caching causes issues",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:57:48.136+00:00",
+        "updated_at": "2026-03-29T06:57:48.135784+00:00"
+      },
+      {
+        "id": 74,
+        "task_id": 152,
+        "body": "**Unit tests** (Vitest or Jest):\n\nStore actions:\n- addClip() creates clip with UUID, updates library\n- updateClip() modifies correct clip, preserves others\n- deleteClip() removes clip, updates timelines referencing it\n- reorderTimelineClips() swaps correctly, maintains integrity\n- addFilterToClipNode() inserts filter in correct position\n- Filter caching: hash collision handling, LRU eviction\n\nUtilities:\n- Export functions: Markdown concatenation, DOCX generation\n- File I/O: JSON serialization/deserialization, schema validation\n- Filter prompt parsing: {placeholder} substitution\n- Color assignment: section name → consistent HSL hue\n\n**Integration tests** (Playwright or Cypress):\n\nCore workflows:\n1. Create new project → add 3 clips → build timeline → export Markdown\n2. Load existing project → verify clips/timelines intact\n3. Drag clip from library to timeline → verify order\n4. Apply filter → wait for LLM result → verify preview updates\n5. Edit filter prompt → re-run filter → verify result changes\n6. Export DOCX → verify file downloads, open in Word (headless check?)\n\nError scenarios:\n- Load corrupted JSON → verify error message shown\n- Apply filter with API offline → verify graceful failure\n- Drag-and-drop on unsupported browser → verify fallback UI\n\nCross-browser:\n- Chrome, Firefox, Safari (webkit)\n- Test File System Access API fallback on Safari\n\n**Manual testing checklist**:\n- [ ] Create project with 10 clips (3 sections, varying variants)\n- [ ] Build 3 timelines with different clip sequences\n- [ ] Apply 5+ filters to clips, verify caching works\n- [ ] Export each timeline as MD and DOCX, verify formatting\n- [ ] Load project, verify all data intact\n- [ ] Test on mobile: drag-and-drop, responsive layout\n- [ ] Keyboard shortcuts work across all panels\n- [ ] Tutorial completes without errors",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:58:22.468+00:00",
+        "updated_at": "2026-03-29T06:58:22.468048+00:00"
+      },
+      {
+        "id": 75,
+        "task_id": 148,
+        "body": "Multiple timelines:\n- Tab bar above timeline panel (like browser tabs)\n- Create new timeline button (+)\n- Rename timeline (double-click tab)\n- Close timeline (X on tab, confirm if unsaved changes)\n- Duplicate timeline (right-click → \"Duplicate\")\n- Keyboard: Cmd+T new timeline, Cmd+W close timeline, Cmd+1/2/3 switch tabs\n\nTimeline comparison view:\n- Side-by-side preview of 2-3 timelines\n- Use case: compare different edit sequences, A/B test filter combinations\n- Layout: split preview pane into columns, one per timeline\n- Synchronized scrolling (optional toggle)\n- Highlight differences (clip-level: different clips, filter-level: different filters)\n- Export comparison as multi-column Markdown or side-by-side DOCX\n\nVisual indicators:\n- Active timeline highlighted in tab bar\n- Unsaved changes: dot indicator on tab\n- Timeline metadata in tab tooltip (created date, clip count, word count)\n\nPerformance:\n- Only render active timeline in detail, other tabs lazy-load\n- Preview caching per timeline (don't re-render on tab switch)",
+        "reference_url": null,
+        "created_at": "2026-03-29T06:58:57.673+00:00",
+        "updated_at": "2026-03-29T06:58:57.672605+00:00"
+      },
+      {
+        "id": 76,
+        "task_id": 154,
+        "body": "**Markdown image syntax** (already supported):\n- `![alt text](path/to/image.png)` or `![alt](https://url.com/image.jpg)`\n- Renders in preview via react-markdown\n\n**Clip storage for images**:\nOption A: Embedded base64 (simpler, larger files)\n- Store images as base64 data URIs in markdown: `![](data:image/png;base64,...)`\n- Pro: self-contained clips, no external dependencies\n- Con: inflates clip text size, slower to edit\n\nOption B: Asset directory (cleaner, scalable)\n- `assets/{clip-uuid}/image1.png` alongside clips\n- Markdown references: `![](../assets/{uuid}/image1.png)`\n- Pro: smaller clip files, easier to swap images\n- Con: more complex file management\n\n**Recommendation**: Start with Option A for MVP (simpler), migrate to Option B if performance suffers.\n\n**Clip editor image insertion**:\n- Toolbar button: \"Insert Image\"\n- Opens file picker, user selects image\n- Convert to base64 or copy to assets directory\n- Insert markdown syntax at cursor position\n- Live preview shows image immediately\n\n**Unicode support**:\n- Already supported in text (UTF-8 encoding)\n- Ensure export preserves unicode: MD (trivial), DOCX (test emoji, special chars, non-Latin scripts)\n- Font selection: use system fonts with good unicode coverage (SF Pro includes extensive glyphs)\n- Filter prompts: LLM should preserve unicode characters (test: \"keep the ★ symbol\")\n\n**Figures with captions**:\n- Extended markdown syntax or HTML fallback:\n  ```markdown\n  <figure>\n    <img src=\"path.png\" alt=\"Diagram\">\n    <figcaption>Figure 1: System architecture</figcaption>\n  </figure>\n  ```\n- Or custom syntax: `![Diagram](path.png \"Figure 1: System architecture\")`\n- DOCX export: map to Word figure+caption styles\n\n**Diagram tools integration** (Phase 3+):\n- Mermaid diagrams in markdown (already supported by remark-mermaid)\n- Inline SVG support\n- Optional: embed draw.io or excalidraw for visual editing",
+        "reference_url": null,
+        "created_at": "2026-03-29T07:03:54.666+00:00",
+        "updated_at": "2026-03-29T07:03:54.666337+00:00"
+      },
+      {
+        "id": 77,
+        "task_id": 155,
+        "body": "**Challenge**: When filters rewrite text, they need to handle embedded images correctly.\n\n**Filter instructions for image preservation**:\nSystem prompt addition:\n```\nWhen rewriting text that contains images (markdown syntax: ![alt](url)), \npreserve the image syntax exactly as-is. Do not modify image URLs, alt text, \nor captions unless specifically instructed. Place images in logical positions \nwithin the rewritten text.\n```\n\n**Special filter templates**:\n- \"Rewrite Around Images\" → \"Rewrite text while keeping all ![...](...) syntax intact and in sensible positions\"\n- \"Add Image Captions\" → \"For each image without a caption, add a descriptive figure caption below it\"\n- \"Remove Images\" → \"Rewrite text, removing all image syntax\" (use case: text-only export)\n- \"Describe Images\" → \"Replace each ![alt](url) with a text description of what the image shows based on alt text\"\n\n**Edge cases to test**:\n- Image in middle of paragraph vs standalone\n- Multiple images in sequence\n- Image with long alt text or caption\n- Base64 data URIs (very long strings)\n- SVG inline code blocks\n\n**DOCX export with images**:\n- Extract base64 images, embed in Word document\n- Preserve figure numbering and captions\n- Map to Word \"Figure\" style\n- Test: images render correctly when opened in Word/LibreOffice\n\n**Filter caching with images**:\n- Hash should include image URLs/data (images are part of content)\n- Large base64 images make cache keys huge → truncate or hash image data separately\n- Consider: cache miss if only image changed but text identical?",
+        "reference_url": null,
+        "created_at": "2026-03-29T07:04:29.762+00:00",
+        "updated_at": "2026-03-29T07:04:29.761828+00:00"
+      }
+    ],
+    "task_relations": [
+      {
+        "id": 1,
+        "task_id": 42,
+        "related_task_id": 37,
+        "relation_type": "blocked_by",
+        "commentary": null,
+        "created_at": "2026-03-21T20:31:44.050751+00:00",
+        "updated_at": "2026-03-21T20:31:44.050751+00:00"
+      },
+      {
+        "id": 2,
+        "task_id": 29,
+        "related_task_id": 61,
+        "relation_type": "blocked_by",
+        "commentary": null,
+        "created_at": "2026-03-21T20:33:38.679302+00:00",
+        "updated_at": "2026-03-21T20:33:38.679302+00:00"
+      },
+      {
+        "id": 3,
+        "task_id": 28,
+        "related_task_id": 61,
+        "relation_type": "blocked_by",
+        "commentary": null,
+        "created_at": "2026-03-21T20:33:47.859897+00:00",
+        "updated_at": "2026-03-21T20:33:47.859897+00:00"
+      },
+      {
+        "id": 4,
+        "task_id": 41,
+        "related_task_id": 37,
+        "relation_type": "blocked_by",
+        "commentary": null,
+        "created_at": "2026-03-21T20:34:14.128319+00:00",
+        "updated_at": "2026-03-21T20:34:14.128319+00:00"
+      }
+    ],
+    "tasks": [
+      {
+        "id": 1,
+        "title": "MasterChess",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:00.199+00:00",
+        "updated_at": "2026-03-21T17:38:00.199215+00:00"
+      },
+      {
+        "id": 2,
+        "title": "RoboTac",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:11.094+00:00",
+        "updated_at": "2026-03-21T17:38:11.093751+00:00"
+      },
+      {
+        "id": 3,
+        "title": "Laser Cutting",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:40:40.113+00:00",
+        "updated_at": "2026-03-21T17:40:40.113457+00:00"
+      },
+      {
+        "id": 4,
+        "title": "3D Printing",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:40:43.308+00:00",
+        "updated_at": "2026-03-21T17:40:43.308345+00:00"
+      },
+      {
+        "id": 5,
+        "title": "Get In Shape",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T18:00:45.289+00:00",
+        "updated_at": "2026-03-21T18:00:45.289412+00:00"
+      },
+      {
+        "id": 6,
+        "title": "Perfect Story",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:39:49.595+00:00",
+        "updated_at": "2026-03-21T18:01:47.409084+00:00"
+      },
+      {
+        "id": 7,
+        "title": "Folklore Story",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:39:44.332+00:00",
+        "updated_at": "2026-03-21T18:01:52.673266+00:00"
+      },
+      {
+        "id": 8,
+        "title": "LCARS Design Manual",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:47.812+00:00",
+        "updated_at": "2026-03-21T18:01:58.229535+00:00"
+      },
+      {
+        "id": 9,
+        "title": "Einstein Essay",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:29.143+00:00",
+        "updated_at": "2026-03-21T18:02:04.604231+00:00"
+      },
+      {
+        "id": 10,
+        "title": "Flip.... Tactics?",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T18:02:25.574+00:00",
+        "updated_at": "2026-03-21T18:02:25.573766+00:00"
+      },
+      {
+        "id": 11,
+        "title": "Watch TV",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T18:02:44.054+00:00",
+        "updated_at": "2026-03-21T18:02:44.053806+00:00"
+      },
+      {
+        "id": 12,
+        "title": "Robowar",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:15.752+00:00",
+        "updated_at": "2026-03-21T18:09:25.832406+00:00"
+      },
+      {
+        "id": 13,
+        "title": "Keep Houses",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T18:02:52.793+00:00",
+        "updated_at": "2026-03-21T23:55:52.024973+00:00"
+      },
+      {
+        "id": 14,
+        "title": "Firefly Cogs Story",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:58:26.646+00:00",
+        "updated_at": "2026-03-21T23:56:06.2639+00:00"
+      },
+      {
+        "id": 15,
+        "title": "Musical Gauntlet - Tale of Mary Anne Vibes",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T03:38:02.446+00:00",
+        "updated_at": "2026-03-29T03:39:46.978383+00:00"
+      },
+      {
+        "id": 16,
+        "title": "Sandman Story",
+        "status": "started",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:39:53.208+00:00",
+        "updated_at": "2026-03-22T04:04:46.069324+00:00"
+      },
+      {
+        "id": 17,
+        "title": "Task Manager",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:32.655+00:00",
+        "updated_at": "2026-03-22T04:04:58.41378+00:00"
+      },
+      {
+        "id": 18,
+        "title": "Contact Connie Willis about \"Perfect\" story",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T03:44:07.565+00:00",
+        "updated_at": "2026-03-29T03:45:14.307971+00:00"
+      },
+      {
+        "id": 19,
+        "title": "Classic Books Reading List",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T03:49:46.136+00:00",
+        "updated_at": "2026-03-29T03:50:10.828624+00:00"
+      },
+      {
+        "id": 20,
+        "title": "Nonlinear Text Editor (Montage)",
+        "status": "started",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T06:51:03.722+00:00",
+        "updated_at": "2026-03-29T08:17:38.541157+00:00"
+      },
+      {
+        "id": 21,
+        "title": "Riftborne",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:23.278+00:00",
+        "updated_at": "2026-03-26T01:33:04.237881+00:00"
+      },
+      {
+        "id": 22,
+        "title": "RPG Quickrefs",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-21T17:38:41.869+00:00",
+        "updated_at": "2026-03-27T02:32:44.190267+00:00"
+      },
+      {
+        "id": 23,
+        "title": "CDL Class C + Hazmat Endorsement",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T03:52:42.265+00:00",
+        "updated_at": "2026-03-29T03:56:21.745246+00:00"
+      },
+      {
+        "id": 24,
+        "title": "Montage - Nonlinear Text Editor",
+        "status": "todo",
+        "is_anchor": true,
+        "parent_task_id": null,
+        "created_at": "2026-03-29T06:48:52.646+00:00",
+        "updated_at": "2026-03-29T06:49:23.217108+00:00"
+      },
+      {
+        "id": 25,
+        "title": "automate mcp updates and/or postgresql comments",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:49:53.375+00:00",
+        "updated_at": "2026-03-21T17:49:53.375166+00:00"
+      },
+      {
+        "id": 26,
+        "title": "experiment with lcars alternate interface",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:50:23.799+00:00",
+        "updated_at": "2026-03-21T17:50:23.799416+00:00"
+      },
+      {
+        "id": 27,
+        "title": "animate the project-task chain opening and closing instead of just project",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:50:46.376+00:00",
+        "updated_at": "2026-03-21T17:50:46.376158+00:00"
+      },
+      {
+        "id": 28,
+        "title": "add many-to-many blocking support",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:53:22.862+00:00",
+        "updated_at": "2026-03-21T17:53:22.862238+00:00"
+      },
+      {
+        "id": 29,
+        "title": "add links back and forth between blocking and blocked tasks",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:53:40.312+00:00",
+        "updated_at": "2026-03-21T17:53:40.311877+00:00"
+      },
+      {
+        "id": 30,
+        "title": "decide on how backups should work -- real data in git?",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:55:37.742+00:00",
+        "updated_at": "2026-03-21T17:55:37.74231+00:00"
+      },
+      {
+        "id": 31,
+        "title": "fix printing",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 4,
+        "created_at": "2026-03-21T17:56:06.601+00:00",
+        "updated_at": "2026-03-21T17:56:06.6008+00:00"
+      },
+      {
+        "id": 32,
+        "title": "clear print head",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 4,
+        "created_at": "2026-03-21T17:56:11.066+00:00",
+        "updated_at": "2026-03-21T17:56:11.065756+00:00"
+      },
+      {
+        "id": 33,
+        "title": "attach original and candidate extensions once long fields are supported",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 6,
+        "created_at": "2026-03-21T17:57:51.469+00:00",
+        "updated_at": "2026-03-21T17:57:51.468597+00:00"
+      },
+      {
+        "id": 34,
+        "title": "merge prose from various versions into final draft",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 6,
+        "created_at": "2026-03-21T17:58:03.452+00:00",
+        "updated_at": "2026-03-21T17:58:03.451685+00:00"
+      },
+      {
+        "id": 35,
+        "title": "get an editing run on final draft",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 6,
+        "created_at": "2026-03-21T17:58:16.102+00:00",
+        "updated_at": "2026-03-21T17:58:16.102252+00:00"
+      },
+      {
+        "id": 36,
+        "title": "refine story, make sure plot points are consistent, add simon etc",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 14,
+        "created_at": "2026-03-21T17:59:22.03+00:00",
+        "updated_at": "2026-03-21T17:59:22.02985+00:00"
+      },
+      {
+        "id": 37,
+        "title": "add mechanism to organize projects -- tags? making, writing, coding",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:00:36.902+00:00",
+        "updated_at": "2026-03-21T18:00:36.90214+00:00"
+      },
+      {
+        "id": 38,
+        "title": "Ride Bike",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 5,
+        "created_at": "2026-03-21T18:00:48.22+00:00",
+        "updated_at": "2026-03-21T18:00:48.220486+00:00"
+      },
+      {
+        "id": 39,
+        "title": "Ride Bike",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 5,
+        "created_at": "2026-03-21T18:00:51.509+00:00",
+        "updated_at": "2026-03-21T18:00:51.509069+00:00"
+      },
+      {
+        "id": 40,
+        "title": "Ride Bike",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 5,
+        "created_at": "2026-03-21T18:00:54.089+00:00",
+        "updated_at": "2026-03-21T18:00:54.089207+00:00"
+      },
+      {
+        "id": 41,
+        "title": "filter projects view by tags, sort by date or status",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:05:18.319+00:00",
+        "updated_at": "2026-03-21T18:05:18.31944+00:00"
+      },
+      {
+        "id": 42,
+        "title": "add tag for fixing things that should already have been done",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:11:22.251+00:00",
+        "updated_at": "2026-03-21T18:11:22.251216+00:00"
+      },
+      {
+        "id": 43,
+        "title": "https://docs.google.com/document/d/1wbih_xodK0vJk64LJCJaLoUa5_Z3EP2QvF99Q9VEdwo/edit?pli=1&tab=t.0",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 9,
+        "created_at": "2026-03-21T18:13:44.565+00:00",
+        "updated_at": "2026-03-21T18:13:44.564785+00:00"
+      },
+      {
+        "id": 44,
+        "title": "attach original and final story once long text is supported",
+        "status": "started",
+        "is_anchor": null,
+        "parent_task_id": 16,
+        "created_at": "2026-03-21T17:57:37.903+00:00",
+        "updated_at": "2026-03-21T21:53:54.791407+00:00"
+      },
+      {
+        "id": 45,
+        "title": "fix spinner collapse",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:11:27.824+00:00",
+        "updated_at": "2026-03-21T20:31:02.353071+00:00"
+      },
+      {
+        "id": 46,
+        "title": "add a way to suspend a project without searching for its active task",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T21:54:10.219+00:00",
+        "updated_at": "2026-03-21T21:54:10.218618+00:00"
+      },
+      {
+        "id": 47,
+        "title": "hitting escape should be more context-sensitive, e.g. cancelling input instead of deselecting project/task",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:48:08.747+00:00",
+        "updated_at": "2026-03-21T20:36:09.478079+00:00"
+      },
+      {
+        "id": 48,
+        "title": "allow transition directly from TODO to DONE",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T20:38:42.723+00:00",
+        "updated_at": "2026-03-21T21:54:20.51888+00:00"
+      },
+      {
+        "id": 49,
+        "title": "fix notes",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:08:10.379+00:00",
+        "updated_at": "2026-03-21T20:38:30.456903+00:00"
+      },
+      {
+        "id": 50,
+        "title": "fix projects display to update dynamically",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:08:07.037+00:00",
+        "updated_at": "2026-03-21T21:54:25.351052+00:00"
+      },
+      {
+        "id": 51,
+        "title": "allow note deletion",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T20:38:47.991+00:00",
+        "updated_at": "2026-03-21T20:43:20.141365+00:00"
+      },
+      {
+        "id": 52,
+        "title": "pick a random task should display the task but not automatically activate it",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:09:24.05+00:00",
+        "updated_at": "2026-03-21T20:48:18.88403+00:00"
+      },
+      {
+        "id": 53,
+        "title": "fix project sorting by computed status",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:54:51.114+00:00",
+        "updated_at": "2026-03-21T21:54:37.033342+00:00"
+      },
+      {
+        "id": 54,
+        "title": "allow \"activate\" button in todo state",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:49:20.099+00:00",
+        "updated_at": "2026-03-21T21:54:47.835892+00:00"
+      },
+      {
+        "id": 55,
+        "title": "Set up clean Redux structure for game state",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:10:36.35+00:00",
+        "updated_at": "2026-03-23T04:10:36.35009+00:00"
+      },
+      {
+        "id": 56,
+        "title": "Create gameboard slice - grid dimensions, tile positions",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:10:44.001+00:00",
+        "updated_at": "2026-03-23T04:10:44.000799+00:00"
+      },
+      {
+        "id": 57,
+        "title": "Create players slice - two players, piece positions, visibility",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:10:53.092+00:00",
+        "updated_at": "2026-03-23T04:10:53.092231+00:00"
+      },
+      {
+        "id": 58,
+        "title": "asf",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 13,
+        "created_at": "2026-03-21T23:55:06.955+00:00",
+        "updated_at": "2026-03-21T23:55:21.879896+00:00"
+      },
+      {
+        "id": 59,
+        "title": "Add story once long text is supportedd",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 14,
+        "created_at": "2026-03-21T17:58:57.938+00:00",
+        "updated_at": "2026-03-21T23:56:06.2639+00:00"
+      },
+      {
+        "id": 60,
+        "title": "updated-at changes should cascade to parents",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T18:07:12.808+00:00",
+        "updated_at": "2026-03-21T23:59:22.008759+00:00"
+      },
+      {
+        "id": 61,
+        "title": "add support for blocking tasks",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:48:42.559+00:00",
+        "updated_at": "2026-03-21T23:59:31.874458+00:00"
+      },
+      {
+        "id": 62,
+        "title": "make \"done\" and \"started\" colors differ more",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T20:39:59.662+00:00",
+        "updated_at": "2026-03-21T23:59:53.178069+00:00"
+      },
+      {
+        "id": 63,
+        "title": "allow tasks to be subtasks",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:53:51.809+00:00",
+        "updated_at": "2026-03-22T00:05:48.833653+00:00"
+      },
+      {
+        "id": 64,
+        "title": "Allow longer strings in note context field",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 17,
+        "created_at": "2026-03-21T17:45:57.349+00:00",
+        "updated_at": "2026-03-22T04:04:58.41378+00:00"
+      },
+      {
+        "id": 65,
+        "title": "Build Board component - rectangular grid display",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:11:23.721+00:00",
+        "updated_at": "2026-03-23T04:11:23.720742+00:00"
+      },
+      {
+        "id": 66,
+        "title": "Render tiles on board spaces",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:11:28.168+00:00",
+        "updated_at": "2026-03-23T04:11:28.167975+00:00"
+      },
+      {
+        "id": 67,
+        "title": "Display two players with piece positions",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:11:32.866+00:00",
+        "updated_at": "2026-03-23T04:11:32.866136+00:00"
+      },
+      {
+        "id": 68,
+        "title": "Implement visibility subset - show only some pieces",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:11:38.6+00:00",
+        "updated_at": "2026-03-23T04:11:38.599998+00:00"
+      },
+      {
+        "id": 69,
+        "title": "Create structured rules document from screenshots",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:21:18.776+00:00",
+        "updated_at": "2026-03-23T04:21:18.775901+00:00"
+      },
+      {
+        "id": 70,
+        "title": "Game Mode: Scientist's Bodyguard",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:21:25.017+00:00",
+        "updated_at": "2026-03-23T04:21:38.233455+00:00"
+      },
+      {
+        "id": 71,
+        "title": "Game Mode: Classic",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:22:42.687+00:00",
+        "updated_at": "2026-03-23T04:22:53.170936+00:00"
+      },
+      {
+        "id": 72,
+        "title": "Game Mode: Follow the Light",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:22:58.367+00:00",
+        "updated_at": "2026-03-23T04:23:07.595828+00:00"
+      },
+      {
+        "id": 73,
+        "title": "Core Rules: Game Phases",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:36:04.793+00:00",
+        "updated_at": "2026-03-23T04:36:20.02602+00:00"
+      },
+      {
+        "id": 74,
+        "title": "Core Rules: Player Actions",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:36:27.417+00:00",
+        "updated_at": "2026-03-23T04:36:41.992819+00:00"
+      },
+      {
+        "id": 75,
+        "title": "Core Rules: Risk Level System",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:36:51.049+00:00",
+        "updated_at": "2026-03-23T04:37:00.688934+00:00"
+      },
+      {
+        "id": 76,
+        "title": "Game Mode: Pull the Plug",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:43:59.275+00:00",
+        "updated_at": "2026-03-23T04:44:13.342882+00:00"
+      },
+      {
+        "id": 77,
+        "title": "Game Mode: Survive the Horror",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:44:20.197+00:00",
+        "updated_at": "2026-03-23T04:44:44.904171+00:00"
+      },
+      {
+        "id": 78,
+        "title": "Core Rules: Board Mechanics (Zones, Tiles, Doors)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:44:54.063+00:00",
+        "updated_at": "2026-03-23T04:45:11.873526+00:00"
+      },
+      {
+        "id": 79,
+        "title": "Core Rules: Clues & Spirit Anchors",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:45:20.491+00:00",
+        "updated_at": "2026-03-23T04:45:33.711414+00:00"
+      },
+      {
+        "id": 80,
+        "title": "Core Rules: Combat & Weapons",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:45:46.01+00:00",
+        "updated_at": "2026-03-23T04:46:02.942065+00:00"
+      },
+      {
+        "id": 81,
+        "title": "Core Rules: Creature Behavior & AI",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:46:17.195+00:00",
+        "updated_at": "2026-03-23T04:46:29.84465+00:00"
+      },
+      {
+        "id": 82,
+        "title": "Core Rules: Game Overview & Lore",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T04:46:47.374+00:00",
+        "updated_at": "2026-03-23T04:46:59.255432+00:00"
+      },
+      {
+        "id": 83,
+        "title": "Tile Edge Type Enumeration (24 tiles)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T05:40:30.691+00:00",
+        "updated_at": "2026-03-23T05:40:30.690991+00:00"
+      },
+      {
+        "id": 84,
+        "title": "Board Setup Rules - determine board size specifications",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T18:02:17.319+00:00",
+        "updated_at": "2026-03-23T18:02:29.310093+00:00"
+      },
+      {
+        "id": 85,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:02.446+00:00",
+        "updated_at": "2026-03-29T03:38:02.446254+00:00"
+      },
+      {
+        "id": 86,
+        "title": "Board Generation - Catan-style pre-generated random layout",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T18:44:07.654+00:00",
+        "updated_at": "2026-03-23T18:44:24.111965+00:00"
+      },
+      {
+        "id": 87,
+        "title": "Zone Type System - only Street and Interior (no Outdoor)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T18:43:45.252+00:00",
+        "updated_at": "2026-03-23T22:21:27.043505+00:00"
+      },
+      {
+        "id": 88,
+        "title": "Tile Mapping Progress - track completed tiles",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T23:38:50.626+00:00",
+        "updated_at": "2026-03-24T01:29:50.411984+00:00"
+      },
+      {
+        "id": 89,
+        "title": "PROVENANCE: Original game is abandoned computer game designed to look like board game",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-24T03:16:17.574+00:00",
+        "updated_at": "2026-03-24T03:16:32.832388+00:00"
+      },
+      {
+        "id": 90,
+        "title": "PHYSICAL: Tile specs for card table (4x6 array, ~5\"x5\" tiles, H-base standees)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-24T03:16:40.674+00:00",
+        "updated_at": "2026-03-24T03:17:00.215269+00:00"
+      },
+      {
+        "id": 91,
+        "title": "Tile Edge Type Enumeration (all 24 tiles)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-23T05:41:47.507+00:00",
+        "updated_at": "2026-03-26T01:33:04.237881+00:00"
+      },
+      {
+        "id": 92,
+        "title": "OFFICIAL NAME: Riftborn - 5-layer concept compression title",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-24T03:47:18.642+00:00",
+        "updated_at": "2026-03-24T03:52:59.874459+00:00"
+      },
+      {
+        "id": 93,
+        "title": "PF2 Module Extraction - Methodology for fresh Claude instances",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 22,
+        "created_at": "2026-03-27T02:32:44.19+00:00",
+        "updated_at": "2026-03-27T02:32:44.190267+00:00"
+      },
+      {
+        "id": 94,
+        "title": "V2 MECHANIC: Rift Walking - teleport using beacons with risk/reward",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 21,
+        "created_at": "2026-03-24T03:56:20.221+00:00",
+        "updated_at": "2026-03-24T03:56:42.811383+00:00"
+      },
+      {
+        "id": 95,
+        "title": "Jorge Rivera-Herrans - Epic: The Musical (Warrior of the Mind, Ruthlessness)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:09.563+00:00",
+        "updated_at": "2026-03-29T03:38:09.562966+00:00"
+      },
+      {
+        "id": 96,
+        "title": "Fiona Apple - Hot Knife",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:13.136+00:00",
+        "updated_at": "2026-03-29T03:38:13.136252+00:00"
+      },
+      {
+        "id": 97,
+        "title": "Janelle Monáe - Many Moons",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:16.483+00:00",
+        "updated_at": "2026-03-29T03:38:16.48318+00:00"
+      },
+      {
+        "id": 98,
+        "title": "Hadestown (2010 concept album) - Why We Build the Wall, Wait for Me",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:21.354+00:00",
+        "updated_at": "2026-03-29T03:38:21.35376+00:00"
+      },
+      {
+        "id": 99,
+        "title": "The Decemberists - The Crane Wife (album, parts 1-3)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:26.177+00:00",
+        "updated_at": "2026-03-29T03:38:26.176946+00:00"
+      },
+      {
+        "id": 100,
+        "title": "Joanna Newsom - Only Skin",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:31.171+00:00",
+        "updated_at": "2026-03-29T03:38:31.170774+00:00"
+      },
+      {
+        "id": 101,
+        "title": "Róisín Murphy - Ruby Blue (album, esp. Ramalama Bang Bang)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:35.001+00:00",
+        "updated_at": "2026-03-29T03:38:35.001053+00:00"
+      },
+      {
+        "id": 102,
+        "title": "Björk - Medúlla (album, esp. Mouth's Cradle, Where Is the Line)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:40.648+00:00",
+        "updated_at": "2026-03-29T03:38:40.647828+00:00"
+      },
+      {
+        "id": 103,
+        "title": "FKA twigs - Cellophane, home with you",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:47.506+00:00",
+        "updated_at": "2026-03-29T03:38:47.506124+00:00"
+      },
+      {
+        "id": 104,
+        "title": "Fever Ray - If I Had a Heart",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:54.876+00:00",
+        "updated_at": "2026-03-29T03:38:54.875918+00:00"
+      },
+      {
+        "id": 105,
+        "title": "Dessa - 551",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:38:58.612+00:00",
+        "updated_at": "2026-03-29T03:38:58.612283+00:00"
+      },
+      {
+        "id": 106,
+        "title": "The Magnetic Fields - 69 Love Songs (album)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:39:04.473+00:00",
+        "updated_at": "2026-03-29T03:39:04.472502+00:00"
+      },
+      {
+        "id": 107,
+        "title": "Amanda Palmer - Runs in the Family, Ampersand",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:39:11.859+00:00",
+        "updated_at": "2026-03-29T03:39:11.858831+00:00"
+      },
+      {
+        "id": 108,
+        "title": "tUnE-yArDs - Bizness",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:39:19.847+00:00",
+        "updated_at": "2026-03-29T03:39:19.847234+00:00"
+      },
+      {
+        "id": 109,
+        "title": "Nellie McKay - Mother of Pearl",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:39:25.526+00:00",
+        "updated_at": "2026-03-29T03:39:25.525818+00:00"
+      },
+      {
+        "id": 110,
+        "title": "BONUS: Miss Otis Regrets (Ella Fitzgerald version - tonal parallel to Mary Anne)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 15,
+        "created_at": "2026-03-29T03:39:32.312+00:00",
+        "updated_at": "2026-03-29T03:39:32.31244+00:00"
+      },
+      {
+        "id": 111,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 18,
+        "created_at": "2026-03-29T03:44:07.565+00:00",
+        "updated_at": "2026-03-29T03:44:07.565212+00:00"
+      },
+      {
+        "id": 112,
+        "title": "Draft contact email/letter to Connie Willis",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 18,
+        "created_at": "2026-03-29T03:44:38.904+00:00",
+        "updated_at": "2026-03-29T03:44:49.83095+00:00"
+      },
+      {
+        "id": 113,
+        "title": "Find contact method (website, publisher, social media)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 18,
+        "created_at": "2026-03-29T03:44:53.782+00:00",
+        "updated_at": "2026-03-29T03:44:59.20079+00:00"
+      },
+      {
+        "id": 114,
+        "title": "Optional: Test jacket line with another Claude instance first",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 18,
+        "created_at": "2026-03-29T03:45:03.062+00:00",
+        "updated_at": "2026-03-29T03:45:08.424408+00:00"
+      },
+      {
+        "id": 115,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:49:46.136+00:00",
+        "updated_at": "2026-03-29T03:49:46.135537+00:00"
+      },
+      {
+        "id": 116,
+        "title": "Catch-22 by Joseph Heller - Logical absurdism, worth reading",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:49:50.514+00:00",
+        "updated_at": "2026-03-29T03:49:50.514247+00:00"
+      },
+      {
+        "id": 117,
+        "title": "Les Misérables by Victor Hugo - Emotional core present, can skip digressions",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:49:54.855+00:00",
+        "updated_at": "2026-03-29T03:49:54.854614+00:00"
+      },
+      {
+        "id": 118,
+        "title": "Crime and Punishment by Dostoevsky - Best entry point to Russian classics",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:49:58.624+00:00",
+        "updated_at": "2026-03-29T03:49:58.624499+00:00"
+      },
+      {
+        "id": 119,
+        "title": "War and Peace by Tolstoy - For worldbuilding and scope",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:50:02.536+00:00",
+        "updated_at": "2026-03-29T03:50:02.535531+00:00"
+      },
+      {
+        "id": 120,
+        "title": "The Trial by Kafka - Better than The Castle (unfinishable)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:50:06.263+00:00",
+        "updated_at": "2026-03-29T03:50:06.262503+00:00"
+      },
+      {
+        "id": 121,
+        "title": "The Count of Monte Cristo by Dumas - Worth it if you enjoyed Three Musketeers",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 19,
+        "created_at": "2026-03-29T03:50:10.829+00:00",
+        "updated_at": "2026-03-29T03:50:10.828624+00:00"
+      },
+      {
+        "id": 122,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:52:42.265+00:00",
+        "updated_at": "2026-03-29T03:52:42.265125+00:00"
+      },
+      {
+        "id": 123,
+        "title": "Get wet-ink medical cert duplicate (by March 28)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:53:00.885+00:00",
+        "updated_at": "2026-03-29T03:53:08.855885+00:00"
+      },
+      {
+        "id": 124,
+        "title": "Apply for Commercial Learner's Permit (CLP) (by April 6)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:53:15.84+00:00",
+        "updated_at": "2026-03-29T03:53:24.492261+00:00"
+      },
+      {
+        "id": 125,
+        "title": "TSA Background Check: Apply & Fingerprinting (by April 13)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:53:31.305+00:00",
+        "updated_at": "2026-03-29T03:53:40.688648+00:00"
+      },
+      {
+        "id": 126,
+        "title": "Study for written tests (April 14 - May 4)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:54:29.799+00:00",
+        "updated_at": "2026-03-29T03:54:43.720434+00:00"
+      },
+      {
+        "id": 127,
+        "title": "Pass General Knowledge written test (by May 31)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:54:53.178+00:00",
+        "updated_at": "2026-03-29T03:55:07.53348+00:00"
+      },
+      {
+        "id": 128,
+        "title": "Pass Hazmat written test (by May 31)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:55:17.051+00:00",
+        "updated_at": "2026-03-29T03:55:29.18499+00:00"
+      },
+      {
+        "id": 129,
+        "title": "Wait for TSA clearance (by June 15)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:55:42.778+00:00",
+        "updated_at": "2026-03-29T03:55:52.968797+00:00"
+      },
+      {
+        "id": 130,
+        "title": "Finalize CDL with H endorsement (by June 25)",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 23,
+        "created_at": "2026-03-29T03:56:13.555+00:00",
+        "updated_at": "2026-03-29T03:56:21.745246+00:00"
+      },
+      {
+        "id": 131,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 24,
+        "created_at": "2026-03-29T06:48:52.646+00:00",
+        "updated_at": "2026-03-29T06:48:52.645668+00:00"
+      },
+      {
+        "id": 132,
+        "title": "Define core data model: Clip, Timeline, Filter, Project schemas",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 24,
+        "created_at": "2026-03-29T06:48:55.849+00:00",
+        "updated_at": "2026-03-29T06:49:03.497151+00:00"
+      },
+      {
+        "id": 133,
+        "title": "Setup React + TypeScript project with Vite",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 24,
+        "created_at": "2026-03-29T06:49:06.607+00:00",
+        "updated_at": "2026-03-29T06:49:12.39642+00:00"
+      },
+      {
+        "id": 134,
+        "title": "Implement Zustand store with core actions",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 24,
+        "created_at": "2026-03-29T06:49:16.085+00:00",
+        "updated_at": "2026-03-29T06:49:23.217108+00:00"
+      },
+      {
+        "id": 135,
+        "title": "•",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:51:03.722+00:00",
+        "updated_at": "2026-03-29T06:51:03.722227+00:00"
+      },
+      {
+        "id": 136,
+        "title": "Build Zustand store: clips, timelines, filter templates, active timeline",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:51:45.785+00:00",
+        "updated_at": "2026-03-29T07:45:29.942619+00:00"
+      },
+      {
+        "id": 137,
+        "title": "Design data model: Clip, Timeline, Filter Template, Timeline Node schemas",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:51:20.155+00:00",
+        "updated_at": "2026-03-29T07:45:29.202841+00:00"
+      },
+      {
+        "id": 138,
+        "title": "Create ClipLibrary component: list view, search/filter, drag source",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:51:59.136+00:00",
+        "updated_at": "2026-03-29T07:45:30.324844+00:00"
+      },
+      {
+        "id": 139,
+        "title": "Create Timeline component: horizontal track, drag-drop, reorder, filter stacks",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:52:14.097+00:00",
+        "updated_at": "2026-03-29T07:45:30.714341+00:00"
+      },
+      {
+        "id": 140,
+        "title": "Create Preview component: live-rendered markdown with filter results",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:52:33.012+00:00",
+        "updated_at": "2026-03-29T07:45:31.108001+00:00"
+      },
+      {
+        "id": 141,
+        "title": "Build filter engine: template library, LLM integration, caching",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:52:55.261+00:00",
+        "updated_at": "2026-03-29T07:45:31.485185+00:00"
+      },
+      {
+        "id": 142,
+        "title": "Create ClipEditor modal: edit text, section name, variant, tags",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:53:22.273+00:00",
+        "updated_at": "2026-03-29T07:45:31.92167+00:00"
+      },
+      {
+        "id": 143,
+        "title": "Implement file I/O: save/load project (JSON + clips dir), auto-save",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:54:06.792+00:00",
+        "updated_at": "2026-03-29T07:45:32.257671+00:00"
+      },
+      {
+        "id": 144,
+        "title": "Build export pipeline: Markdown and DOCX generation from timeline",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:55:00.616+00:00",
+        "updated_at": "2026-03-29T07:45:32.735045+00:00"
+      },
+      {
+        "id": 145,
+        "title": "Create FilterTemplatePicker modal: browse templates, add to clip",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:55:13.815+00:00",
+        "updated_at": "2026-03-29T07:45:33.074299+00:00"
+      },
+      {
+        "id": 146,
+        "title": "Implement filter prompt editor: inline editing with live preview",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:55:32.505+00:00",
+        "updated_at": "2026-03-29T07:45:33.465906+00:00"
+      },
+      {
+        "id": 147,
+        "title": "Design UI/UX: three-panel layout, color scheme, drag feedback",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:56:11.1+00:00",
+        "updated_at": "2026-03-29T07:45:33.508629+00:00"
+      },
+      {
+        "id": 148,
+        "title": "Phase 2: Multiple timelines with tabs, timeline comparison view",
+        "status": "started",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:58:45.168+00:00",
+        "updated_at": "2026-03-29T07:47:02.480305+00:00"
+      },
+      {
+        "id": 149,
+        "title": "Error handling: API failures, corrupt projects, graceful degradation",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:57:33.413+00:00",
+        "updated_at": "2026-03-29T07:53:36.419789+00:00"
+      },
+      {
+        "id": 150,
+        "title": "Performance optimization: virtualized lists, debounced renders, filter caching",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:57:03.098+00:00",
+        "updated_at": "2026-03-29T06:57:18.145488+00:00"
+      },
+      {
+        "id": 151,
+        "title": "Build onboarding flow: first-run tutorial, sample project",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:56:35.684+00:00",
+        "updated_at": "2026-03-29T07:53:35.895264+00:00"
+      },
+      {
+        "id": 152,
+        "title": "Testing: unit tests for store actions, integration tests for workflow",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:58:06.87+00:00",
+        "updated_at": "2026-03-29T06:58:22.468048+00:00"
+      },
+      {
+        "id": 153,
+        "title": "Add keyboard shortcuts: navigation, clip actions, timeline editing",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:55:47.255+00:00",
+        "updated_at": "2026-03-29T07:53:36.197221+00:00"
+      },
+      {
+        "id": 154,
+        "title": "Support embedded media: images, diagrams, figures in clips and timeline",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T07:03:36.829+00:00",
+        "updated_at": "2026-03-29T07:03:54.666337+00:00"
+      },
+      {
+        "id": 155,
+        "title": "Add image-aware filter templates: preserve figures, caption handling",
+        "status": "todo",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T07:04:03.068+00:00",
+        "updated_at": "2026-03-29T07:04:29.761828+00:00"
+      },
+      {
+        "id": 156,
+        "title": "Initialize React project with TypeScript, Zustand, dnd-kit, react-markdown",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T06:51:31.875+00:00",
+        "updated_at": "2026-03-29T07:45:29.562756+00:00"
+      },
+      {
+        "id": 157,
+        "title": "Computed split nodes: slice metadata on TimelineNode, right-gravity split point reconciliation, content-addressed filter cache",
+        "status": "done",
+        "is_anchor": null,
+        "parent_task_id": 20,
+        "created_at": "2026-03-29T08:17:36.591+00:00",
+        "updated_at": "2026-03-29T08:17:38.541157+00:00"
+      }
+    ]
+  }
+}
