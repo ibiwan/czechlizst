@@ -520,7 +520,6 @@ function App() {
         <TaskDetailPane
           blockerRelations={selectedBlockers}
           filteredRelatedCandidateGroups={filteredRelatedCandidateGroups}
-          focusedTask={focusedTask}
           mutating={mutating}
           newBlockerTitle={newBlockerTitle}
           newNoteBody={newNoteBody}

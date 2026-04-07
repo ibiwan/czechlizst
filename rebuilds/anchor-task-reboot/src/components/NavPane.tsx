@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { countDescendants, countDirectChildren, findTaskById, formatRelativeDay, getEffectiveTaskStatus } from '../lib';
 import type { Task, TaskRelation } from '../types';
@@ -43,8 +43,11 @@ export function NavPane({
   selectedTask: Task | null;
   tasks: Task[];
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [addValue, setAddValue] = useState('');
+  const [enterDir, setEnterDir] = useState<'left' | 'right'>('left');
+  const [drillKey, setDrillKey] = useState(0);
 
   const hasAnchorSelected = selectedAnchorId !== null;
 
@@ -57,8 +60,42 @@ export function NavPane({
     setAddOpen(false);
   }
 
+  function handleDrillDown(taskId: number) {
+    const inner = sectionRef.current?.firstElementChild as HTMLElement | null;
+    if (inner) {
+      sectionRef.current?.querySelectorAll('.pane-exit-left').forEach(el => el.remove());
+      const clone = inner.cloneNode(true) as HTMLElement;
+      clone.className = 'pane-inner pane-exit-left';
+      clone.style.cssText = 'position:absolute;inset:0;z-index:10;';
+      clone.addEventListener('animationend', () => clone.remove(), { once: true });
+      sectionRef.current!.appendChild(clone);
+    }
+    setEnterDir('right');
+    setDrillKey(k => k + 1);
+    onFocusTask(taskId);
+  }
+
+  function handleBreadcrumbNav(taskId: number) {
+    setEnterDir('left');
+    setDrillKey(k => k + 1);
+    onFocusTask(taskId);
+  }
+
+  function handleCloseAnchor() {
+    setEnterDir('left');
+    setDrillKey(0);
+    onCloseAnchor();
+  }
+
+  function handleSelectAnchor(anchorId: number) {
+    setEnterDir('left');
+    setDrillKey(0);
+    onSelectAnchor(anchorId);
+  }
+
   return (
-    <section className="pane" data-testid="pane-children">
+    <section className="pane pane--animated" data-testid="pane-children" ref={sectionRef}>
+      <div className={`pane-enter-${enterDir} pane-inner`} key={`${selectedAnchorId ?? 'empty'}-${drillKey}`}>
       <div className="pane-header sticky-pane-header">
         <p className="eyebrow">Pane 2</p>
         <h2 data-testid="pane-children-title">
@@ -66,7 +103,7 @@ export function NavPane({
         </h2>
 
         {hasAnchorSelected ? (
-          <button className="text-button pane-context-action" onClick={onCloseAnchor} type="button">
+          <button className="text-button pane-context-action" onClick={handleCloseAnchor} type="button">
             Close anchor
           </button>
         ) : (
@@ -78,7 +115,7 @@ export function NavPane({
             {breadcrumbs.map((task, index) => (
               <span className="breadcrumb" key={task.id}>
                 {index > 0 ? <span className="breadcrumb-sep">{'>'}</span> : null}
-                <button onClick={() => onFocusTask(task.id)} type="button">
+                <button onClick={() => handleBreadcrumbNav(task.id)} type="button">
                   {task.title}
                 </button>
               </span>
@@ -88,7 +125,6 @@ export function NavPane({
       </div>
 
       <div className="pane-scroll">
-      <div className="nav-content-enter" key={selectedAnchorId ?? 'empty'}>
       {!hasAnchorSelected ? (
         anchorTasks.length > 0 ? (
           <div className="birds-eye-row">
@@ -96,7 +132,7 @@ export function NavPane({
               <button
                 key={anchor.id}
                 className={`birds-eye-tile ${anchor.id === selectedAnchorId ? 'selected' : ''}`}
-                onClick={() => onSelectAnchor(anchor.id)}
+                onClick={() => handleSelectAnchor(anchor.id)}
                 type="button"
               >
                 <strong>{anchor.title}</strong>
@@ -132,7 +168,7 @@ export function NavPane({
                   key={task.id}
                   childCount={countDirectChildren(tasks, task.id)}
                   isFocused={task.id === focusedTask?.id}
-                  onFocus={onFocusTask}
+                  onFocus={handleDrillDown}
                   onSelect={onSelectTask}
                   relations={relations}
                   selected={task.id === selectedTask?.id}

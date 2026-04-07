@@ -4,10 +4,10 @@ import { findChildren, findTaskById, formatRelativeDay, getEffectiveTaskStatus }
 import type { Task, TaskNote, TaskRelation, WorkStatus } from '../types';
 import { RelatedTaskCombobox } from './RelatedTaskCombobox';
 import { StatusPill } from './StatusPill';
+import { StatusSelect } from './StatusSelect';
 
 export function TaskDetailPane({
   filteredRelatedCandidateGroups,
-  focusedTask,
   mutating,
   newBlockerTitle,
   newNoteBody,
@@ -40,7 +40,6 @@ export function TaskDetailPane({
   tasks
 }: {
   filteredRelatedCandidateGroups: Array<{ label: string; tasks: Task[] }>;
-  focusedTask: Task | null;
   mutating: boolean;
   newBlockerTitle: string;
   newNoteBody: string;
@@ -73,20 +72,10 @@ export function TaskDetailPane({
   tasks: Task[];
 }) {
   return (
-    <section className="pane detail-pane" data-testid="pane-detail">
+    <section className="pane detail-pane pane--animated" data-testid="pane-detail">
+      <div className="pane-enter-left pane-inner" key={selectedTask?.id ?? 'empty'}>
       <div className="pane-header sticky-pane-header">
         <p className="eyebrow">Pane 3</p>
-        <h2>Task detail</h2>
-        {selectedTask && focusedTask && selectedTask.id !== focusedTask.id ? (
-          <button
-            className="text-button pane-context-action"
-            disabled={mutating}
-            onClick={() => onFocusTask(selectedTask.id)}
-            type="button"
-          >
-            Open in pane 2
-          </button>
-        ) : null}
       </div>
 
       <div className="pane-scroll">
@@ -129,6 +118,7 @@ export function TaskDetailPane({
           <p>No task selected.</p>
         </div>
       )}
+      </div>
       </div>
     </section>
   );
@@ -219,7 +209,6 @@ function TaskDetail({
       <section className="detail-card" data-testid="task-detail-card">
         <div className="detail-card-top">
           <div className="task-detail-title-wrap">
-            <p className="eyebrow">{task.isAnchor ? 'Anchor task' : 'Task'}</p>
             {editingTitle ? (
               <form
                 className="task-detail-title-form"
@@ -267,17 +256,11 @@ function TaskDetail({
           </div>
           <div>
             <span className="detail-label">Status</span>
-            <select
-              className="status-select"
-              onChange={(event) => onStatusChange(event.target.value as WorkStatus)}
+            <StatusSelect
+              disabled={mutating}
+              onChange={onStatusChange}
               value={task.status}
-            >
-              <option value="todo">todo</option>
-              <option value="started">started</option>
-              <option value="active">active</option>
-              <option value="done">done</option>
-              <option value="dropped">dropped</option>
-            </select>
+            />
           </div>
         </div>
 
